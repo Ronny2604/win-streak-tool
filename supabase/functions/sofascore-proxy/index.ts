@@ -5,18 +5,23 @@ const corsHeaders = {
 
 const SOFASCORE_API = 'https://api.sofascore.com/api/v1';
 
-const HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Accept': 'application/json',
-  'Referer': 'https://www.sofascore.com/',
-  'Origin': 'https://www.sofascore.com',
-};
-
 async function fetchSofaScore(path: string) {
-  const res = await fetch(`${SOFASCORE_API}${path}`, { headers: HEADERS });
+  const res = await fetch(`${SOFASCORE_API}${path}`, {
+    headers: {
+      'Accept': '*/*',
+      'Cache-Control': 'no-cache',
+    },
+  });
   if (!res.ok) {
-    console.error(`SofaScore API error: ${res.status} for path: ${path}`);
-    throw new Error(`SofaScore API returned ${res.status}`);
+    // Try mobile API as fallback
+    const mobileRes = await fetch(`https://api.sofascore.app/api/v1${path}`, {
+      headers: { 'Accept': '*/*' },
+    });
+    if (!mobileRes.ok) {
+      console.error(`SofaScore API error: ${mobileRes.status} for path: ${path}`);
+      throw new Error(`SofaScore API returned ${mobileRes.status}`);
+    }
+    return mobileRes.json();
   }
   return res.json();
 }
@@ -37,10 +42,8 @@ Deno.serve(async (req) => {
     let data;
 
     if (action === 'live') {
-      // Fetch live football events
       data = await fetchSofaScore('/sport/football/events/live');
     } else if (action === 'today') {
-      // Fetch today's scheduled events
       const today = formatDate(new Date());
       data = await fetchSofaScore(`/sport/football/scheduled-events/${today}`);
     } else if (action === 'odds') {
