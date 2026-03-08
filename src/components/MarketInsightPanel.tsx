@@ -70,22 +70,7 @@ export function MarketInsightPanel({ market, fixtures, onClose }: MarketInsightP
           <div>
             <h3 className="text-sm font-bold text-foreground">{market}</h3>
             <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-              {loading ? (
-                <>
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Carregando dados reais...
-                </>
-              ) : (
-                <>
-                  {insights.filter(i => i.realData).length > 0 && (
-                    <Database className="h-3 w-3 text-neon" />
-                  )}
                   {insights.length} {insights.length === 1 ? "oportunidade" : "oportunidades"} encontradas
-                  {insights.filter(i => i.realData).length > 0 && (
-                    <span className="text-neon ml-1">• Dados reais</span>
-                  )}
-                </>
-              )}
             </p>
           </div>
         </div>
