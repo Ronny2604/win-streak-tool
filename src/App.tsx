@@ -21,6 +21,7 @@ const App = () => (
       <TooltipProvider>
         <AuthProvider>
           <KeyGateProvider>
+            <CustomTicketProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
