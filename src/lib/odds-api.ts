@@ -53,7 +53,7 @@ const SPORT_COUNTRIES: Record<string, string> = {
   soccer_italy_serie_a: "Italy",
   soccer_germany_bundesliga: "Germany",
   soccer_france_ligue_one: "France",
-  soccer_brazil_serie_a: "Brazil",
+  soccer_brazil_campeonato: "Brazil",
   soccer_uefa_champs_league: "World",
 };
 
