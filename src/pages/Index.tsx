@@ -21,7 +21,7 @@ export default function Index() {
   const { session, loading: keyLoading } = useKeyGate();
   const isPro = session.plan === "pro";
   const LITE_LIMIT = 5;
-  const [activeTab, setActiveTab] = useState<"futebol" | "live" | "bilhetes">("futebol");
+  const [activeTab, setActiveTab] = useState<"futebol" | "live" | "bilhetes" | "historico">("futebol");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
   const [activeHighlight, setActiveHighlight] = useState<number | null>(null);
