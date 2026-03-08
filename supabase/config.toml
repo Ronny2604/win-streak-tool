@@ -1,1 +1,4 @@
 project_id = "jgrgheohhhkeroxtqckl"
+
+[functions.sofascore-proxy]
+verify_jwt = false
