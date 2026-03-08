@@ -1,4 +1,17 @@
-import { supabase } from "@/integrations/supabase/client";
+const API_KEY = "d28a1069bc56332e46147be343abb995";
+const BASE_URL = "https://v3.football.api-sports.io";
+
+async function fetchFootballApi<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
+  const url = new URL(`${BASE_URL}${endpoint}`);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+
+  const res = await fetch(url.toString(), {
+    headers: { "x-apisports-key": API_KEY },
+  });
+
+  if (!res.ok) throw new Error(`API Error: ${res.status}`);
+  return res.json();
+}
 
 export interface SofaFixture {
   fixture: {
@@ -19,67 +32,24 @@ export interface SofaFixture {
   goals: { home: number | null; away: number | null };
 }
 
-export interface OddValue {
-  value: string;
-  odd: string;
-}
-
-export interface Prediction {
-  predictions: {
-    winner: { id: number; name: string; comment: string };
-    advice: string;
-    percent: { home: string; draw: string; away: string };
-  };
-  teams: {
-    home: { id: number; name: string; logo: string };
-    away: { id: number; name: string; logo: string };
-  };
-}
-
-async function callProxy(params: Record<string, string>) {
-  const { data, error } = await supabase.functions.invoke("sofascore-proxy", {
-    method: "GET",
-    body: null,
-    headers: {},
-  });
-
-  // supabase.functions.invoke doesn't support query params well for GET,
-  // so we'll use fetch directly
-  const projectId = import.meta.env.VITE_SUPABASE_URL?.replace('https://', '').split('.')[0];
-  const url = new URL(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sofascore-proxy`);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-
-  const res = await fetch(url.toString(), {
-    headers: {
-      'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!res.ok) throw new Error(`Proxy error: ${res.status}`);
-  return res.json();
-}
-
 export async function getTodayFixtures(league?: string) {
-  const params: Record<string, string> = { action: 'today' };
-  if (league) params.league = league;
-  return callProxy(params) as Promise<{ response: SofaFixture[] }>;
+  const today = new Date().toISOString().split("T")[0];
+  const params: Record<string, string> = { date: today };
+  if (league) { params.league = league; params.season = "2024"; }
+
+  return fetchFootballApi<{ response: SofaFixture[] }>("/fixtures", params);
 }
 
 export async function getLiveFixtures() {
-  return callProxy({ action: 'live' }) as Promise<{ response: SofaFixture[] }>;
+  return fetchFootballApi<{ response: SofaFixture[] }>("/fixtures", { live: "all" });
 }
 
 export async function getFixtureOdds(fixtureId: number) {
-  return callProxy({ action: 'odds', fixtureId: fixtureId.toString() });
+  return fetchFootballApi<{ response: any[] }>("/odds", { fixture: fixtureId.toString() });
 }
 
 export async function getFixturePredictions(fixtureId: number) {
-  return callProxy({ action: 'predictions', fixtureId: fixtureId.toString() }) as Promise<{ response: Prediction[] }>;
-}
-
-export async function getH2H(team1Id: number, team2Id: number) {
-  return callProxy({ action: 'h2h', h2h: `${team1Id}-${team2Id}` });
+  return fetchFootballApi<{ response: any[] }>("/predictions", { fixture: fixtureId.toString() });
 }
 
 export const LEAGUES = [
