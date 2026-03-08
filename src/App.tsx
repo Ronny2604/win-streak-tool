@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { KeyGateProvider } from "@/contexts/KeyGateContext";
+import { CustomTicketProvider } from "@/contexts/CustomTicketContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
@@ -20,6 +21,7 @@ const App = () => (
       <TooltipProvider>
         <AuthProvider>
           <KeyGateProvider>
+            <CustomTicketProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
@@ -37,6 +39,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
+            </CustomTicketProvider>
           </KeyGateProvider>
         </AuthProvider>
       </TooltipProvider>

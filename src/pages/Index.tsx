@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSoccerOdds, getLiveScores, LEAGUES, type NormalizedFixture } from "@/lib/odds-api";
 import { MatchCard } from "@/components/MatchCard";
+import { MatchDetailModal } from "@/components/MatchDetailModal";
+import { CustomTicketBar } from "@/components/CustomTicketBar";
 import { TicketsSection } from "@/components/TicketsSection";
 import { TicketsHistory } from "@/components/TicketsHistory";
 import { FilterChip } from "@/components/FilterChip";
@@ -26,6 +28,7 @@ export default function Index() {
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
   const [activeHighlight, setActiveHighlight] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+  const [selectedMatch, setSelectedMatch] = useState<NormalizedFixture | null>(null);
 
   const { data: fixturesData, isLoading: loadingFixtures } = useQuery({
     queryKey: ["fixtures", selectedLeague],
@@ -207,7 +210,7 @@ export default function Index() {
         ) : filteredFixtures && filteredFixtures.length > 0 ? (
           <div className="space-y-3">
             {filteredFixtures.slice(0, isPro ? 50 : LITE_LIMIT).map((fixture) => (
-              <MatchCard key={fixture.id} fixture={fixture} showOdds={isPro} />
+              <MatchCard key={fixture.id} fixture={fixture} showOdds={isPro} onClick={() => setSelectedMatch(fixture)} />
             ))}
             {!isPro && filteredFixtures.length > LITE_LIMIT && (
               <div className="relative">
@@ -238,6 +241,18 @@ export default function Index() {
         )}
         </>)}
       </main>
+
+      {/* Match Detail Modal */}
+      {selectedMatch && (
+        <MatchDetailModal
+          fixture={selectedMatch}
+          onClose={() => setSelectedMatch(null)}
+          showOdds={isPro}
+        />
+      )}
+
+      {/* Custom Ticket Bar */}
+      <CustomTicketBar />
     </div>
   );
 }
