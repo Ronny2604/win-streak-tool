@@ -1,27 +1,43 @@
 import { NormalizedFixture } from "@/lib/odds-api";
 import { MiniChart } from "./MiniChart";
 import { EliteBadge } from "./EliteBadge";
+import { useCustomTicket } from "@/contexts/CustomTicketContext";
+import { Check } from "lucide-react";
 
 interface MatchCardProps {
   fixture: NormalizedFixture;
   showOdds?: boolean;
+  onClick?: () => void;
 }
 
 function generateMockChart(): number[] {
   return Array.from({ length: 10 }, () => Math.random() > 0.3 ? Math.random() * 10 : -Math.random() * 3);
 }
 
-export function MatchCard({ fixture, showOdds = true }: MatchCardProps) {
+export function MatchCard({ fixture, showOdds = true, onClick }: MatchCardProps) {
   const { teams, league, status, goals, odds, date } = fixture;
+  const { isSelected } = useCustomTicket();
   const isLive = status.short === "LIVE";
+  const selected = isSelected(fixture.id);
   const time = new Date(date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="rounded-xl bg-card p-4 border border-border hover:border-neon/30 transition-all group">
+    <div
+      onClick={onClick}
+      className={`rounded-xl bg-card p-4 border transition-all group cursor-pointer ${
+        selected ? "border-neon bg-neon/5" : "border-border hover:border-neon/30"
+      }`}
+    >
       {/* League header */}
       <div className="flex items-center gap-2 mb-3">
         {league.logo && <img src={league.logo} alt={league.name} className="w-4 h-4 object-contain" />}
         <span className="text-xs text-muted-foreground font-medium capitalize">{league.name}</span>
+        {selected && (
+          <span className="ml-1 flex items-center gap-1">
+            <Check className="h-3 w-3 text-neon" />
+            <span className="text-[10px] font-bold text-neon">NO BILHETE</span>
+          </span>
+        )}
         {isLive && (
           <span className="ml-auto flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-chart-negative animate-pulse-neon" />
