@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { NormalizedFixture } from "@/lib/odds-api";
-import { analyzeMarket, MarketType, MarketTeamInsight } from "@/lib/market-analysis";
+import { analyzeMarket, analyzeMarketAsync, MarketType, MarketTeamInsight } from "@/lib/market-analysis";
 import { useCustomTicket } from "@/contexts/CustomTicketContext";
 import {
   CornerDownRight,
