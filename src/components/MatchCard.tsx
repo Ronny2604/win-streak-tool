@@ -55,7 +55,7 @@ export function MatchCard({ fixture, odds, showOdds = true }: MatchCardProps) {
       </div>
 
       {/* Odds */}
-      {odds && (
+      {showOdds && odds && (
         <div className="flex gap-2 mb-3">
           <div className="flex-1 rounded-lg bg-surface py-1.5 text-center">
             <div className="text-[10px] text-muted-foreground">Casa</div>
