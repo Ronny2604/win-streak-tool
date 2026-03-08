@@ -27,18 +27,18 @@ export default function Index() {
 
   const { data: fixturesData, isLoading: loadingFixtures } = useQuery({
     queryKey: ["fixtures", selectedLeague],
-    queryFn: () => getTodayFixtures(selectedLeague),
+    queryFn: () => getSoccerOdds(selectedLeague),
     staleTime: 60000,
   });
 
   const { data: liveData, isLoading: loadingLive } = useQuery({
     queryKey: ["live-fixtures"],
-    queryFn: getLiveFixtures,
+    queryFn: () => getLiveScores(),
     refetchInterval: 30000,
     enabled: activeTab === "live",
   });
 
-  const fixtures = activeTab === "live" ? liveData?.response : fixturesData?.response;
+  const fixtures = activeTab === "live" ? liveData : fixturesData;
   const isLoading = activeTab === "live" ? loadingLive : loadingFixtures;
 
   const filteredFixtures = fixtures?.filter((f) => {
