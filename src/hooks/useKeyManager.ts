@@ -1,13 +1,16 @@
-import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
-interface UserKey {
+export interface AccessKey {
   id: string;
   key: string;
-  user: string;
+  username: string;
   plan: "lite" | "pro";
   active: boolean;
-  createdAt: string;
-  expiresAt: string;
+  created_by: string;
+  created_at: string;
+  expires_at: string;
 }
 
 function generateKey(): string {
@@ -19,45 +22,63 @@ function generateKey(): string {
 }
 
 export function useKeyManager() {
-  const [keys, setKeys] = useState<UserKey[]>(() => {
-    const stored = localStorage.getItem("admin-keys");
-    return stored ? JSON.parse(stored) : [];
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  const { data: keys = [], isLoading } = useQuery({
+    queryKey: ["access-keys"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("access_keys")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as AccessKey[];
+    },
+    enabled: !!user,
   });
 
-  useEffect(() => {
-    localStorage.setItem("admin-keys", JSON.stringify(keys));
-  }, [keys]);
+  const createMutation = useMutation({
+    mutationFn: async ({ username, plan, daysValid }: { username: string; plan: "lite" | "pro"; daysValid: number }) => {
+      const expires = new Date();
+      expires.setDate(expires.getDate() + daysValid);
+      const { data, error } = await supabase.from("access_keys").insert({
+        key: generateKey(),
+        username,
+        plan,
+        active: true,
+        created_by: user!.id,
+        expires_at: expires.toISOString(),
+      }).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["access-keys"] }),
+  });
 
-  const createKey = (user: string, plan: "lite" | "pro", daysValid: number) => {
-    const now = new Date();
-    const expires = new Date(now);
-    expires.setDate(expires.getDate() + daysValid);
+  const toggleMutation = useMutation({
+    mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
+      const { error } = await supabase.from("access_keys").update({ active: !active }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["access-keys"] }),
+  });
 
-    const newKey: UserKey = {
-      id: crypto.randomUUID(),
-      key: generateKey(),
-      user,
-      plan,
-      active: true,
-      createdAt: now.toISOString(),
-      expiresAt: expires.toISOString(),
-    };
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("access_keys").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["access-keys"] }),
+  });
 
-    setKeys((prev) => [newKey, ...prev]);
-    return newKey;
+  return {
+    keys,
+    isLoading,
+    createKey: (username: string, plan: "lite" | "pro", daysValid: number) =>
+      createMutation.mutateAsync({ username, plan, daysValid }),
+    toggleKey: (id: string, active: boolean) => toggleMutation.mutateAsync({ id, active }),
+    deleteKey: (id: string) => deleteMutation.mutateAsync(id),
+    isCreating: createMutation.isPending,
   };
-
-  const toggleKey = (id: string) => {
-    setKeys((prev) =>
-      prev.map((k) => (k.id === id ? { ...k, active: !k.active } : k))
-    );
-  };
-
-  const deleteKey = (id: string) => {
-    setKeys((prev) => prev.filter((k) => k.id !== id));
-  };
-
-  return { keys, createKey, toggleKey, deleteKey };
 }
-
-export type { UserKey };
