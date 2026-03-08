@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { NormalizedFixture } from "@/lib/odds-api";
-import { analyzeMarket, MarketType, MarketTeamInsight } from "@/lib/market-analysis";
+import { analyzeMarketAsync, analyzeMarket, MarketType, MarketTeamInsight } from "@/lib/market-analysis";
 import { useCustomTicket } from "@/contexts/CustomTicketContext";
 import {
   CornerDownRight,
@@ -13,6 +13,8 @@ import {
   Check,
   TrendingUp,
   X,
+  Loader2,
+  Database,
 } from "lucide-react";
 
 const MARKET_ICONS: Record<MarketType, typeof Goal> = {
@@ -38,9 +40,33 @@ interface MarketInsightPanelProps {
 }
 
 export function MarketInsightPanel({ market, fixtures, onClose }: MarketInsightPanelProps) {
-  const insights = useMemo(() => analyzeMarket(fixtures, market), [fixtures, market]);
+  const [insights, setInsights] = useState<MarketTeamInsight[]>([]);
+  const [loading, setLoading] = useState(true);
   const { addSelection, removeSelection, isSelected, getSelection } = useCustomTicket();
   const Icon = MARKET_ICONS[market];
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+
+    // Show immediate fallback
+    const fallback = analyzeMarket(fixtures, market);
+    setInsights(fallback);
+
+    // Then fetch real data
+    analyzeMarketAsync(fixtures, market)
+      .then((real) => {
+        if (!cancelled) {
+          setInsights(real);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [fixtures, market]);
 
   const handleToggle = (insight: MarketTeamInsight) => {
     const key = insight.fixture.id;
@@ -67,8 +93,23 @@ export function MarketInsightPanel({ market, fixtures, onClose }: MarketInsightP
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground">{market}</h3>
-            <p className="text-[10px] text-muted-foreground">
-              {insights.length} {insights.length === 1 ? "oportunidade" : "oportunidades"} encontradas
+            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+              {loading ? (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Carregando dados reais...
+                </>
+              ) : (
+                <>
+                  {insights.filter(i => i.realData).length > 0 && (
+                    <Database className="h-3 w-3 text-neon" />
+                  )}
+                  {insights.length} {insights.length === 1 ? "oportunidade" : "oportunidades"} encontradas
+                  {insights.filter(i => i.realData).length > 0 && (
+                    <span className="text-neon ml-1">• Dados reais</span>
+                  )}
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -82,7 +123,7 @@ export function MarketInsightPanel({ market, fixtures, onClose }: MarketInsightP
 
       {/* Insights list */}
       <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
-        {insights.length === 0 ? (
+        {insights.length === 0 && !loading ? (
           <div className="p-8 text-center">
             <p className="text-sm text-muted-foreground">Nenhuma oportunidade forte para este mercado hoje.</p>
           </div>
@@ -106,9 +147,14 @@ export function MarketInsightPanel({ market, fixtures, onClose }: MarketInsightP
                       <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${TAG_STYLES[insight.tag]}`}>
                         {insight.tag}
                       </span>
+                      {insight.realData && (
+                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full border border-neon/30 bg-neon/10 text-neon">
+                          REAL
+                        </span>
+                      )}
                       <span className="text-xs font-bold text-foreground truncate">{insight.teamName}</span>
                     </div>
-                    {insight.opponent !== "Total" && insight.opponent !== "BTTS" && insight.opponent !== "Sem Empate" && (
+                    {insight.opponent !== "Total" && insight.opponent !== "BTTS" && insight.opponent !== "Sem Empate" && insight.opponent !== "Estimativa" && (
                       <p className="text-[10px] text-muted-foreground mb-1.5">vs {insight.opponent}</p>
                     )}
                     <p className="text-xs font-semibold text-neon mb-1">{insight.suggestedBet}</p>
@@ -132,7 +178,6 @@ export function MarketInsightPanel({ market, fixtures, onClose }: MarketInsightP
                       <TrendingUp className="h-3 w-3 text-muted-foreground" />
                       <span className="text-[10px] font-bold text-foreground">{insight.score}%</span>
                     </div>
-                    {/* Score bar */}
                     <div className="w-12 h-1 rounded-full bg-border overflow-hidden">
                       <div
                         className="h-full rounded-full bg-neon"
