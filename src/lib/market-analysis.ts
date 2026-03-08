@@ -482,7 +482,145 @@ export async function analyzeMarketAsync(
             tag: totalScore > 72 ? "FAVORITO" : "VALUE",
             realData: true,
           });
+      }
+
+      if (market === "Gols") {
+        const homeGoalsFor = homeStats?.goals?.for?.average?.home ? parseFloat(homeStats.goals.for.average.home) : null;
+        const awayGoalsFor = awayStats?.goals?.for?.average?.away ? parseFloat(awayStats.goals.for.average.away) : null;
+        const homeGoalsAgainst = homeStats?.goals?.against?.average?.home ? parseFloat(homeStats.goals.against.average.home) : null;
+        const awayGoalsAgainst = awayStats?.goals?.against?.average?.away ? parseFloat(awayStats.goals.against.average.away) : null;
+        const homePlayed = homeStats?.fixtures?.played?.home ?? 0;
+        const awayPlayed = awayStats?.fixtures?.played?.away ?? 0;
+        const homeWinRate = homeStats?.fixtures ? (homeStats.fixtures.wins.home / Math.max(1, homeStats.fixtures.played.home) * 100) : 0;
+        const homeForm = getFormArray(homeStats?.form ?? null);
+        const awayForm = getFormArray(awayStats?.form ?? null);
+
+        if (homeGoalsFor !== null && homePlayed > 0) {
+          hasAnyRealData = true;
+          const goalScore = Math.min(93, Math.round(homeGoalsFor * 25 + 15));
+          const formStr = homeForm.length > 0 ? ` Forma: ${homeForm.join("")}.` : "";
+
+          if (goalScore > 50) {
+            insights.push({
+              fixture,
+              teamName: fixture.teams.home.name,
+              teamLogo: fixture.teams.home.logo,
+              opponent: fixture.teams.away.name,
+              score: goalScore,
+              suggestedBet: `${fixture.teams.home.name} marca +1.5 gols`,
+              suggestedOdd: +(1.65 + (1 / (goalScore / 25)) * 0.3).toFixed(2),
+              reasoning: `Média real: ${homeGoalsFor} gols/jogo em casa (${homePlayed} jogos). Taxa vitória casa: ${homeWinRate.toFixed(0)}%.${formStr}`,
+              tag: goalScore > 72 ? "FAVORITO" : "TENDÊNCIA",
+              realData: true,
+            });
+          }
         }
+
+        if (awayGoalsFor !== null && awayPlayed > 0) {
+          hasAnyRealData = true;
+          const goalScore = Math.min(90, Math.round(awayGoalsFor * 23 + 12));
+          const formStr = awayForm.length > 0 ? ` Forma: ${awayForm.join("")}.` : "";
+
+          if (goalScore > 50) {
+            insights.push({
+              fixture,
+              teamName: fixture.teams.away.name,
+              teamLogo: fixture.teams.away.logo,
+              opponent: fixture.teams.home.name,
+              score: goalScore,
+              suggestedBet: `${fixture.teams.away.name} marca +0.5 gols`,
+              suggestedOdd: +(1.40 + (1 / (goalScore / 25)) * 0.25).toFixed(2),
+              reasoning: `Média real: ${awayGoalsFor} gols/jogo fora (${awayPlayed} jogos).${formStr}`,
+              tag: goalScore > 70 ? "FORTE" : "VALUE",
+              realData: true,
+            });
+          }
+        }
+
+        // Over 2.5 total
+        if (homeGoalsFor !== null && awayGoalsFor !== null) {
+          const expectedTotal = homeGoalsFor + awayGoalsFor + (homeGoalsAgainst ?? 0) * 0.3 + (awayGoalsAgainst ?? 0) * 0.3;
+          const avgTotal = (homeGoalsFor + awayGoalsFor);
+          const overScore = Math.min(92, Math.round(avgTotal * 22 + 5));
+
+          if (overScore > 50) {
+            insights.push({
+              fixture,
+              teamName: `${fixture.teams.home.name} vs ${fixture.teams.away.name}`,
+              teamLogo: fixture.league.logo,
+              opponent: "Total",
+              score: overScore,
+              suggestedBet: avgTotal > 3 ? `Mais de 3.5 gols` : `Mais de 2.5 gols`,
+              suggestedOdd: +(1.60 + (1 / (overScore / 25)) * 0.2).toFixed(2),
+              reasoning: `Média real combinada: ${avgTotal.toFixed(1)} gols/jogo. Expectativa ajustada: ${expectedTotal.toFixed(1)}.`,
+              tag: overScore > 70 ? "FAVORITO" : "VALUE",
+              realData: true,
+            });
+          }
+        }
+      }
+
+      if (market === "Ambas Marcam") {
+        const homeGoalsFor = homeStats?.goals?.for?.average?.home ? parseFloat(homeStats.goals.for.average.home) : null;
+        const awayGoalsFor = awayStats?.goals?.for?.average?.away ? parseFloat(awayStats.goals.for.average.away) : null;
+        const homeGoalsAgainst = homeStats?.goals?.against?.average?.home ? parseFloat(homeStats.goals.against.average.home) : null;
+        const awayGoalsAgainst = awayStats?.goals?.against?.average?.away ? parseFloat(awayStats.goals.against.average.away) : null;
+        const homeCleanSheets = homeStats?.clean_sheet?.home ?? 0;
+        const awayCleanSheets = awayStats?.clean_sheet?.away ?? 0;
+        const homePlayed = homeStats?.fixtures?.played?.home ?? 0;
+        const awayPlayed = awayStats?.fixtures?.played?.away ?? 0;
+
+        if (homeGoalsFor !== null && awayGoalsFor !== null && homePlayed > 0 && awayPlayed > 0) {
+          hasAnyRealData = true;
+
+          // BTTS likelihood: both teams score AND concede
+          const homeScoresRate = homeGoalsFor > 0 ? Math.min(1, homeGoalsFor / 2) : 0;
+          const awayScoresRate = awayGoalsFor > 0 ? Math.min(1, awayGoalsFor / 1.5) : 0;
+          const homeConcedes = homeGoalsAgainst !== null ? Math.min(1, homeGoalsAgainst / 1.5) : 0.5;
+          const awayConcedes = awayGoalsAgainst !== null ? Math.min(1, awayGoalsAgainst / 1.5) : 0.5;
+
+          // Clean sheet rate inversely affects BTTS
+          const homeCSRate = homePlayed > 0 ? homeCleanSheets / homePlayed : 0;
+          const awayCSRate = awayPlayed > 0 ? awayCleanSheets / awayPlayed : 0;
+
+          const bttsProb = (homeScoresRate * awayConcedes + awayScoresRate * homeConcedes) / 2;
+          const csDiscount = 1 - (homeCSRate + awayCSRate) / 2;
+          const bttsScore = Math.min(92, Math.round(bttsProb * csDiscount * 100 + 20));
+
+          if (bttsScore > 50) {
+            insights.push({
+              fixture,
+              teamName: `${fixture.teams.home.name} vs ${fixture.teams.away.name}`,
+              teamLogo: fixture.league.logo,
+              opponent: "BTTS",
+              score: bttsScore,
+              suggestedBet: `Ambas marcam - Sim`,
+              suggestedOdd: +(1.50 + (1 / (bttsScore / 25)) * 0.2).toFixed(2),
+              reasoning: `Dados reais: ${fixture.teams.home.name} marca ${homeGoalsFor}/jogo, sofre ${homeGoalsAgainst?.toFixed(1) ?? "?"}/jogo. ${fixture.teams.away.name} marca ${awayGoalsFor}/jogo fora. CS casa: ${(homeCSRate * 100).toFixed(0)}%.`,
+              tag: bttsScore > 73 ? "FAVORITO" : "VALUE",
+              realData: true,
+            });
+          }
+
+          // BTTS No
+          const noBttsScore = Math.min(90, Math.round((1 - bttsProb * csDiscount) * 80 + 10));
+          if (noBttsScore > 65 && (homeCSRate > 0.35 || awayCSRate > 0.35)) {
+            const cleanSheetTeam = homeCSRate > awayCSRate ? fixture.teams.home.name : fixture.teams.away.name;
+            insights.push({
+              fixture,
+              teamName: `${fixture.teams.home.name} vs ${fixture.teams.away.name}`,
+              teamLogo: fixture.league.logo,
+              opponent: "BTTS",
+              score: noBttsScore,
+              suggestedBet: `Ambas marcam - Não`,
+              suggestedOdd: +(1.55 + (1 / (noBttsScore / 25)) * 0.25).toFixed(2),
+              reasoning: `${cleanSheetTeam} tem alta taxa de clean sheet (${Math.max(homeCSRate, awayCSRate) * 100 | 0}%). Defesa sólida dificulta BTTS.`,
+              tag: "TENDÊNCIA",
+              realData: true,
+            });
+          }
+        }
+      }
       }
     }
 
