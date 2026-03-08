@@ -3,7 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { getSoccerOdds, getLiveScores, LEAGUES, type NormalizedFixture } from "@/lib/odds-api";
 import { MatchCard } from "@/components/MatchCard";
 import { MatchDetailModal } from "@/components/MatchDetailModal";
+import { MarketInsightPanel } from "@/components/MarketInsightPanel";
 import { CustomTicketBar } from "@/components/CustomTicketBar";
+import type { MarketType } from "@/lib/market-analysis";
 import { TicketsSection } from "@/components/TicketsSection";
 import { TicketsHistory } from "@/components/TicketsHistory";
 import { FilterChip } from "@/components/FilterChip";
@@ -58,7 +60,7 @@ export default function Index() {
 
   const toggleMarket = (m: string) => {
     setActiveMarkets((prev) =>
-      prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]
+      prev.includes(m) ? [] : [m]
     );
   };
 
@@ -169,7 +171,7 @@ export default function Index() {
 
         {/* Active filters display */}
         {activeMarkets.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mb-1">
             {activeMarkets.map((m) => (
               <FilterChip
                 key={m}
@@ -184,9 +186,18 @@ export default function Index() {
               onClick={() => setActiveMarkets([])}
               className="text-xs font-medium text-chart-negative hover:underline"
             >
-              Limpar tudo
+              Limpar
             </button>
           </div>
+        )}
+
+        {/* Market Insight Panel */}
+        {activeMarkets.length === 1 && fixturesData && fixturesData.length > 0 && (
+          <MarketInsightPanel
+            market={activeMarkets[0] as MarketType}
+            fixtures={fixturesData}
+            onClose={() => setActiveMarkets([])}
+          />
         )}
 
         {/* Search */}
