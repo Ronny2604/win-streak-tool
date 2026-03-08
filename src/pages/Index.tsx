@@ -85,15 +85,18 @@ export default function Index() {
             Futebol
           </button>
           <button
-            onClick={() => setActiveTab("live")}
+            onClick={() => isPro && setActiveTab("live")}
             className={`pb-2 text-sm font-semibold transition-colors border-b-2 flex items-center gap-1.5 ${
-              activeTab === "live"
-                ? "border-chart-negative text-chart-negative"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+              !isPro
+                ? "border-transparent text-muted-foreground/40 cursor-not-allowed"
+                : activeTab === "live"
+                  ? "border-chart-negative text-chart-negative"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <span className="h-2 w-2 rounded-full bg-chart-negative animate-pulse-neon" />
             Ao Vivo
+            {!isPro && <Lock className="h-3 w-3 ml-1" />}
           </button>
         </div>
 
