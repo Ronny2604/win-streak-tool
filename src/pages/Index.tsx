@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSoccerOdds, getLiveScores, LEAGUES, type NormalizedFixture } from "@/lib/odds-api";
 import { MatchCard } from "@/components/MatchCard";
+import { MatchDetailModal } from "@/components/MatchDetailModal";
+import { CustomTicketBar } from "@/components/CustomTicketBar";
 import { TicketsSection } from "@/components/TicketsSection";
 import { TicketsHistory } from "@/components/TicketsHistory";
 import { FilterChip } from "@/components/FilterChip";
