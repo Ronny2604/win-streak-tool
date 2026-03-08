@@ -6,7 +6,7 @@ import { FilterChip } from "@/components/FilterChip";
 import { AppHeader } from "@/components/AppHeader";
 import { KeyGateScreen } from "@/components/KeyGateScreen";
 import { useKeyGate } from "@/contexts/KeyGateContext";
-import { Star, Flame, Target, Search, Loader2 } from "lucide-react";
+import { Star, Flame, Target, Search, Loader2, Lock } from "lucide-react";
 
 const MARKETS = ["Chance Dupla", "S/ Empate", "Escanteios", "Cartões", "Gols", "Ambas Marcam"];
 const HIGHLIGHTS = [
@@ -17,6 +17,8 @@ const HIGHLIGHTS = [
 
 export default function Index() {
   const { session, loading: keyLoading } = useKeyGate();
+  const isPro = session.plan === "pro";
+  const LITE_LIMIT = 5;
   const [activeTab, setActiveTab] = useState<"futebol" | "live">("futebol");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
@@ -83,15 +85,18 @@ export default function Index() {
             Futebol
           </button>
           <button
-            onClick={() => setActiveTab("live")}
+            onClick={() => isPro && setActiveTab("live")}
             className={`pb-2 text-sm font-semibold transition-colors border-b-2 flex items-center gap-1.5 ${
-              activeTab === "live"
-                ? "border-chart-negative text-chart-negative"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+              !isPro
+                ? "border-transparent text-muted-foreground/40 cursor-not-allowed"
+                : activeTab === "live"
+                  ? "border-chart-negative text-chart-negative"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <span className="h-2 w-2 rounded-full bg-chart-negative animate-pulse-neon" />
             Ao Vivo
+            {!isPro && <Lock className="h-3 w-3 ml-1" />}
           </button>
         </div>
 
@@ -184,9 +189,29 @@ export default function Index() {
           </div>
         ) : filteredFixtures && filteredFixtures.length > 0 ? (
           <div className="space-y-3">
-            {filteredFixtures.slice(0, 20).map((fixture) => (
-              <MatchCard key={fixture.fixture.id} fixture={fixture} />
+            {filteredFixtures.slice(0, isPro ? 50 : LITE_LIMIT).map((fixture) => (
+              <MatchCard key={fixture.fixture.id} fixture={fixture} showOdds={isPro} />
             ))}
+            {!isPro && filteredFixtures.length > LITE_LIMIT && (
+              <div className="relative">
+                {/* Blurred preview of next items */}
+                <div className="space-y-3 blur-sm pointer-events-none select-none opacity-50">
+                  {filteredFixtures.slice(LITE_LIMIT, LITE_LIMIT + 2).map((fixture) => (
+                    <MatchCard key={fixture.fixture.id} fixture={fixture} showOdds={false} />
+                  ))}
+                </div>
+                {/* Upgrade overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm rounded-xl">
+                  <Lock className="h-6 w-6 text-neon mb-2" />
+                  <p className="text-sm font-semibold text-foreground">
+                    +{filteredFixtures.length - LITE_LIMIT} jogos disponíveis
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Upgrade para <span className="font-bold text-neon">PRO</span> para ver todos os jogos, odds e ao vivo
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 gap-2">

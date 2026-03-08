@@ -5,13 +5,14 @@ import { EliteBadge } from "./EliteBadge";
 interface MatchCardProps {
   fixture: Fixture;
   odds?: { home: string; draw: string; away: string } | null;
+  showOdds?: boolean;
 }
 
 function generateMockChart(): number[] {
   return Array.from({ length: 10 }, () => Math.random() > 0.3 ? Math.random() * 10 : -Math.random() * 3);
 }
 
-export function MatchCard({ fixture, odds }: MatchCardProps) {
+export function MatchCard({ fixture, odds, showOdds = true }: MatchCardProps) {
   const { teams, league, fixture: fix, goals } = fixture;
   const isLive = fix.status.short === "1H" || fix.status.short === "2H" || fix.status.short === "HT";
   const time = new Date(fix.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
@@ -54,7 +55,7 @@ export function MatchCard({ fixture, odds }: MatchCardProps) {
       </div>
 
       {/* Odds */}
-      {odds && (
+      {showOdds && odds && (
         <div className="flex gap-2 mb-3">
           <div className="flex-1 rounded-lg bg-surface py-1.5 text-center">
             <div className="text-[10px] text-muted-foreground">Casa</div>
