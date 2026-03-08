@@ -28,6 +28,7 @@ export default function Index() {
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
   const [activeHighlight, setActiveHighlight] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+  const [selectedMatch, setSelectedMatch] = useState<NormalizedFixture | null>(null);
 
   const { data: fixturesData, isLoading: loadingFixtures } = useQuery({
     queryKey: ["fixtures", selectedLeague],
