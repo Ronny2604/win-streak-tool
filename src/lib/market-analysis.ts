@@ -264,8 +264,9 @@ export async function analyzeMarketAsync(
   const batch = fixtures.filter((f) => f.odds).slice(0, 12);
   if (batch.length === 0) return [];
 
-  // Only corners and cards benefit from real team stats right now
-  if (market !== "Escanteios" && market !== "Cartões") {
+  // Only these markets benefit from real team stats
+  const REAL_DATA_MARKETS: MarketType[] = ["Escanteios", "Cartões", "Gols", "Ambas Marcam"];
+  if (!REAL_DATA_MARKETS.includes(market)) {
     return analyzeMarket(fixtures, market);
   }
 
