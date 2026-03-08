@@ -171,7 +171,7 @@ export default function Index() {
 
         {/* Active filters display */}
         {activeMarkets.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mb-1">
             {activeMarkets.map((m) => (
               <FilterChip
                 key={m}
@@ -186,9 +186,18 @@ export default function Index() {
               onClick={() => setActiveMarkets([])}
               className="text-xs font-medium text-chart-negative hover:underline"
             >
-              Limpar tudo
+              Limpar
             </button>
           </div>
+        )}
+
+        {/* Market Insight Panel */}
+        {activeMarkets.length === 1 && fixturesData && fixturesData.length > 0 && (
+          <MarketInsightPanel
+            market={activeMarkets[0] as MarketType}
+            fixtures={fixturesData}
+            onClose={() => setActiveMarkets([])}
+          />
         )}
 
         {/* Search */}
