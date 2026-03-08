@@ -24,7 +24,8 @@ const HIGHLIGHTS = [
 
 export default function Index() {
   const { session, loading: keyLoading } = useKeyGate();
-  const isPro = session.plan === "pro";
+  const { isAdmin, loading: authLoading } = useAuth();
+  const isPro = isAdmin || session.plan === "pro";
   const LITE_LIMIT = 5;
   const [activeTab, setActiveTab] = useState<"futebol" | "live" | "bilhetes" | "historico">("futebol");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
