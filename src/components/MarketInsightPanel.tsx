@@ -38,7 +38,31 @@ interface MarketInsightPanelProps {
 }
 
 export function MarketInsightPanel({ market, fixtures, onClose }: MarketInsightPanelProps) {
-  const insights = useMemo(() => analyzeMarket(fixtures, market), [fixtures, market]);
+  // Start with instant odds-based results, then upgrade to real data
+  const oddsInsights = useMemo(() => analyzeMarket(fixtures, market), [fixtures, market]);
+  const [insights, setInsights] = useState<MarketTeamInsight[]>(oddsInsights);
+  const [loadingReal, setLoadingReal] = useState(false);
+  const [hasRealData, setHasRealData] = useState(false);
+
+  useEffect(() => {
+    setInsights(oddsInsights);
+    setHasRealData(false);
+
+    // Try fetching real data in background (only for Corners/Cards)
+    if (market === "Escanteios" || market === "Cartões") {
+      setLoadingReal(true);
+      analyzeMarketAsync(fixtures, market)
+        .then((realInsights) => {
+          if (realInsights.some((i) => i.realData)) {
+            setInsights(realInsights);
+            setHasRealData(true);
+          }
+        })
+        .catch(() => {})
+        .finally(() => setLoadingReal(false));
+    }
+  }, [fixtures, market, oddsInsights]);
+
   const { addSelection, removeSelection, isSelected, getSelection } = useCustomTicket();
   const Icon = MARKET_ICONS[market];
 
