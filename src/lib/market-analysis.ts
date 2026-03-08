@@ -301,7 +301,9 @@ export async function analyzeMarketAsync(
       const homeTeam = searchResults[i * 2];
       const awayTeam = searchResults[i * 2 + 1];
       const fixture = teamPairs[i].fixture;
-      const leagueId = parseInt(fixture.league?.id ?? "0") || 0;
+      // Derive league ID from the sport key embedded in league.name
+      const sportKey = Object.keys(SPORT_TO_LEAGUE_ID).find((k) => fixture.league?.name?.includes(k.replace(/soccer_/g, "").replace(/_/g, " ")));
+      const leagueId = sportKey ? SPORT_TO_LEAGUE_ID[sportKey] : 39; // default to EPL
 
       if (homeTeam) {
         statsFetches.push(
