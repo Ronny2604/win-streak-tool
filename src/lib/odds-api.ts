@@ -109,7 +109,7 @@ export const LEAGUES = [
   { id: "soccer_italy_serie_a", name: "Serie A", country: "Italy" },
   { id: "soccer_germany_bundesliga", name: "Bundesliga", country: "Germany" },
   { id: "soccer_france_ligue_one", name: "Ligue 1", country: "France" },
-  { id: "soccer_brazil_serie_a", name: "Brasileirão", country: "Brazil" },
+  { id: "soccer_brazil_campeonato", name: "Brasileirão", country: "Brazil" },
   { id: "soccer_uefa_champs_league", name: "Champions League", country: "World" },
 ];
 
