@@ -5,6 +5,7 @@ import { EliteBadge } from "./EliteBadge";
 interface MatchCardProps {
   fixture: Fixture;
   odds?: { home: string; draw: string; away: string } | null;
+  showOdds?: boolean;
 }
 
 function generateMockChart(): number[] {
