@@ -40,33 +40,9 @@ interface MarketInsightPanelProps {
 }
 
 export function MarketInsightPanel({ market, fixtures, onClose }: MarketInsightPanelProps) {
-  const [insights, setInsights] = useState<MarketTeamInsight[]>([]);
-  const [loading, setLoading] = useState(true);
+  const insights = useMemo(() => analyzeMarket(fixtures, market), [fixtures, market]);
   const { addSelection, removeSelection, isSelected, getSelection } = useCustomTicket();
   const Icon = MARKET_ICONS[market];
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-
-    // Show immediate fallback
-    const fallback = analyzeMarket(fixtures, market);
-    setInsights(fallback);
-
-    // Then fetch real data
-    analyzeMarketAsync(fixtures, market)
-      .then((real) => {
-        if (!cancelled) {
-          setInsights(real);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => { cancelled = true; };
-  }, [fixtures, market]);
 
   const handleToggle = (insight: MarketTeamInsight) => {
     const key = insight.fixture.id;
