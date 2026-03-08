@@ -155,12 +155,29 @@ function SavedTicketCard({ ticket, onUpdateResult, onDelete }: SavedTicketCardPr
                 </button>
               )}
             </div>
-            <button
-              onClick={(e) => { e.stopPropagation(); onDelete(ticket.id); }}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-all"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={(e) => { e.stopPropagation(); shareViaWhatsApp(ticket as any); }}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-emerald-400 hover:bg-emerald-500/10 transition-all"
+                title="Compartilhar no WhatsApp"
+              >
+                <MessageCircle className="h-4 w-4" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); shareViaLink(ticket as any); }}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-neon hover:bg-neon/10 transition-all"
+                title="Copiar bilhete"
+              >
+                <Link className="h-4 w-4" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete(ticket.id); }}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-all"
+                title="Deletar"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
       )}
