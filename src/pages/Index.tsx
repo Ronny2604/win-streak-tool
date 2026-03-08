@@ -4,6 +4,8 @@ import { getTodayFixtures, getLiveFixtures, LEAGUES, type Fixture } from "@/lib/
 import { MatchCard } from "@/components/MatchCard";
 import { FilterChip } from "@/components/FilterChip";
 import { AppHeader } from "@/components/AppHeader";
+import { KeyGateScreen } from "@/components/KeyGateScreen";
+import { useKeyGate } from "@/contexts/KeyGateContext";
 import { Star, Flame, Target, Search, Loader2 } from "lucide-react";
 
 const MARKETS = ["Chance Dupla", "S/ Empate", "Escanteios", "Cartões", "Gols", "Ambas Marcam"];
