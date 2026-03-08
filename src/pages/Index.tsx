@@ -60,7 +60,7 @@ export default function Index() {
 
   const toggleMarket = (m: string) => {
     setActiveMarkets((prev) =>
-      prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]
+      prev.includes(m) ? [] : [m]
     );
   };
 
