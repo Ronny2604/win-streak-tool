@@ -197,7 +197,7 @@ export default function Index() {
                 {/* Blurred preview of next items */}
                 <div className="space-y-3 blur-sm pointer-events-none select-none opacity-50">
                   {filteredFixtures.slice(LITE_LIMIT, LITE_LIMIT + 2).map((fixture) => (
-                    <MatchCard key={fixture.fixture.id} fixture={fixture} showOdds={false} />
+                    <MatchCard key={fixture.id} fixture={fixture} showOdds={false} />
                   ))}
                 </div>
                 {/* Upgrade overlay */}
