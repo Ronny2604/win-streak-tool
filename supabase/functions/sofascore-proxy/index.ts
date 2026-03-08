@@ -41,104 +41,103 @@ async function getMarkdown(url: string): Promise<string> {
 function parseMarkdown(md: string): SofaEvent[] {
   const events: SofaEvent[] = [];
   
+  // Each match is a link block ending with ](https://www.sofascore.com/pt/football/match/...)
+  // Split by match URLs
+  const matchRegex = /\[([^\]]*?)\]\(https:\/\/www\.sofascore\.com\/pt\/football\/match\/[^)]+\)/g;
+  
+  // Track current league/country from tournament links
   let currentLeague = '';
   let currentCountry = '';
   
-  // Split by league sections - look for tournament links
-  const leaguePattern = /\[([^\]]+)\]\(https:\/\/www\.sofascore\.com\/pt\/football\/tournament\/[^)]+\)\s*\[([^\]]+)\]\(https:\/\/www\.sofascore\.com\/pt\/football\/[^)]+\)/g;
+  // Find league sections
+  const leagueRegex = /\[([^\]]+)\]\(https:\/\/www\.sofascore\.com\/pt\/football\/tournament\/[^)]+\)\s*\[([^\]]+)\]\(https:\/\/www\.sofascore\.com\/pt\/football\/[^)]+\)/g;
+  const leaguePositions: Array<{ index: number; league: string; country: string }> = [];
+  let lm;
+  while ((lm = leagueRegex.exec(md)) !== null) {
+    leaguePositions.push({ index: lm.index, league: lm[1], country: lm[2] });
+  }
   
-  // Find all match blocks - they're inside markdown links like [content](matchUrl)
-  // Pattern: [time\\\nstatus\\\n![team1](...)\\\nname1\\\n![team2](...)\\\nname2\\\nscore1\\\nscore2](url)
-  const matchPattern = /\[(\d{1,2}:\d{2})\\+\n(.*?)\\+\n!\[[^\]]*\]\([^)]*\)\\+\n([^\\]+?)\\+\n!\[[^\]]*\]\([^)]*\)\\+\n([^\\]+?)(?:\\+\n(\d+)\\+\n(\d+))?\]\(https:\/\/www\.sofascore\.com\/pt\/football\/match\//g;
-  
-  // Actually, let me use a simpler approach: split by match URLs
-  // Each match block ends with ](https://www.sofascore.com/pt/football/match/...)
-  
-  const sections = md.split(/\[!\[([^\]]+)\]\([^)]*\)\]\(https:\/\/www\.sofascore\.com\/pt\/football\/tournament\//);
-  
-  for (const section of sections) {
-    // Check for league name at start  
-    const leagueNameMatch = section.match(/^[^)]*\)\s*\[([^\]]+)\]\(https:\/\/www\.sofascore\.com\/pt\/football\/tournament\/[^)]+\)\s*\[([^\]]+)\]/);
-    if (leagueNameMatch) {
-      currentLeague = leagueNameMatch[1];
-      currentCountry = leagueNameMatch[2];
+  let match;
+  while ((match = matchRegex.exec(md)) !== null) {
+    const content = match[1];
+    const position = match.index;
+    
+    // Find the most recent league before this match
+    for (const lp of leaguePositions) {
+      if (lp.index < position) {
+        currentLeague = lp.league;
+        currentCountry = lp.country;
+      }
     }
     
-    // Find match blocks within this section
-    // Each match is wrapped in [...](https://www.sofascore.com/pt/football/match/...)
-    const matchBlocks = section.split(/\]\(https:\/\/www\.sofascore\.com\/pt\/football\/match\/[^)]+\)/);
+    // Parse content: split by \\ and newlines
+    const parts = content
+      .split(/\\+\n*/)
+      .map(p => p.trim())
+      .filter(p => p && p !== '\\' && p !== '');
     
-    for (const block of matchBlocks) {
-      // Match block content separated by \\n\\n or \\\n
-      const parts = block.split(/\\+\n+/).map(p => p.replace(/^\[/, '').trim()).filter(p => p && p !== '\\');
-      
-      if (parts.length < 4) continue;
-      
-      // Find time (HH:MM format)
-      let time = '';
-      let minute = '';
-      let status = 'not_started';
-      let homeTeam = '';
-      let awayTeam = '';
-      let homeScore: number | null = null;
-      let awayScore: number | null = null;
-      
-      const cleanParts: string[] = [];
-      for (const p of parts) {
-        const clean = p.replace(/!\[[^\]]*\]\([^)]*\)/g, '').trim();
-        if (clean) cleanParts.push(clean);
+    // Remove image markdown
+    const cleanParts = parts.map(p => p.replace(/!\[[^\]]*\]\([^)]*\)/g, '').trim()).filter(p => p);
+    
+    let time = '';
+    let minute = '';
+    let status = 'not_started';
+    let homeTeam = '';
+    let awayTeam = '';
+    let homeScore: number | null = null;
+    let awayScore: number | null = null;
+    
+    const teamNames: string[] = [];
+    const scores: number[] = [];
+    
+    for (const p of cleanParts) {
+      // Time
+      if (!time && p.match(/^\d{1,2}:\d{2}$/)) {
+        time = p;
+        continue;
       }
       
-      // Parse clean parts
-      for (let i = 0; i < cleanParts.length; i++) {
-        const p = cleanParts[i];
-        
-        if (!time && p.match(/^\d{1,2}:\d{2}$/)) {
-          time = p;
-          continue;
-        }
-        
-        // Status indicators
-        if (p.match(/^\d+'/)) { minute = p; status = 'live'; continue; }
-        if (p === '-') { status = 'not_started'; continue; }
-        if (p.match(/^F\d/i) || p === 'Enc.' || p === 'FT') { status = 'finished'; continue; }
-        if (p === 'HT' || p === 'Int.' || p.match(/^Int/)) { status = 'halftime'; minute = 'HT'; continue; }
-        if (p.match(/^F2°T/)) { status = 'finished'; continue; }
-        
-        // Skip numbers that are pagination like "1/2", "5"
-        if (p.match(/^\d+\/\d+$/) || (p.match(/^\d+$/) && !homeTeam)) continue;
-        
-        // Team names (not numbers, not URLs, not status)
-        if (!homeTeam && !p.match(/^\d+$/) && p.length > 1 && !p.startsWith('http') && !p.startsWith('![')) {
-          homeTeam = p;
-          continue;
-        }
-        
-        if (homeTeam && !awayTeam && !p.match(/^\d+$/) && p.length > 1 && !p.startsWith('http') && !p.startsWith('![')) {
-          awayTeam = p;
-          continue;
-        }
-        
-        // Scores (single digit numbers after teams)
-        if (homeTeam && p.match(/^\d+$/)) {
-          if (homeScore === null) { homeScore = parseInt(p); continue; }
-          if (awayScore === null) { awayScore = parseInt(p); continue; }
-        }
+      // Minute (live)
+      if (p.match(/^\d+'/)) { minute = p.replace("'", ''); status = 'live'; continue; }
+      
+      // Status
+      if (p === '-') { status = 'not_started'; continue; }
+      if (p.match(/^F\d?°?T?$/i) || p === 'Enc.' || p === 'FT' || p.match(/^F\d/)) { status = 'finished'; continue; }
+      if (p === 'HT' || p === 'Int.' || p.match(/^Int/)) { status = 'halftime'; minute = 'HT'; continue; }
+      if (p === 'Adiado' || p === 'Adiad.') { status = 'postponed'; continue; }
+      
+      // Single digit = score
+      if (p.match(/^\d{1,2}$/) && teamNames.length > 0) {
+        scores.push(parseInt(p));
+        continue;
       }
       
-      if (homeTeam && awayTeam) {
-        events.push({
-          homeTeam,
-          awayTeam,
-          homeScore,
-          awayScore,
-          league: currentLeague,
-          country: currentCountry,
-          time,
-          status,
-          minute,
-        });
+      // Skip pagination numbers at start
+      if (p.match(/^\d+\/\d+$/) || (p.match(/^\d+$/) && teamNames.length === 0)) continue;
+      
+      // Team name
+      if (p.length > 1 && !p.startsWith('http') && !p.match(/^\d+$/)) {
+        teamNames.push(p);
       }
+    }
+    
+    if (teamNames.length >= 2) {
+      homeTeam = teamNames[0];
+      awayTeam = teamNames[1];
+      homeScore = scores.length >= 1 ? scores[0] : null;
+      awayScore = scores.length >= 2 ? scores[1] : null;
+      
+      events.push({
+        homeTeam,
+        awayTeam,
+        homeScore,
+        awayScore,
+        league: currentLeague,
+        country: currentCountry,
+        time,
+        status,
+        minute,
+      });
     }
   }
   
@@ -164,13 +163,9 @@ Deno.serve(async (req) => {
 
     console.log(`Scraping: ${sofascoreUrl}`);
     const markdown = await getMarkdown(sofascoreUrl);
-    console.log(`Markdown length: ${markdown.length}`);
     
     const events = parseMarkdown(markdown);
     console.log(`Parsed ${events.length} events`);
-    if (events.length > 0) {
-      console.log(`First 3: ${JSON.stringify(events.slice(0, 3))}`);
-    }
 
     return new Response(
       JSON.stringify({ success: true, events, action }),
