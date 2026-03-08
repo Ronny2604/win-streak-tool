@@ -66,7 +66,7 @@ export default function Index() {
     );
   };
 
-  if (keyLoading) {
+  if (keyLoading || authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-neon" />
@@ -74,7 +74,7 @@ export default function Index() {
     );
   }
 
-  if (!session.valid) return <KeyGateScreen />;
+  if (!session.valid && !isAdmin) return <KeyGateScreen />;
 
   return (
     <div className="min-h-screen bg-background">
