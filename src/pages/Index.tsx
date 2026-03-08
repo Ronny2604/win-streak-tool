@@ -12,6 +12,7 @@ import { FilterChip } from "@/components/FilterChip";
 import { AppHeader } from "@/components/AppHeader";
 import { KeyGateScreen } from "@/components/KeyGateScreen";
 import { useKeyGate } from "@/contexts/KeyGateContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Star, Flame, Target, Search, Loader2, Lock } from "lucide-react";
 
 const MARKETS = ["Chance Dupla", "S/ Empate", "Escanteios", "Cartões", "Gols", "Ambas Marcam"];
@@ -23,7 +24,8 @@ const HIGHLIGHTS = [
 
 export default function Index() {
   const { session, loading: keyLoading } = useKeyGate();
-  const isPro = session.plan === "pro";
+  const { isAdmin, loading: authLoading } = useAuth();
+  const isPro = isAdmin || session.plan === "pro";
   const LITE_LIMIT = 5;
   const [activeTab, setActiveTab] = useState<"futebol" | "live" | "bilhetes" | "historico">("futebol");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
@@ -64,7 +66,7 @@ export default function Index() {
     );
   };
 
-  if (keyLoading) {
+  if (keyLoading || authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-neon" />
@@ -72,7 +74,7 @@ export default function Index() {
     );
   }
 
-  if (!session.valid) return <KeyGateScreen />;
+  if (!session.valid && !isAdmin) return <KeyGateScreen />;
 
   return (
     <div className="min-h-screen bg-background">
