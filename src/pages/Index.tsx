@@ -189,9 +189,29 @@ export default function Index() {
           </div>
         ) : filteredFixtures && filteredFixtures.length > 0 ? (
           <div className="space-y-3">
-            {filteredFixtures.slice(0, 20).map((fixture) => (
-              <MatchCard key={fixture.fixture.id} fixture={fixture} />
+            {filteredFixtures.slice(0, isPro ? 50 : LITE_LIMIT).map((fixture) => (
+              <MatchCard key={fixture.fixture.id} fixture={fixture} showOdds={isPro} />
             ))}
+            {!isPro && filteredFixtures.length > LITE_LIMIT && (
+              <div className="relative">
+                {/* Blurred preview of next items */}
+                <div className="space-y-3 blur-sm pointer-events-none select-none opacity-50">
+                  {filteredFixtures.slice(LITE_LIMIT, LITE_LIMIT + 2).map((fixture) => (
+                    <MatchCard key={fixture.fixture.id} fixture={fixture} showOdds={false} />
+                  ))}
+                </div>
+                {/* Upgrade overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm rounded-xl">
+                  <Lock className="h-6 w-6 text-neon mb-2" />
+                  <p className="text-sm font-semibold text-foreground">
+                    +{filteredFixtures.length - LITE_LIMIT} jogos disponíveis
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Upgrade para <span className="font-bold text-neon">PRO</span> para ver todos os jogos, odds e ao vivo
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 gap-2">
