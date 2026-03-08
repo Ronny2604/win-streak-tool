@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getTodayFixtures, getLiveFixtures, LEAGUES, type SofaFixture } from "@/lib/api-football";
+import { getSoccerOdds, getLiveScores, LEAGUES, type NormalizedFixture } from "@/lib/odds-api";
 import { MatchCard } from "@/components/MatchCard";
 import { FilterChip } from "@/components/FilterChip";
 import { AppHeader } from "@/components/AppHeader";
