@@ -1,5 +1,6 @@
 import { BettingTicket } from "@/lib/ticket-generator";
-import { Shield, Zap, Flame, ChevronDown, ChevronUp, Trophy } from "lucide-react";
+import { shareViaWhatsApp, shareViaLink } from "@/lib/share-ticket";
+import { Shield, Zap, Flame, ChevronDown, ChevronUp, Trophy, Share2, MessageCircle, Link } from "lucide-react";
 import { useState } from "react";
 
 const TYPE_CONFIG = {
@@ -157,9 +158,21 @@ export function TicketCard({ ticket }: TicketCardProps) {
                 <span className="text-[10px] text-muted-foreground">Aposta sugerida</span>
                 <p className="text-sm font-bold text-foreground">{ticket.suggestedStake}</p>
               </div>
-              <div className="text-right">
-                <span className="text-[10px] text-muted-foreground">Retorno potencial</span>
-                <p className="text-sm font-bold text-neon">{ticket.potentialReturn}</p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={(e) => { e.stopPropagation(); shareViaWhatsApp(ticket); }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all"
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  WhatsApp
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); shareViaLink(ticket); }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-card border border-border text-muted-foreground hover:border-neon/30 transition-all"
+                >
+                  <Link className="h-3.5 w-3.5" />
+                  Copiar
+                </button>
               </div>
             </div>
           </div>
