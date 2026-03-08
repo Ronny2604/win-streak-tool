@@ -104,6 +104,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      validate_access_key: { Args: { _key: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user"
