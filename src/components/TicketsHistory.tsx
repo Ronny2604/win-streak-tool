@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSavedTickets, SavedTicket } from "@/hooks/useSavedTickets";
+import { shareViaWhatsApp, shareViaLink } from "@/lib/share-ticket";
 import {
   CheckCircle2,
   XCircle,
@@ -15,6 +16,8 @@ import {
   BarChart3,
   Loader2,
   ArrowLeft,
+  MessageCircle,
+  Link,
 } from "lucide-react";
 import { toast } from "sonner";
 
