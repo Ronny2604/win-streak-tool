@@ -43,7 +43,7 @@ const SPORT_LOGOS: Record<string, string> = {
   soccer_italy_serie_a: "https://media.api-sports.io/football/leagues/135.png",
   soccer_germany_bundesliga: "https://media.api-sports.io/football/leagues/78.png",
   soccer_france_ligue_one: "https://media.api-sports.io/football/leagues/61.png",
-  soccer_brazil_serie_a: "https://media.api-sports.io/football/leagues/71.png",
+  soccer_brazil_campeonato: "https://media.api-sports.io/football/leagues/71.png",
   soccer_uefa_champs_league: "https://media.api-sports.io/football/leagues/2.png",
 };
 
