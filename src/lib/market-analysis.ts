@@ -622,7 +622,6 @@ export async function analyzeMarketAsync(
           }
         }
       }
-      }
     }
 
     if (!hasAnyRealData) {
