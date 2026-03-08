@@ -241,6 +241,18 @@ export default function Index() {
         )}
         </>)}
       </main>
+
+      {/* Match Detail Modal */}
+      {selectedMatch && (
+        <MatchDetailModal
+          fixture={selectedMatch}
+          onClose={() => setSelectedMatch(null)}
+          showOdds={isPro}
+        />
+      )}
+
+      {/* Custom Ticket Bar */}
+      <CustomTicketBar />
     </div>
   );
 }
