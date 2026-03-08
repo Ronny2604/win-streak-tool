@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSoccerOdds, getLiveScores, LEAGUES, type NormalizedFixture } from "@/lib/odds-api";
 import { MatchCard } from "@/components/MatchCard";
+import { TicketsSection } from "@/components/TicketsSection";
 import { FilterChip } from "@/components/FilterChip";
 import { AppHeader } from "@/components/AppHeader";
 import { KeyGateScreen } from "@/components/KeyGateScreen";
@@ -19,7 +20,7 @@ export default function Index() {
   const { session, loading: keyLoading } = useKeyGate();
   const isPro = session.plan === "pro";
   const LITE_LIMIT = 5;
-  const [activeTab, setActiveTab] = useState<"futebol" | "live">("futebol");
+  const [activeTab, setActiveTab] = useState<"futebol" | "live" | "bilhetes">("futebol");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
   const [activeHighlight, setActiveHighlight] = useState<number | null>(null);
@@ -98,8 +99,21 @@ export default function Index() {
             Ao Vivo
             {!isPro && <Lock className="h-3 w-3 ml-1" />}
           </button>
+          <button
+            onClick={() => setActiveTab("bilhetes")}
+            className={`pb-2 text-sm font-semibold transition-colors border-b-2 flex items-center gap-1.5 ${
+              activeTab === "bilhetes"
+                ? "border-neon text-neon"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            🎫 Bilhetes
+          </button>
         </div>
 
+        {activeTab === "bilhetes" ? (
+          <TicketsSection fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} />
+        ) : (<>
         {/* Market filters */}
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           {MARKETS.map((m) => (
@@ -219,6 +233,7 @@ export default function Index() {
             <p className="text-xs text-muted-foreground">Tente selecionar outra liga ou volte mais tarde</p>
           </div>
         )}
+        </>)}
       </main>
     </div>
   );
