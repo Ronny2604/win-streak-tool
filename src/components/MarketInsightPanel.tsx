@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { NormalizedFixture } from "@/lib/odds-api";
-import { analyzeMarketAsync, analyzeMarket, MarketType, MarketTeamInsight } from "@/lib/market-analysis";
+import { analyzeMarket, MarketType, MarketTeamInsight } from "@/lib/market-analysis";
 import { useCustomTicket } from "@/contexts/CustomTicketContext";
 import {
   CornerDownRight,
@@ -13,8 +13,6 @@ import {
   Check,
   TrendingUp,
   X,
-  Loader2,
-  Database,
 } from "lucide-react";
 
 const MARKET_ICONS: Record<MarketType, typeof Goal> = {
@@ -40,33 +38,9 @@ interface MarketInsightPanelProps {
 }
 
 export function MarketInsightPanel({ market, fixtures, onClose }: MarketInsightPanelProps) {
-  const [insights, setInsights] = useState<MarketTeamInsight[]>([]);
-  const [loading, setLoading] = useState(true);
+  const insights = useMemo(() => analyzeMarket(fixtures, market), [fixtures, market]);
   const { addSelection, removeSelection, isSelected, getSelection } = useCustomTicket();
   const Icon = MARKET_ICONS[market];
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-
-    // Show immediate fallback
-    const fallback = analyzeMarket(fixtures, market);
-    setInsights(fallback);
-
-    // Then fetch real data
-    analyzeMarketAsync(fixtures, market)
-      .then((real) => {
-        if (!cancelled) {
-          setInsights(real);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => { cancelled = true; };
-  }, [fixtures, market]);
 
   const handleToggle = (insight: MarketTeamInsight) => {
     const key = insight.fixture.id;
@@ -94,22 +68,7 @@ export function MarketInsightPanel({ market, fixtures, onClose }: MarketInsightP
           <div>
             <h3 className="text-sm font-bold text-foreground">{market}</h3>
             <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-              {loading ? (
-                <>
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Carregando dados reais...
-                </>
-              ) : (
-                <>
-                  {insights.filter(i => i.realData).length > 0 && (
-                    <Database className="h-3 w-3 text-neon" />
-                  )}
                   {insights.length} {insights.length === 1 ? "oportunidade" : "oportunidades"} encontradas
-                  {insights.filter(i => i.realData).length > 0 && (
-                    <span className="text-neon ml-1">• Dados reais</span>
-                  )}
-                </>
-              )}
             </p>
           </div>
         </div>
@@ -123,7 +82,7 @@ export function MarketInsightPanel({ market, fixtures, onClose }: MarketInsightP
 
       {/* Insights list */}
       <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
-        {insights.length === 0 && !loading ? (
+        {insights.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-sm text-muted-foreground">Nenhuma oportunidade forte para este mercado hoje.</p>
           </div>
