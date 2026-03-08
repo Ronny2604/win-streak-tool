@@ -3,7 +3,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-async function scrapeWithFirecrawl(url: string, prompt: string, schema: Record<string, unknown>) {
+async function scrapeMarkdown(url: string) {
   const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
   if (!apiKey) throw new Error('FIRECRAWL_API_KEY not configured');
 
@@ -15,49 +15,79 @@ async function scrapeWithFirecrawl(url: string, prompt: string, schema: Record<s
     },
     body: JSON.stringify({
       url,
-      formats: ['extract'],
-      extract: { schema, prompt },
-      waitFor: 3000,
+      formats: ['markdown'],
+      waitFor: 5000,
+      onlyMainContent: true,
     }),
   });
 
   const data = await response.json();
-
   if (!response.ok) {
     console.error('Firecrawl error:', JSON.stringify(data));
     throw new Error(data.error || `Firecrawl returned ${response.status}`);
   }
-
   return data;
 }
 
-const eventsSchema = {
-  type: 'object',
-  properties: {
-    events: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          homeTeam: { type: 'string' },
-          awayTeam: { type: 'string' },
-          homeScore: { type: 'number' },
-          awayScore: { type: 'number' },
-          league: { type: 'string' },
-          country: { type: 'string' },
-          time: { type: 'string' },
-          status: { type: 'string' },
-          minute: { type: 'string' },
-          homeOdds: { type: 'number' },
-          drawOdds: { type: 'number' },
-          awayOdds: { type: 'number' },
-        },
-      },
-    },
-  },
-};
-
-const eventsPrompt = 'Extract ALL football/soccer matches on this page. For each: home team, away team, scores (0 if not started), league name, country, time (HH:MM format), status (not_started/live/finished/halftime), current minute if live, and betting odds (home/draw/away) if shown.';
+// Parse markdown content into structured events
+function parseEvents(markdown: string): Array<Record<string, unknown>> {
+  const events: Array<Record<string, unknown>> = [];
+  const lines = markdown.split('\n').filter(l => l.trim());
+  
+  let currentLeague = '';
+  let currentCountry = '';
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // Detect league headers (usually bold or heading)
+    if (line.startsWith('#') || line.startsWith('**')) {
+      const cleaned = line.replace(/[#*]+/g, '').trim();
+      if (cleaned && !cleaned.match(/^\d/) && cleaned.length > 2) {
+        // Could be "Country · League" or just "League"
+        const parts = cleaned.split(/[·\-–—]/);
+        if (parts.length >= 2) {
+          currentCountry = parts[0].trim();
+          currentLeague = parts[1].trim();
+        } else {
+          currentLeague = cleaned;
+        }
+      }
+      continue;
+    }
+    
+    // Try to detect match lines: "Team1 X - Y Team2" or "Team1 vs Team2" patterns
+    const scoreMatch = line.match(/^(.+?)\s+(\d+)\s*[-:]\s*(\d+)\s+(.+?)$/);
+    const vsMatch = line.match(/^(.+?)\s+(?:vs?\.?|x)\s+(.+?)$/i);
+    const timeMatch = line.match(/(\d{1,2}:\d{2})/);
+    
+    if (scoreMatch) {
+      events.push({
+        homeTeam: scoreMatch[1].replace(/[*_]/g, '').trim(),
+        awayTeam: scoreMatch[4].replace(/[*_]/g, '').trim(),
+        homeScore: parseInt(scoreMatch[2]),
+        awayScore: parseInt(scoreMatch[3]),
+        league: currentLeague,
+        country: currentCountry,
+        time: timeMatch?.[1] || '',
+        status: 'live',
+      });
+    } else if (vsMatch && !line.includes('http')) {
+      events.push({
+        homeTeam: vsMatch[1].replace(/[*_]/g, '').trim(),
+        awayTeam: vsMatch[2].replace(/[*_]/g, '').trim(),
+        homeScore: 0,
+        awayScore: 0,
+        league: currentLeague,
+        country: currentCountry,
+        time: timeMatch?.[1] || '',
+        status: 'not_started',
+      });
+    }
+  }
+  
+  return events;
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -69,7 +99,6 @@ Deno.serve(async (req) => {
     const action = url.searchParams.get('action') || 'today';
 
     let sofascoreUrl: string;
-
     if (action === 'live') {
       sofascoreUrl = 'https://www.sofascore.com/pt/futebol/jogos-ao-vivo';
     } else {
@@ -78,17 +107,17 @@ Deno.serve(async (req) => {
     }
 
     console.log(`Scraping: ${sofascoreUrl}`);
-    const result = await scrapeWithFirecrawl(sofascoreUrl, eventsPrompt, eventsSchema);
-
-    const events = result?.data?.extract?.events || result?.extract?.events || [];
-    console.log(`Found ${events.length} events`);
-    console.log('Full result keys:', JSON.stringify(Object.keys(result || {})));
-    console.log('Data keys:', JSON.stringify(Object.keys(result?.data || {})));
-    if (result?.data?.extract) console.log('Extract keys:', JSON.stringify(Object.keys(result.data.extract)));
-    if (events.length === 0) console.log('Raw result (truncated):', JSON.stringify(result).substring(0, 2000));
+    const result = await scrapeMarkdown(sofascoreUrl);
+    
+    const markdown = result?.data?.markdown || result?.markdown || '';
+    console.log(`Markdown length: ${markdown.length}`);
+    console.log(`Markdown preview: ${markdown.substring(0, 500)}`);
+    
+    const events = parseEvents(markdown);
+    console.log(`Parsed ${events.length} events`);
 
     return new Response(
-      JSON.stringify({ success: true, events, action }),
+      JSON.stringify({ success: true, events, action, rawLength: markdown.length }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
