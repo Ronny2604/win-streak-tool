@@ -12,7 +12,7 @@ function generateMockChart(): number[] {
   return Array.from({ length: 10 }, () => Math.random() > 0.3 ? Math.random() * 10 : -Math.random() * 3);
 }
 
-export function MatchCard({ fixture, odds }: MatchCardProps) {
+export function MatchCard({ fixture, odds, showOdds = true }: MatchCardProps) {
   const { teams, league, fixture: fix, goals } = fixture;
   const isLive = fix.status.short === "1H" || fix.status.short === "2H" || fix.status.short === "HT";
   const time = new Date(fix.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
