@@ -82,6 +82,10 @@ Deno.serve(async (req) => {
 
     const events = result?.data?.extract?.events || result?.extract?.events || [];
     console.log(`Found ${events.length} events`);
+    console.log('Full result keys:', JSON.stringify(Object.keys(result || {})));
+    console.log('Data keys:', JSON.stringify(Object.keys(result?.data || {})));
+    if (result?.data?.extract) console.log('Extract keys:', JSON.stringify(Object.keys(result.data.extract)));
+    if (events.length === 0) console.log('Raw result (truncated):', JSON.stringify(result).substring(0, 2000));
 
     return new Response(
       JSON.stringify({ success: true, events, action }),
