@@ -74,6 +74,51 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_tickets: {
+        Row: {
+          confidence: number
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          notes: string | null
+          potential_return: string | null
+          result: string | null
+          selections: Json
+          suggested_stake: string | null
+          total_odd: number
+          type: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          name: string
+          notes?: string | null
+          potential_return?: string | null
+          result?: string | null
+          selections?: Json
+          suggested_stake?: string | null
+          total_odd?: number
+          type?: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          potential_return?: string | null
+          result?: string | null
+          selections?: Json
+          suggested_stake?: string | null
+          total_odd?: number
+          type?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

@@ -1,0 +1,1 @@
+CREATE POLICY "Anyone can delete tickets" ON public.saved_tickets FOR DELETE TO anon, authenticated USING (true);

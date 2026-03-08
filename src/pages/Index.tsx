@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getSoccerOdds, getLiveScores, LEAGUES, type NormalizedFixture } from "@/lib/odds-api";
 import { MatchCard } from "@/components/MatchCard";
 import { TicketsSection } from "@/components/TicketsSection";
+import { TicketsHistory } from "@/components/TicketsHistory";
 import { FilterChip } from "@/components/FilterChip";
 import { AppHeader } from "@/components/AppHeader";
 import { KeyGateScreen } from "@/components/KeyGateScreen";
@@ -20,7 +21,7 @@ export default function Index() {
   const { session, loading: keyLoading } = useKeyGate();
   const isPro = session.plan === "pro";
   const LITE_LIMIT = 5;
-  const [activeTab, setActiveTab] = useState<"futebol" | "live" | "bilhetes">("futebol");
+  const [activeTab, setActiveTab] = useState<"futebol" | "live" | "bilhetes" | "historico">("futebol");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
   const [activeHighlight, setActiveHighlight] = useState<number | null>(null);
@@ -111,8 +112,10 @@ export default function Index() {
           </button>
         </div>
 
-        {activeTab === "bilhetes" ? (
-          <TicketsSection fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} />
+        {activeTab === "historico" ? (
+          <TicketsHistory onBack={() => setActiveTab("bilhetes")} />
+        ) : activeTab === "bilhetes" ? (
+          <TicketsSection fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} onOpenHistory={() => setActiveTab("historico")} />
         ) : (<>
         {/* Market filters */}
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
