@@ -84,7 +84,7 @@ export function MarketInsightPanel({ market, fixtures, onClose }: MarketInsightP
 
       {/* Insights list */}
       <div className="divide-y divide-border max-h-[60vh] overflow-y-auto">
-        {insights.length === 0 && !loading ? (
+        {insights.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-sm text-muted-foreground">Nenhuma oportunidade forte para este mercado hoje.</p>
           </div>
