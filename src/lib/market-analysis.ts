@@ -482,6 +482,7 @@ export async function analyzeMarketAsync(
             tag: totalScore > 72 ? "FAVORITO" : "VALUE",
             realData: true,
           });
+        }
       }
 
       if (market === "Gols") {
