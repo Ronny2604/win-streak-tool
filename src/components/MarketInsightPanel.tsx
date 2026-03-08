@@ -13,8 +13,6 @@ import {
   Check,
   TrendingUp,
   X,
-  Loader2,
-  Database,
 } from "lucide-react";
 
 const MARKET_ICONS: Record<MarketType, typeof Goal> = {
