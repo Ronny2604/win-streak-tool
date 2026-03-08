@@ -3,7 +3,7 @@ import { MiniChart } from "./MiniChart";
 import { EliteBadge } from "./EliteBadge";
 
 interface MatchCardProps {
-  fixture: Fixture;
+  fixture: SofaFixture;
   odds?: { home: string; draw: string; away: string } | null;
   showOdds?: boolean;
 }
