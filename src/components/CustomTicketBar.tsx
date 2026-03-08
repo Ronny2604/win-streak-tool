@@ -19,7 +19,7 @@ export function CustomTicketBar() {
         type: "moderate",
         selections: selections.map((s) => ({
           fixture: s.fixture,
-          betType: s.betType,
+          betType: s.betType as any,
           label: s.label,
           odd: s.odd,
           confidence: 75,
