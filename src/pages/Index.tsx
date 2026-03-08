@@ -190,7 +190,7 @@ export default function Index() {
         ) : filteredFixtures && filteredFixtures.length > 0 ? (
           <div className="space-y-3">
             {filteredFixtures.slice(0, isPro ? 50 : LITE_LIMIT).map((fixture) => (
-              <MatchCard key={fixture.fixture.id} fixture={fixture} showOdds={isPro} />
+              <MatchCard key={fixture.id} fixture={fixture} showOdds={isPro} />
             ))}
             {!isPro && filteredFixtures.length > LITE_LIMIT && (
               <div className="relative">
