@@ -12,6 +12,7 @@ import { FilterChip } from "@/components/FilterChip";
 import { AppHeader } from "@/components/AppHeader";
 import { KeyGateScreen } from "@/components/KeyGateScreen";
 import { useKeyGate } from "@/contexts/KeyGateContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Star, Flame, Target, Search, Loader2, Lock } from "lucide-react";
 
 const MARKETS = ["Chance Dupla", "S/ Empate", "Escanteios", "Cartões", "Gols", "Ambas Marcam"];
