@@ -111,6 +111,9 @@ export default function Index() {
           </button>
         </div>
 
+        {activeTab === "bilhetes" ? (
+          <TicketsSection fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} />
+        ) : (<>
         {/* Market filters */}
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           {MARKETS.map((m) => (
