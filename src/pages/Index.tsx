@@ -4,6 +4,8 @@ import { getTodayFixtures, getLiveFixtures, LEAGUES, type Fixture } from "@/lib/
 import { MatchCard } from "@/components/MatchCard";
 import { FilterChip } from "@/components/FilterChip";
 import { AppHeader } from "@/components/AppHeader";
+import { KeyGateScreen } from "@/components/KeyGateScreen";
+import { useKeyGate } from "@/contexts/KeyGateContext";
 import { Star, Flame, Target, Search, Loader2 } from "lucide-react";
 
 const MARKETS = ["Chance Dupla", "S/ Empate", "Escanteios", "Cartões", "Gols", "Ambas Marcam"];
@@ -14,6 +16,7 @@ const HIGHLIGHTS = [
 ];
 
 export default function Index() {
+  const { session, loading: keyLoading } = useKeyGate();
   const [activeTab, setActiveTab] = useState<"futebol" | "live">("futebol");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
@@ -51,6 +54,16 @@ export default function Index() {
       prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]
     );
   };
+
+  if (keyLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-neon" />
+      </div>
+    );
+  }
+
+  if (!session.valid) return <KeyGateScreen />;
 
   return (
     <div className="min-h-screen bg-background">
