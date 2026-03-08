@@ -112,8 +112,10 @@ export default function Index() {
           </button>
         </div>
 
-        {activeTab === "bilhetes" ? (
-          <TicketsSection fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} />
+        {activeTab === "historico" ? (
+          <TicketsHistory onBack={() => setActiveTab("bilhetes")} />
+        ) : activeTab === "bilhetes" ? (
+          <TicketsSection fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} onOpenHistory={() => setActiveTab("historico")} />
         ) : (<>
         {/* Market filters */}
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
