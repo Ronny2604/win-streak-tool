@@ -48,8 +48,8 @@ export function MarketInsightPanel({ market, fixtures, onClose }: MarketInsightP
     setInsights(oddsInsights);
     setHasRealData(false);
 
-    // Try fetching real data in background (only for Corners/Cards)
-    if (market === "Escanteios" || market === "Cartões") {
+    // Try fetching real data in background for supported markets
+    if (market === "Escanteios" || market === "Cartões" || market === "Gols" || market === "Ambas Marcam") {
       setLoadingReal(true);
       analyzeMarketAsync(fixtures, market)
         .then((realInsights) => {
