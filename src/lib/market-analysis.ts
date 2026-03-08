@@ -245,13 +245,243 @@ export function analyzeMarket(fixtures: NormalizedFixture[], market: MarketType)
   insights.sort((a, b) => b.score - a.score);
   return insights;
 }
-
-// Async version - ready for real API data when available
+// Async version — tries to fetch real stats from API-Football via edge function,
+// falls back to odds-based analysis if the API key is invalid or data unavailable.
 export async function analyzeMarketAsync(
   fixtures: NormalizedFixture[],
   market: MarketType
 ): Promise<MarketTeamInsight[]> {
-  // For now, use the synchronous odds-based analysis
-  // When API-Football key is valid, this will fetch real stats
-  return analyzeMarket(fixtures, market);
+  const batch = fixtures.filter((f) => f.odds).slice(0, 12);
+  if (batch.length === 0) return [];
+
+  // Only corners and cards benefit from real team stats right now
+  if (market !== "Escanteios" && market !== "Cartões") {
+    return analyzeMarket(fixtures, market);
+  }
+
+  try {
+    const { searchTeam, getTeamStats, countYellowCards, countRedCards, getFormArray, getCardAvgPerMatch } = await import("@/lib/football-stats-service");
+
+    // Try fetching stats for the first fixture to test if the API key works
+    const testFixture = batch[0];
+    const testTeam = await searchTeam(testFixture.teams.home.name);
+    if (!testTeam) {
+      console.log("[market-analysis] API-Football search returned null, falling back to odds");
+      return analyzeMarket(fixtures, market);
+    }
+
+    // API key works — fetch real stats for all teams in parallel
+    const insights: MarketTeamInsight[] = [];
+
+    const teamPairs = batch.map((f) => ({
+      fixture: f,
+      homeName: f.teams.home.name,
+      awayName: f.teams.away.name,
+    }));
+
+    // Search all teams in parallel
+    const searchResults = await Promise.all(
+      teamPairs.flatMap((p) => [searchTeam(p.homeName), searchTeam(p.awayName)])
+    );
+
+    // Fetch stats for found teams (use league 0 as fallback — the edge function handles it)
+    const statsFetches: Promise<{ fixture: NormalizedFixture; side: "home" | "away"; stats: import("@/lib/football-stats-service").TeamStats | null }>[] = [];
+
+    for (let i = 0; i < teamPairs.length; i++) {
+      const homeTeam = searchResults[i * 2];
+      const awayTeam = searchResults[i * 2 + 1];
+      const fixture = teamPairs[i].fixture;
+      const leagueId = parseInt(fixture.league?.id ?? "0") || 0;
+
+      if (homeTeam) {
+        statsFetches.push(
+          getTeamStats(homeTeam.id, leagueId).then((stats) => ({ fixture, side: "home" as const, stats }))
+        );
+      }
+      if (awayTeam) {
+        statsFetches.push(
+          getTeamStats(awayTeam.id, leagueId).then((stats) => ({ fixture, side: "away" as const, stats }))
+        );
+      }
+    }
+
+    const allStats = await Promise.all(statsFetches);
+
+    // Group by fixture
+    const fixtureStatsMap = new Map<string, { home: import("@/lib/football-stats-service").TeamStats | null; away: import("@/lib/football-stats-service").TeamStats | null }>();
+    for (const entry of allStats) {
+      const existing = fixtureStatsMap.get(entry.fixture.id) ?? { home: null, away: null };
+      existing[entry.side] = entry.stats;
+      fixtureStatsMap.set(entry.fixture.id, existing);
+    }
+
+    let hasAnyRealData = false;
+
+    for (const fixture of batch) {
+      const pair = fixtureStatsMap.get(fixture.id);
+      if (!pair || (!pair.home && !pair.away)) continue;
+
+      const homeStats = pair.home;
+      const awayStats = pair.away;
+
+      if (market === "Escanteios") {
+        // Real corner data isn't directly in team_statistics, but we can use form + goals as proxy
+        // If we have real goals data, use it to estimate corner pressure
+        const homeGoalsAvg = homeStats?.goals?.for?.average?.home ? parseFloat(homeStats.goals.for.average.home) : null;
+        const awayGoalsAvg = awayStats?.goals?.for?.average?.away ? parseFloat(awayStats.goals.for.average.away) : null;
+        const homePlayed = homeStats?.fixtures?.played?.home ?? 0;
+        const awayPlayed = awayStats?.fixtures?.played?.away ?? 0;
+
+        if (homeGoalsAvg !== null && homePlayed > 0) {
+          hasAnyRealData = true;
+          // Higher goal average = more attacking pressure = more corners
+          const estimatedCorners = (homeGoalsAvg * 3.2 + 2.5).toFixed(1);
+          const cornerScore = Math.min(93, Math.round(homeGoalsAvg * 18 + 30));
+          const form = getFormArray(homeStats?.form ?? null);
+          const formStr = form.length > 0 ? ` Forma: ${form.join("")}.` : "";
+
+          if (cornerScore > 50) {
+            insights.push({
+              fixture,
+              teamName: fixture.teams.home.name,
+              teamLogo: fixture.teams.home.logo,
+              opponent: fixture.teams.away.name,
+              score: cornerScore,
+              suggestedBet: `${fixture.teams.home.name} +3.5 escanteios`,
+              suggestedOdd: +(1.45 + (1 / (cornerScore / 30)) * 0.3).toFixed(2),
+              reasoning: `Média real: ${homeGoalsAvg} gols/jogo em casa (${homePlayed} jogos) → ~${estimatedCorners} escanteios estimados.${formStr}`,
+              tag: cornerScore > 72 ? "FAVORITO" : "TENDÊNCIA",
+              realData: true,
+            });
+          }
+        }
+
+        if (awayGoalsAvg !== null && awayPlayed > 0) {
+          hasAnyRealData = true;
+          const estimatedCorners = (awayGoalsAvg * 3.0 + 2.0).toFixed(1);
+          const cornerScore = Math.min(90, Math.round(awayGoalsAvg * 17 + 25));
+
+          if (cornerScore > 50) {
+            insights.push({
+              fixture,
+              teamName: fixture.teams.away.name,
+              teamLogo: fixture.teams.away.logo,
+              opponent: fixture.teams.home.name,
+              score: cornerScore,
+              suggestedBet: `${fixture.teams.away.name} +2.5 escanteios`,
+              suggestedOdd: +(1.55 + (1 / (cornerScore / 30)) * 0.3).toFixed(2),
+              reasoning: `Média real: ${awayGoalsAvg} gols/jogo fora (${awayPlayed} jogos) → ~${estimatedCorners} escanteios estimados.`,
+              tag: cornerScore > 70 ? "FORTE" : "VALUE",
+              realData: true,
+            });
+          }
+        }
+
+        // Total corners insight
+        if (homeGoalsAvg !== null && awayGoalsAvg !== null) {
+          const totalEstCorners = (homeGoalsAvg * 3.2 + 2.5 + awayGoalsAvg * 3.0 + 2.0);
+          const totalScore = Math.min(90, Math.round(totalEstCorners * 5 + 10));
+          if (totalScore > 55) {
+            insights.push({
+              fixture,
+              teamName: `${fixture.teams.home.name} vs ${fixture.teams.away.name}`,
+              teamLogo: fixture.league.logo,
+              opponent: "Total",
+              score: totalScore,
+              suggestedBet: `Mais de 9.5 escanteios`,
+              suggestedOdd: +(1.65 + (1 / (totalScore / 25)) * 0.2).toFixed(2),
+              reasoning: `Estimativa real: ${totalEstCorners.toFixed(1)} escanteios baseado em médias de gols reais.`,
+              tag: "VALUE",
+              realData: true,
+            });
+          }
+        }
+      }
+
+      if (market === "Cartões") {
+        const homeCards = homeStats?.cards ?? null;
+        const awayCards = awayStats?.cards ?? null;
+        const homePlayed = homeStats?.fixtures?.played?.total ?? 0;
+        const awayPlayed = awayStats?.fixtures?.played?.total ?? 0;
+
+        if (homeCards && homePlayed > 0) {
+          hasAnyRealData = true;
+          const yellowTotal = countYellowCards(homeCards);
+          const redTotal = countRedCards(homeCards);
+          const avgPerMatch = getCardAvgPerMatch(homeCards, homePlayed);
+          const cardScore = Math.min(92, Math.round(avgPerMatch * 20 + 20));
+
+          if (cardScore > 50) {
+            insights.push({
+              fixture,
+              teamName: fixture.teams.home.name,
+              teamLogo: fixture.teams.home.logo,
+              opponent: fixture.teams.away.name,
+              score: cardScore,
+              suggestedBet: `${fixture.teams.home.name} +1.5 cartões`,
+              suggestedOdd: +(1.35 + (1 / (cardScore / 25)) * 0.25).toFixed(2),
+              reasoning: `Dados reais: ${yellowTotal} amarelos + ${redTotal} vermelhos em ${homePlayed} jogos (média ${avgPerMatch}/jogo).`,
+              tag: cardScore > 72 ? "FAVORITO" : "TENDÊNCIA",
+              realData: true,
+            });
+          }
+        }
+
+        if (awayCards && awayPlayed > 0) {
+          hasAnyRealData = true;
+          const yellowTotal = countYellowCards(awayCards);
+          const redTotal = countRedCards(awayCards);
+          const avgPerMatch = getCardAvgPerMatch(awayCards, awayPlayed);
+          const cardScore = Math.min(92, Math.round(avgPerMatch * 20 + 18));
+
+          if (cardScore > 50) {
+            insights.push({
+              fixture,
+              teamName: fixture.teams.away.name,
+              teamLogo: fixture.teams.away.logo,
+              opponent: fixture.teams.home.name,
+              score: cardScore,
+              suggestedBet: `${fixture.teams.away.name} +1.5 cartões`,
+              suggestedOdd: +(1.40 + (1 / (cardScore / 25)) * 0.25).toFixed(2),
+              reasoning: `Dados reais: ${yellowTotal} amarelos + ${redTotal} vermelhos em ${awayPlayed} jogos (média ${avgPerMatch}/jogo).`,
+              tag: cardScore > 70 ? "FORTE" : "VALUE",
+              realData: true,
+            });
+          }
+        }
+
+        // Total cards
+        if (homeCards && awayCards && homePlayed > 0 && awayPlayed > 0) {
+          const homeAvg = getCardAvgPerMatch(homeCards, homePlayed);
+          const awayAvg = getCardAvgPerMatch(awayCards, awayPlayed);
+          const combinedAvg = homeAvg + awayAvg;
+          const totalScore = Math.min(90, Math.round(combinedAvg * 12 + 15));
+
+          insights.push({
+            fixture,
+            teamName: `${fixture.teams.home.name} vs ${fixture.teams.away.name}`,
+            teamLogo: fixture.league.logo,
+            opponent: "Total",
+            score: totalScore,
+            suggestedBet: `Mais de 3.5 cartões no jogo`,
+            suggestedOdd: +(1.55 + (1 / (totalScore / 25)) * 0.2).toFixed(2),
+            reasoning: `Média real combinada: ${combinedAvg.toFixed(1)} cartões/jogo (${fixture.teams.home.name}: ${homeAvg}, ${fixture.teams.away.name}: ${awayAvg}).`,
+            tag: totalScore > 72 ? "FAVORITO" : "VALUE",
+            realData: true,
+          });
+        }
+      }
+    }
+
+    if (!hasAnyRealData) {
+      console.log("[market-analysis] No real data fetched, falling back to odds");
+      return analyzeMarket(fixtures, market);
+    }
+
+    insights.sort((a, b) => b.score - a.score);
+    return insights;
+  } catch (err) {
+    console.warn("[market-analysis] Real data fetch failed, using odds fallback:", err);
+    return analyzeMarket(fixtures, market);
+  }
 }
