@@ -1,10 +1,9 @@
-import { SofaFixture } from "@/lib/api-football";
+import { NormalizedFixture } from "@/lib/odds-api";
 import { MiniChart } from "./MiniChart";
 import { EliteBadge } from "./EliteBadge";
 
 interface MatchCardProps {
-  fixture: SofaFixture;
-  odds?: { home: string; draw: string; away: string } | null;
+  fixture: NormalizedFixture;
   showOdds?: boolean;
 }
 
@@ -12,17 +11,17 @@ function generateMockChart(): number[] {
   return Array.from({ length: 10 }, () => Math.random() > 0.3 ? Math.random() * 10 : -Math.random() * 3);
 }
 
-export function MatchCard({ fixture, odds, showOdds = true }: MatchCardProps) {
-  const { teams, league, fixture: fix, goals } = fixture;
-  const isLive = fix.status.short === "1H" || fix.status.short === "2H" || fix.status.short === "HT";
-  const time = new Date(fix.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+export function MatchCard({ fixture, showOdds = true }: MatchCardProps) {
+  const { teams, league, status, goals, odds, date } = fixture;
+  const isLive = status.short === "LIVE";
+  const time = new Date(date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
   return (
     <div className="rounded-xl bg-card p-4 border border-border hover:border-neon/30 transition-all group">
       {/* League header */}
       <div className="flex items-center gap-2 mb-3">
-        <img src={league.logo} alt={league.name} className="w-4 h-4 object-contain" />
-        <span className="text-xs text-muted-foreground font-medium">{league.name}</span>
+        {league.logo && <img src={league.logo} alt={league.name} className="w-4 h-4 object-contain" />}
+        <span className="text-xs text-muted-foreground font-medium capitalize">{league.name}</span>
         {isLive && (
           <span className="ml-auto flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-chart-negative animate-pulse-neon" />
@@ -36,7 +35,7 @@ export function MatchCard({ fixture, odds, showOdds = true }: MatchCardProps) {
       <div className="space-y-2 mb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={teams.home.logo} alt={teams.home.name} className="w-6 h-6 object-contain" />
+            {teams.home.logo && <img src={teams.home.logo} alt={teams.home.name} className="w-6 h-6 object-contain" />}
             <span className="text-sm font-semibold text-foreground">{teams.home.name}</span>
           </div>
           {goals.home !== null && (
@@ -45,7 +44,7 @@ export function MatchCard({ fixture, odds, showOdds = true }: MatchCardProps) {
         </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={teams.away.logo} alt={teams.away.name} className="w-6 h-6 object-contain" />
+            {teams.away.logo && <img src={teams.away.logo} alt={teams.away.name} className="w-6 h-6 object-contain" />}
             <span className="text-sm font-semibold text-foreground">{teams.away.name}</span>
           </div>
           {goals.away !== null && (

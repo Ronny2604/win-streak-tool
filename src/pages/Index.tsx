@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getTodayFixtures, getLiveFixtures, LEAGUES, type SofaFixture } from "@/lib/api-football";
+import { getSoccerOdds, getLiveScores, LEAGUES, type NormalizedFixture } from "@/lib/odds-api";
 import { MatchCard } from "@/components/MatchCard";
 import { FilterChip } from "@/components/FilterChip";
 import { AppHeader } from "@/components/AppHeader";
@@ -27,18 +27,18 @@ export default function Index() {
 
   const { data: fixturesData, isLoading: loadingFixtures } = useQuery({
     queryKey: ["fixtures", selectedLeague],
-    queryFn: () => getTodayFixtures(selectedLeague),
+    queryFn: () => getSoccerOdds(selectedLeague),
     staleTime: 60000,
   });
 
   const { data: liveData, isLoading: loadingLive } = useQuery({
     queryKey: ["live-fixtures"],
-    queryFn: getLiveFixtures,
+    queryFn: () => getLiveScores(),
     refetchInterval: 30000,
     enabled: activeTab === "live",
   });
 
-  const fixtures = activeTab === "live" ? liveData?.response : fixturesData?.response;
+  const fixtures = activeTab === "live" ? liveData : fixturesData;
   const isLoading = activeTab === "live" ? loadingLive : loadingFixtures;
 
   const filteredFixtures = fixtures?.filter((f) => {
@@ -190,14 +190,14 @@ export default function Index() {
         ) : filteredFixtures && filteredFixtures.length > 0 ? (
           <div className="space-y-3">
             {filteredFixtures.slice(0, isPro ? 50 : LITE_LIMIT).map((fixture) => (
-              <MatchCard key={fixture.fixture.id} fixture={fixture} showOdds={isPro} />
+              <MatchCard key={fixture.id} fixture={fixture} showOdds={isPro} />
             ))}
             {!isPro && filteredFixtures.length > LITE_LIMIT && (
               <div className="relative">
                 {/* Blurred preview of next items */}
                 <div className="space-y-3 blur-sm pointer-events-none select-none opacity-50">
                   {filteredFixtures.slice(LITE_LIMIT, LITE_LIMIT + 2).map((fixture) => (
-                    <MatchCard key={fixture.fixture.id} fixture={fixture} showOdds={false} />
+                    <MatchCard key={fixture.id} fixture={fixture} showOdds={false} />
                   ))}
                 </div>
                 {/* Upgrade overlay */}
