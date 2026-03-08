@@ -43,7 +43,7 @@ const SPORT_LOGOS: Record<string, string> = {
   soccer_italy_serie_a: "https://media.api-sports.io/football/leagues/135.png",
   soccer_germany_bundesliga: "https://media.api-sports.io/football/leagues/78.png",
   soccer_france_ligue_one: "https://media.api-sports.io/football/leagues/61.png",
-  soccer_brazil_serie_a: "https://media.api-sports.io/football/leagues/71.png",
+  soccer_brazil_campeonato: "https://media.api-sports.io/football/leagues/71.png",
   soccer_uefa_champs_league: "https://media.api-sports.io/football/leagues/2.png",
 };
 
@@ -53,7 +53,7 @@ const SPORT_COUNTRIES: Record<string, string> = {
   soccer_italy_serie_a: "Italy",
   soccer_germany_bundesliga: "Germany",
   soccer_france_ligue_one: "France",
-  soccer_brazil_serie_a: "Brazil",
+  soccer_brazil_campeonato: "Brazil",
   soccer_uefa_champs_league: "World",
 };
 
@@ -109,7 +109,7 @@ export const LEAGUES = [
   { id: "soccer_italy_serie_a", name: "Serie A", country: "Italy" },
   { id: "soccer_germany_bundesliga", name: "Bundesliga", country: "Germany" },
   { id: "soccer_france_ligue_one", name: "Ligue 1", country: "France" },
-  { id: "soccer_brazil_serie_a", name: "Brasileirão", country: "Brazil" },
+  { id: "soccer_brazil_campeonato", name: "Brasileirão", country: "Brazil" },
   { id: "soccer_uefa_champs_league", name: "Champions League", country: "World" },
 ];
 
