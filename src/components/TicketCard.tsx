@@ -1,5 +1,6 @@
 import { BettingTicket } from "@/lib/ticket-generator";
-import { Shield, Zap, Flame, ChevronDown, ChevronUp, Trophy } from "lucide-react";
+import { shareViaWhatsApp, shareViaLink } from "@/lib/share-ticket";
+import { Shield, Zap, Flame, ChevronDown, ChevronUp, Trophy, Share2, MessageCircle, Link } from "lucide-react";
 import { useState } from "react";
 
 const TYPE_CONFIG = {
