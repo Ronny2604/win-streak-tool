@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_keys: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          key: string
+          plan: string
+          username: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          key: string
+          plan: string
+          username: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          key?: string
+          plan?: string
+          username?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
