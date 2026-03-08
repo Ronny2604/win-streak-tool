@@ -31,26 +31,19 @@ Deno.serve(async (req) => {
 
     switch (action) {
       case "team_statistics": {
-        // Get season stats for a team (includes corners, cards averages)
         const result = await apiFetch("/teams/statistics", {
           team: String(teamId),
           league: String(leagueId),
-          season: String(season || 2025),
+          season: String(season || 2024),
         });
         const stats = result.response;
         data = {
-          corners: {
-            total: stats?.lineups?.[0]?.formation || null,
-            forTotal: stats?.fixtures?.wins?.total ?? 0,
-            againstTotal: stats?.fixtures?.loses?.total ?? 0,
-          },
           cards: stats?.cards || null,
           fixtures: stats?.fixtures || null,
           goals: stats?.goals || null,
           form: stats?.form || null,
           clean_sheet: stats?.clean_sheet || null,
-          lineups: stats?.lineups || null,
-          raw: stats,
+          penalty: stats?.penalty || null,
         };
         break;
       }
