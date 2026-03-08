@@ -233,6 +233,7 @@ export default function Index() {
             <p className="text-xs text-muted-foreground">Tente selecionar outra liga ou volte mais tarde</p>
           </div>
         )}
+        </>)}
       </main>
     </div>
   );
