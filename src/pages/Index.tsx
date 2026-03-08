@@ -99,6 +99,16 @@ export default function Index() {
             Ao Vivo
             {!isPro && <Lock className="h-3 w-3 ml-1" />}
           </button>
+          <button
+            onClick={() => setActiveTab("bilhetes")}
+            className={`pb-2 text-sm font-semibold transition-colors border-b-2 flex items-center gap-1.5 ${
+              activeTab === "bilhetes"
+                ? "border-neon text-neon"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            🎫 Bilhetes
+          </button>
         </div>
 
         {/* Market filters */}
