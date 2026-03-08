@@ -40,92 +40,97 @@ async function getMarkdown(url: string): Promise<string> {
 
 function parseMarkdown(md: string): SofaEvent[] {
   const events: SofaEvent[] = [];
-  const lines = md.split('\n');
   
   let currentLeague = '';
   let currentCountry = '';
   
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    
-    // Detect league links: [MLS](url) [EUA](url) or similar
-    const leagueMatch = line.match(/\[([^\]]+)\]\(https:\/\/www\.sofascore\.com\/pt\/football\/tournament\/.+?\)/);
-    if (leagueMatch) {
-      currentLeague = leagueMatch[1];
-      // Country is usually the next link on same or next line
-      const countryMatch = line.match(/\[([^\]]+)\]\(https:\/\/www\.sofascore\.com\/pt\/football\/[^/]+\)$/);
-      if (countryMatch) {
-        currentCountry = countryMatch[1];
-      }
-      continue;
+  // Split by league sections - look for tournament links
+  const leaguePattern = /\[([^\]]+)\]\(https:\/\/www\.sofascore\.com\/pt\/football\/tournament\/[^)]+\)\s*\[([^\]]+)\]\(https:\/\/www\.sofascore\.com\/pt\/football\/[^)]+\)/g;
+  
+  // Find all match blocks - they're inside markdown links like [content](matchUrl)
+  // Pattern: [time\\\nstatus\\\n![team1](...)\\\nname1\\\n![team2](...)\\\nname2\\\nscore1\\\nscore2](url)
+  const matchPattern = /\[(\d{1,2}:\d{2})\\+\n(.*?)\\+\n!\[[^\]]*\]\([^)]*\)\\+\n([^\\]+?)\\+\n!\[[^\]]*\]\([^)]*\)\\+\n([^\\]+?)(?:\\+\n(\d+)\\+\n(\d+))?\]\(https:\/\/www\.sofascore\.com\/pt\/football\/match\//g;
+  
+  // Actually, let me use a simpler approach: split by match URLs
+  // Each match block ends with ](https://www.sofascore.com/pt/football/match/...)
+  
+  const sections = md.split(/\[!\[([^\]]+)\]\([^)]*\)\]\(https:\/\/www\.sofascore\.com\/pt\/football\/tournament\//);
+  
+  for (const section of sections) {
+    // Check for league name at start  
+    const leagueNameMatch = section.match(/^[^)]*\)\s*\[([^\]]+)\]\(https:\/\/www\.sofascore\.com\/pt\/football\/tournament\/[^)]+\)\s*\[([^\]]+)\]/);
+    if (leagueNameMatch) {
+      currentLeague = leagueNameMatch[1];
+      currentCountry = leagueNameMatch[2];
     }
     
-    // Detect time patterns like "16:30" or "HT" or "65'" at line start
-    const timeLineMatch = line.match(/^(\d{1,2}:\d{2})/);
-    const minuteMatch = line.match(/(\d+)'/);
-    const isHT = line.includes('HT') || line.includes('Int.');
+    // Find match blocks within this section
+    // Each match is wrapped in [...](https://www.sofascore.com/pt/football/match/...)
+    const matchBlocks = section.split(/\]\(https:\/\/www\.sofascore\.com\/pt\/football\/match\/[^)]+\)/);
     
-    // Detect team names by looking for team image patterns
-    // Pattern: ![TeamName or [TeamName](url)
-    // Then look for scores in nearby lines
-    
-    // SofaScore markdown has patterns like:
-    // "16:30\n\n65'\n\n![New York Red Bulls](...) New York Red Bulls\n\n2\n\n![Columbus Crew](...) Columbus Crew\n\n1"
-    // Let's look for team image patterns
-    const teamImgMatch = line.match(/!\[([^\]]+)\].*?\)\s*(.+?)$/);
-    if (teamImgMatch) {
-      const teamName = teamImgMatch[2]?.trim() || teamImgMatch[1]?.trim();
+    for (const block of matchBlocks) {
+      // Match block content separated by \\n\\n or \\\n
+      const parts = block.split(/\\+\n+/).map(p => p.replace(/^\[/, '').trim()).filter(p => p && p !== '\\');
       
-      // Look backwards for time/status
+      if (parts.length < 4) continue;
+      
+      // Find time (HH:MM format)
       let time = '';
       let minute = '';
       let status = 'not_started';
-      
-      for (let j = i - 1; j >= Math.max(0, i - 8); j--) {
-        const prevLine = lines[j].trim();
-        const tMatch = prevLine.match(/^(\d{1,2}:\d{2})$/);
-        if (tMatch) { time = tMatch[1]; break; }
-        const mMatch = prevLine.match(/^(\d+)'$/);
-        if (mMatch) { minute = mMatch[1]; status = 'live'; }
-        if (prevLine === 'HT' || prevLine === 'Int.') { status = 'halftime'; minute = 'HT'; }
-        if (prevLine === 'FT' || prevLine === 'Enc.') { status = 'finished'; }
-      }
-      
-      // Look forward for score and opponent
-      let score: number | null = null;
+      let homeTeam = '';
       let awayTeam = '';
+      let homeScore: number | null = null;
       let awayScore: number | null = null;
       
-      for (let j = i + 1; j < Math.min(lines.length, i + 6); j++) {
-        const nextLine = lines[j].trim();
+      const cleanParts: string[] = [];
+      for (const p of parts) {
+        const clean = p.replace(/!\[[^\]]*\]\([^)]*\)/g, '').trim();
+        if (clean) cleanParts.push(clean);
+      }
+      
+      // Parse clean parts
+      for (let i = 0; i < cleanParts.length; i++) {
+        const p = cleanParts[i];
         
-        // Score line (just a number)
-        if (score === null && nextLine.match(/^\d+$/)) {
-          score = parseInt(nextLine);
+        if (!time && p.match(/^\d{1,2}:\d{2}$/)) {
+          time = p;
           continue;
         }
         
-        // Next team
-        const nextTeamMatch = nextLine.match(/!\[([^\]]+)\].*?\)\s*(.+?)$/);
-        if (nextTeamMatch) {
-          awayTeam = nextTeamMatch[2]?.trim() || nextTeamMatch[1]?.trim();
-          // Look for away score
-          for (let k = j + 1; k < Math.min(lines.length, j + 3); k++) {
-            const scoreLine = lines[k].trim();
-            if (scoreLine.match(/^\d+$/)) {
-              awayScore = parseInt(scoreLine);
-              break;
-            }
-          }
-          break;
+        // Status indicators
+        if (p.match(/^\d+'/)) { minute = p; status = 'live'; continue; }
+        if (p === '-') { status = 'not_started'; continue; }
+        if (p.match(/^F\d/i) || p === 'Enc.' || p === 'FT') { status = 'finished'; continue; }
+        if (p === 'HT' || p === 'Int.' || p.match(/^Int/)) { status = 'halftime'; minute = 'HT'; continue; }
+        if (p.match(/^F2°T/)) { status = 'finished'; continue; }
+        
+        // Skip numbers that are pagination like "1/2", "5"
+        if (p.match(/^\d+\/\d+$/) || (p.match(/^\d+$/) && !homeTeam)) continue;
+        
+        // Team names (not numbers, not URLs, not status)
+        if (!homeTeam && !p.match(/^\d+$/) && p.length > 1 && !p.startsWith('http') && !p.startsWith('![')) {
+          homeTeam = p;
+          continue;
+        }
+        
+        if (homeTeam && !awayTeam && !p.match(/^\d+$/) && p.length > 1 && !p.startsWith('http') && !p.startsWith('![')) {
+          awayTeam = p;
+          continue;
+        }
+        
+        // Scores (single digit numbers after teams)
+        if (homeTeam && p.match(/^\d+$/)) {
+          if (homeScore === null) { homeScore = parseInt(p); continue; }
+          if (awayScore === null) { awayScore = parseInt(p); continue; }
         }
       }
       
-      if (awayTeam) {
+      if (homeTeam && awayTeam) {
         events.push({
-          homeTeam: teamName,
+          homeTeam,
           awayTeam,
-          homeScore: score,
+          homeScore,
           awayScore,
           league: currentLeague,
           country: currentCountry,
@@ -133,8 +138,6 @@ function parseMarkdown(md: string): SofaEvent[] {
           status,
           minute,
         });
-        // Skip ahead to avoid duplicates
-        i += 5;
       }
     }
   }
@@ -163,14 +166,10 @@ Deno.serve(async (req) => {
     const markdown = await getMarkdown(sofascoreUrl);
     console.log(`Markdown length: ${markdown.length}`);
     
-    // Log a sample of the markdown structure for debugging
-    const sampleLines = markdown.split('\n').slice(0, 80).join('\n');
-    console.log(`Sample:\n${sampleLines}`);
-    
     const events = parseMarkdown(markdown);
     console.log(`Parsed ${events.length} events`);
     if (events.length > 0) {
-      console.log(`First event: ${JSON.stringify(events[0])}`);
+      console.log(`First 3: ${JSON.stringify(events.slice(0, 3))}`);
     }
 
     return new Response(
