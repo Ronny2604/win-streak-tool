@@ -1,4 +1,4 @@
-import { Fixture } from "@/lib/api-football";
+import { SofaFixture } from "@/lib/api-football";
 import { MiniChart } from "./MiniChart";
 import { EliteBadge } from "./EliteBadge";
 
