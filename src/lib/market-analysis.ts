@@ -1,5 +1,15 @@
 import { NormalizedFixture } from "@/lib/odds-api";
 
+// Map Odds-API sport keys to API-Football league IDs
+const SPORT_TO_LEAGUE_ID: Record<string, number> = {
+  soccer_epl: 39,
+  soccer_spain_la_liga: 140,
+  soccer_italy_serie_a: 135,
+  soccer_germany_bundesliga: 78,
+  soccer_france_ligue_one: 61,
+  soccer_brazil_campeonato: 71,
+  soccer_uefa_champs_league: 2,
+};
 export type MarketType = "Escanteios" | "Cartões" | "Gols" | "Ambas Marcam" | "Chance Dupla" | "S/ Empate";
 
 export interface MarketTeamInsight {
