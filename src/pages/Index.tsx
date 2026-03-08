@@ -16,6 +16,7 @@ const HIGHLIGHTS = [
 ];
 
 export default function Index() {
+  const { session, loading: keyLoading } = useKeyGate();
   const [activeTab, setActiveTab] = useState<"futebol" | "live">("futebol");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
