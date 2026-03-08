@@ -1,27 +1,31 @@
 import { useState } from "react";
 import { useKeyManager } from "@/hooks/useKeyManager";
 import { AppHeader } from "@/components/AppHeader";
-import { ArrowLeft, Plus, Copy, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
+import { ArrowLeft, Plus, Copy, Trash2, ToggleLeft, ToggleRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function AdminPanel() {
-  const { keys, createKey, toggleKey, deleteKey } = useKeyManager();
+  const { keys, isLoading, createKey, toggleKey, deleteKey, isCreating } = useKeyManager();
   const [userName, setUserName] = useState("");
   const [plan, setPlan] = useState<"lite" | "pro">("lite");
   const [days, setDays] = useState(30);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!userName.trim()) {
       toast.error("Informe o nome do usuário");
       return;
     }
-    const newKey = createKey(userName.trim(), plan, days);
-    toast.success(`Chave criada: ${newKey.key}`);
-    setUserName("");
+    try {
+      const newKey = await createKey(userName.trim(), plan, days);
+      toast.success(`Chave criada: ${newKey.key}`);
+      setUserName("");
+    } catch {
+      toast.error("Erro ao criar chave");
+    }
   };
 
-  const copyKey = (key: string) => {
+  const copyToClipboard = (key: string) => {
     navigator.clipboard.writeText(key);
     toast.success("Chave copiada!");
   };
@@ -71,9 +75,10 @@ export default function AdminPanel() {
           </div>
           <button
             onClick={handleCreate}
-            className="flex items-center gap-2 rounded-lg bg-neon px-4 py-2 text-sm font-semibold text-filter-chip-active-foreground transition-all hover:opacity-90 glow-neon"
+            disabled={isCreating}
+            className="flex items-center gap-2 rounded-lg bg-neon px-4 py-2 text-sm font-semibold text-filter-chip-active-foreground transition-all hover:opacity-90 glow-neon disabled:opacity-50"
           >
-            <Plus className="h-4 w-4" />
+            {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
             Gerar Chave
           </button>
         </div>
@@ -83,22 +88,24 @@ export default function AdminPanel() {
           <h2 className="text-sm font-semibold text-muted-foreground">
             Chaves Geradas ({keys.length})
           </h2>
-          {keys.length === 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-neon" />
+            </div>
+          ) : keys.length === 0 ? (
             <p className="text-xs text-muted-foreground py-8 text-center">Nenhuma chave gerada ainda</p>
           ) : (
             keys.map((k) => (
               <div
                 key={k.id}
                 className={`rounded-xl border p-4 transition-all ${
-                  k.active
-                    ? "bg-card border-border"
-                    : "bg-card/50 border-border/50 opacity-60"
+                  k.active ? "bg-card border-border" : "bg-card/50 border-border/50 opacity-60"
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm text-foreground">{k.user}</span>
+                      <span className="font-semibold text-sm text-foreground">{k.username}</span>
                       <span
                         className={`rounded-md px-2 py-0.5 text-[10px] font-bold ${
                           k.plan === "pro"
@@ -113,18 +120,18 @@ export default function AdminPanel() {
                       {k.key}
                     </code>
                     <p className="text-[10px] text-muted-foreground">
-                      Expira: {new Date(k.expiresAt).toLocaleDateString("pt-BR")}
+                      Expira: {new Date(k.expires_at).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <button
-                      onClick={() => copyKey(k.key)}
+                      onClick={() => copyToClipboard(k.key)}
                       className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
                     >
                       <Copy className="h-3.5 w-3.5" />
                     </button>
                     <button
-                      onClick={() => toggleKey(k.id)}
+                      onClick={() => toggleKey(k.id, k.active)}
                       className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
                     >
                       {k.active ? (
