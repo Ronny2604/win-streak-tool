@@ -93,6 +93,8 @@ export function MarketInsightPanel({ market, fixtures, onClose }: MarketInsightP
             <h3 className="text-sm font-bold text-foreground">{market}</h3>
             <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                   {insights.length} {insights.length === 1 ? "oportunidade" : "oportunidades"} encontradas
+                  {loadingReal && <span className="ml-1 text-neon animate-pulse">• buscando dados reais...</span>}
+                  {hasRealData && <span className="ml-1 text-neon font-bold">• DADOS REAIS</span>}
             </p>
           </div>
         </div>
