@@ -55,6 +55,16 @@ export default function Index() {
     );
   };
 
+  if (keyLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-neon" />
+      </div>
+    );
+  }
+
+  if (!session.valid) return <KeyGateScreen />;
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
