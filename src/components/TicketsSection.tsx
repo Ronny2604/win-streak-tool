@@ -25,8 +25,8 @@ export function TicketsSection({ fixtures, isLoading, isPro, onOpenHistory }: Ti
     try {
       await saveTicket(ticket);
       toast.success(`"${ticket.name}" salvo com sucesso!`);
-    } catch {
-      toast.error("Erro ao salvar bilhete");
+    } catch (err: any) {
+      toast.error("Erro ao salvar bilhete: " + (err?.message ?? "Tente novamente"));
     }
   };
 

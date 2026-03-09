@@ -32,8 +32,8 @@ export function CustomTicketBar() {
       });
       toast.success("Bilhete personalizado salvo!");
       clearSelections();
-    } catch {
-      toast.error("Erro ao salvar bilhete");
+    } catch (err: any) {
+      toast.error("Erro ao salvar bilhete: " + (err?.message ?? "Tente novamente"));
     }
   };
 
