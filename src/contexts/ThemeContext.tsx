@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type ThemeMode = "dark" | "light";
 export type ThemePreset = "emerald" | "purple" | "blue" | "orange" | "pink" | "cyan";
@@ -22,17 +23,44 @@ export const THEME_PRESETS: { id: ThemePreset; name: string; color: string }[] =
   { id: "cyan", name: "Ciano", color: "185 80% 45%" },
 ];
 
+async function saveThemeToDb(mode: ThemeMode, preset: ThemePreset) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  await supabase
+    .from("profiles")
+    .update({ theme_mode: mode, theme_preset: preset })
+    .eq("user_id", user.id);
+}
+
+async function loadThemeFromDb(): Promise<{ mode: ThemeMode; preset: ThemePreset } | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("theme_mode, theme_preset")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!data) return null;
+
+  return {
+    mode: (data.theme_mode as ThemeMode) || "dark",
+    preset: (data.theme_preset as ThemePreset) || "emerald",
+  };
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<ThemeMode>(() => {
-    const stored = localStorage.getItem("app-theme") as ThemeMode;
-    return stored || "dark";
+  const [theme, setThemeState] = useState<ThemeMode>(() => {
+    return (localStorage.getItem("app-theme") as ThemeMode) || "dark";
   });
 
-  const [preset, setPreset] = useState<ThemePreset>(() => {
-    const stored = localStorage.getItem("app-theme-preset") as ThemePreset;
-    return stored || "emerald";
+  const [preset, setPresetState] = useState<ThemePreset>(() => {
+    return (localStorage.getItem("app-theme-preset") as ThemePreset) || "emerald";
   });
 
+  // Apply theme class to DOM
   useEffect(() => {
     const root = document.documentElement;
     root.classList.remove("light", "dark");
@@ -40,18 +68,52 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("app-theme", theme);
   }, [theme]);
 
+  // Apply preset class to DOM
   useEffect(() => {
     const root = document.documentElement;
-    
-    // Remove all preset classes
-    THEME_PRESETS.forEach(p => root.classList.remove(`theme-${p.id}`));
-    
-    // Add current preset class
+    THEME_PRESETS.forEach((p) => root.classList.remove(`theme-${p.id}`));
     root.classList.add(`theme-${preset}`);
     localStorage.setItem("app-theme-preset", preset);
   }, [preset]);
 
-  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+  // Load theme from DB on auth state change
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const saved = await loadThemeFromDb();
+        if (saved) {
+          setThemeState(saved.mode);
+          setPresetState(saved.preset);
+        }
+      }
+    });
+
+    // Also load on mount if already logged in
+    loadThemeFromDb().then((saved) => {
+      if (saved) {
+        setThemeState(saved.mode);
+        setPresetState(saved.preset);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const setTheme = useCallback((newTheme: ThemeMode) => {
+    setThemeState(newTheme);
+    saveThemeToDb(newTheme, preset);
+  }, [preset]);
+
+  const setPreset = useCallback((newPreset: ThemePreset) => {
+    setPresetState(newPreset);
+    saveThemeToDb(theme, newPreset);
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setThemeState(newTheme);
+    saveThemeToDb(newTheme, preset);
+  }, [theme, preset]);
 
   return (
     <ThemeContext.Provider value={{ theme, preset, setTheme, setPreset, toggleTheme }}>
