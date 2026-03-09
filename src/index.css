@@ -252,7 +252,6 @@
   .bg-surface-hover {
     background-color: hsl(var(--surface-hover));
   }
-  }
   @keyframes pulse-subtle {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.75; }
