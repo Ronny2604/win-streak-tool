@@ -5,6 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKeyGate } from "@/contexts/KeyGateContext";
 import { PersonalizationPanel } from "@/components/PersonalizationPanel";
+import { VipBadge } from "@/components/VipBadge";
 
 export function AppHeader() {
   const { theme, toggleTheme } = useTheme();
