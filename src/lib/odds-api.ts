@@ -95,6 +95,32 @@ let cachedOddsApiKey = DEFAULT_ODDS_API_KEY;
 let lastKeyFetchAt = 0;
 const KEY_CACHE_TTL_MS = 60 * 1000;
 
+// Cache TTLs in seconds
+const ODDS_CACHE_TTL = 300;   // 5 min for odds/fixtures
+const LIVE_CACHE_TTL = 60;    // 1 min for live scores
+
+async function getCache(key: string): Promise<NormalizedFixture[] | null> {
+  try {
+    const { data, error } = await supabase.rpc("get_cache", { _cache_key: key });
+    if (error || !data) return null;
+    return data as unknown as NormalizedFixture[];
+  } catch {
+    return null;
+  }
+}
+
+async function setCache(key: string, fixtures: NormalizedFixture[], ttlSeconds: number): Promise<void> {
+  try {
+    await supabase.rpc("set_cache", {
+      _cache_key: key,
+      _data: JSON.parse(JSON.stringify(fixtures)),
+      _ttl_seconds: ttlSeconds,
+    });
+  } catch (err) {
+    console.warn("Failed to set cache:", err);
+  }
+}
+
 async function resolveOddsApiKey(): Promise<string> {
   const now = Date.now();
   if (now - lastKeyFetchAt < KEY_CACHE_TTL_MS && cachedOddsApiKey) return cachedOddsApiKey;
