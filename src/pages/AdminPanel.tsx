@@ -70,6 +70,7 @@ export default function AdminPanel() {
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "keys", label: "Chaves", icon: Key },
     { id: "tickets", label: "Bilhetes", icon: Ticket },
+    { id: "personalization", label: "Personalizar", icon: Palette },
   ];
 
   return (
