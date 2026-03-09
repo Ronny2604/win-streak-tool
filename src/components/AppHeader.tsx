@@ -23,13 +23,16 @@ export function AppHeader() {
               Ronny<span className="text-neon">BR</span>
             </Link>
             {keySession.valid && keySession.plan && (
-              <span className={`rounded-lg px-2.5 py-0.5 text-[10px] font-bold tracking-wider ${
-                keySession.plan === "pro"
-                  ? "bg-badge-elite/20 text-neon"
-                  : "bg-secondary text-muted-foreground"
-              }`}>
-                {keySession.plan.toUpperCase()}
-              </span>
+              <>
+                <span className={`rounded-lg px-2.5 py-0.5 text-[10px] font-bold tracking-wider ${
+                  keySession.plan === "pro"
+                    ? "bg-badge-elite/20 text-neon"
+                    : "bg-secondary text-muted-foreground"
+                }`}>
+                  {keySession.plan.toUpperCase()}
+                </span>
+                <VipBadge plan={keySession.plan} />
+              </>
             )}
           </div>
           <div className="flex items-center gap-1">
