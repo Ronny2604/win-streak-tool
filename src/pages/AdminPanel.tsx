@@ -367,6 +367,9 @@ export default function AdminPanel() {
             )}
           </div>
         )}
+
+        {/* Personalization Tab */}
+        {tab === "personalization" && <PersonalizationPanel />}
       </main>
     </div>
   );
