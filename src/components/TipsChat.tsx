@@ -68,7 +68,8 @@ export function TipsChat() {
     e.preventDefault();
     if (!newMessage.trim() || !user) return;
 
-    await supabase.from("tips_chat").insert({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase.from("tips_chat" as any) as any).insert({
       user_id: user.id,
       username: user.email?.split("@")[0] ?? "Anônimo",
       message: newMessage.trim(),
