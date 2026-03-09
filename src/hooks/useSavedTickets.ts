@@ -65,6 +65,17 @@ export function useSavedTickets() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["saved-tickets"] }),
   });
 
+  const updateNotesMutation = useMutation({
+    mutationFn: async ({ id, notes }: { id: string; notes: string | null }) => {
+      const { error } = await supabase
+        .from("saved_tickets")
+        .update({ notes: notes || null })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["saved-tickets"] }),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -97,6 +108,7 @@ export function useSavedTickets() {
     saveTicket: saveMutation.mutateAsync,
     isSaving: saveMutation.isPending,
     updateResult: updateResultMutation.mutateAsync,
+    updateNotes: updateNotesMutation.mutateAsync,
     deleteTicket: deleteMutation.mutateAsync,
   };
 }
