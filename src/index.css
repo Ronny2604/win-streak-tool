@@ -95,6 +95,136 @@
     --sidebar-border: 220 15% 18%;
     --sidebar-ring: 145 72% 45%;
   }
+
+  /* Theme Presets - Purple */
+  .theme-purple {
+    --primary: 270 70% 55%;
+    --accent: 270 70% 55%;
+    --ring: 270 70% 55%;
+    --neon: 270 70% 60%;
+    --neon-glow: 270 70% 55%;
+    --badge-elite: 270 70% 55%;
+    --chart-positive: 270 70% 60%;
+    --filter-chip-active: 270 70% 55%;
+    --sidebar-primary: 270 70% 55%;
+    --sidebar-ring: 270 70% 55%;
+  }
+  .theme-purple.dark {
+    --primary: 270 70% 60%;
+    --accent: 270 70% 60%;
+    --ring: 270 70% 60%;
+    --neon: 270 70% 65%;
+    --neon-glow: 270 70% 60%;
+    --badge-elite: 270 70% 60%;
+    --chart-positive: 270 70% 65%;
+    --filter-chip-active: 270 70% 60%;
+    --sidebar-primary: 270 70% 60%;
+    --sidebar-ring: 270 70% 60%;
+  }
+
+  /* Theme Presets - Blue */
+  .theme-blue {
+    --primary: 210 90% 50%;
+    --accent: 210 90% 50%;
+    --ring: 210 90% 50%;
+    --neon: 210 90% 55%;
+    --neon-glow: 210 90% 50%;
+    --badge-elite: 210 90% 50%;
+    --chart-positive: 210 90% 55%;
+    --filter-chip-active: 210 90% 50%;
+    --sidebar-primary: 210 90% 50%;
+    --sidebar-ring: 210 90% 50%;
+  }
+  .theme-blue.dark {
+    --primary: 210 90% 55%;
+    --accent: 210 90% 55%;
+    --ring: 210 90% 55%;
+    --neon: 210 90% 60%;
+    --neon-glow: 210 90% 55%;
+    --badge-elite: 210 90% 55%;
+    --chart-positive: 210 90% 60%;
+    --filter-chip-active: 210 90% 55%;
+    --sidebar-primary: 210 90% 55%;
+    --sidebar-ring: 210 90% 55%;
+  }
+
+  /* Theme Presets - Orange */
+  .theme-orange {
+    --primary: 25 95% 53%;
+    --accent: 25 95% 53%;
+    --ring: 25 95% 53%;
+    --neon: 25 95% 58%;
+    --neon-glow: 25 95% 53%;
+    --badge-elite: 25 95% 53%;
+    --chart-positive: 25 95% 58%;
+    --filter-chip-active: 25 95% 53%;
+    --sidebar-primary: 25 95% 53%;
+    --sidebar-ring: 25 95% 53%;
+  }
+  .theme-orange.dark {
+    --primary: 25 95% 58%;
+    --accent: 25 95% 58%;
+    --ring: 25 95% 58%;
+    --neon: 25 95% 63%;
+    --neon-glow: 25 95% 58%;
+    --badge-elite: 25 95% 58%;
+    --chart-positive: 25 95% 63%;
+    --filter-chip-active: 25 95% 58%;
+    --sidebar-primary: 25 95% 58%;
+    --sidebar-ring: 25 95% 58%;
+  }
+
+  /* Theme Presets - Pink */
+  .theme-pink {
+    --primary: 330 80% 55%;
+    --accent: 330 80% 55%;
+    --ring: 330 80% 55%;
+    --neon: 330 80% 60%;
+    --neon-glow: 330 80% 55%;
+    --badge-elite: 330 80% 55%;
+    --chart-positive: 330 80% 60%;
+    --filter-chip-active: 330 80% 55%;
+    --sidebar-primary: 330 80% 55%;
+    --sidebar-ring: 330 80% 55%;
+  }
+  .theme-pink.dark {
+    --primary: 330 80% 60%;
+    --accent: 330 80% 60%;
+    --ring: 330 80% 60%;
+    --neon: 330 80% 65%;
+    --neon-glow: 330 80% 60%;
+    --badge-elite: 330 80% 60%;
+    --chart-positive: 330 80% 65%;
+    --filter-chip-active: 330 80% 60%;
+    --sidebar-primary: 330 80% 60%;
+    --sidebar-ring: 330 80% 60%;
+  }
+
+  /* Theme Presets - Cyan */
+  .theme-cyan {
+    --primary: 185 80% 45%;
+    --accent: 185 80% 45%;
+    --ring: 185 80% 45%;
+    --neon: 185 80% 50%;
+    --neon-glow: 185 80% 45%;
+    --badge-elite: 185 80% 45%;
+    --chart-positive: 185 80% 50%;
+    --filter-chip-active: 185 80% 45%;
+    --sidebar-primary: 185 80% 45%;
+    --sidebar-ring: 185 80% 45%;
+  }
+  .theme-cyan.dark {
+    --primary: 185 80% 50%;
+    --accent: 185 80% 50%;
+    --ring: 185 80% 50%;
+    --neon: 185 80% 55%;
+    --neon-glow: 185 80% 50%;
+    --badge-elite: 185 80% 50%;
+    --chart-positive: 185 80% 55%;
+    --filter-chip-active: 185 80% 50%;
+    --sidebar-primary: 185 80% 50%;
+    --sidebar-ring: 185 80% 50%;
+  }
 }
 
 @layer base {
