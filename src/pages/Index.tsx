@@ -157,19 +157,28 @@ export default function Index() {
         ) : activeTab === "bilhetes" ? (
           <TicketsSection fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} onOpenHistory={() => setActiveTab("historico")} />
         ) : activeTab === "premium" ? (
-          <div className="space-y-4">
+        <div className="space-y-4">
             {/* Premium sub-nav */}
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
               {[
-                { id: "valuebets", icon: Zap, label: "Value Bets" },
-                { id: "form", icon: BarChart3, label: "Forma" },
-                { id: "roi", icon: Trophy, label: "ROI" },
-                { id: "chat", icon: MessageCircle, label: "Chat" },
-                { id: "kelly", icon: Calculator, label: "Kelly" },
+                { id: "dashboard" as PremiumSection, icon: BarChart3, label: "Dashboard" },
+                { id: "ai" as PremiumSection, icon: Bot, label: "IA" },
+                { id: "valuebets" as PremiumSection, icon: Zap, label: "Value" },
+                { id: "h2h" as PremiumSection, icon: Users, label: "H2H" },
+                { id: "rankings" as PremiumSection, icon: Trophy, label: "Rankings" },
+                { id: "odds" as PremiumSection, icon: Zap, label: "Odds" },
+                { id: "calendar" as PremiumSection, icon: Calendar, label: "Calendário" },
+                { id: "financial" as PremiumSection, icon: DollarSign, label: "Financeiro" },
+                { id: "goals" as PremiumSection, icon: Target, label: "Metas" },
+                { id: "favorites" as PremiumSection, icon: Star, label: "Favoritos" },
+                { id: "form" as PremiumSection, icon: BarChart3, label: "Forma" },
+                { id: "roi" as PremiumSection, icon: Trophy, label: "ROI" },
+                { id: "chat" as PremiumSection, icon: MessageCircle, label: "Chat" },
+                { id: "kelly" as PremiumSection, icon: Calculator, label: "Kelly" },
               ].map(({ id, icon: Icon, label }) => (
                 <button
                   key={id}
-                  onClick={() => setPremiumSection(id as typeof premiumSection)}
+                  onClick={() => setPremiumSection(id)}
                   className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all whitespace-nowrap ${
                     premiumSection === id
                       ? "bg-badge-star/10 border border-badge-star/50 text-badge-star"
@@ -182,12 +191,20 @@ export default function Index() {
               ))}
             </div>
 
-            {premiumSection === "valuebets" && fixturesData && (
-              <ValueBetsPanel fixtures={fixturesData} />
-            )}
-            {premiumSection === "form" && fixturesData && (
-              <FormAnalysisPanel fixtures={fixturesData} />
-            )}
+            {/* New Premium Sections */}
+            {premiumSection === "dashboard" && <PerformanceDashboard />}
+            {premiumSection === "ai" && fixturesData && <AITicketGenerator fixtures={fixturesData} />}
+            {premiumSection === "h2h" && fixturesData && <HeadToHead fixtures={fixturesData} />}
+            {premiumSection === "rankings" && fixturesData && <TeamRankings fixtures={fixturesData} />}
+            {premiumSection === "odds" && fixturesData && <OddsComparator fixtures={fixturesData} />}
+            {premiumSection === "calendar" && fixturesData && <GamesCalendar fixtures={fixturesData} onSelectFixture={setSelectedMatch} />}
+            {premiumSection === "financial" && <FinancialHistory />}
+            {premiumSection === "goals" && <BankrollGoals />}
+            {premiumSection === "favorites" && fixturesData && <FavoritesWidget fixtures={fixturesData} onSelectFixture={setSelectedMatch} />}
+            
+            {/* Original Premium Sections */}
+            {premiumSection === "valuebets" && fixturesData && <ValueBetsPanel fixtures={fixturesData} />}
+            {premiumSection === "form" && fixturesData && <FormAnalysisPanel fixtures={fixturesData} />}
             {premiumSection === "roi" && <LeagueROIPanel />}
             {premiumSection === "chat" && <TipsChat />}
             {premiumSection === "kelly" && <BankrollSimulator />}
