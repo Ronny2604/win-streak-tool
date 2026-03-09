@@ -54,12 +54,13 @@ export function TipsChat() {
 
   async function fetchMessages() {
     const { data } = await supabase
-      .from("tips_chat")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .from("tips_chat" as any)
       .select("*")
       .order("created_at", { ascending: true })
       .limit(50);
 
-    if (data) setMessages(data as TipMessage[]);
+    if (data) setMessages(data as unknown as TipMessage[]);
     setLoading(false);
   }
 
