@@ -2,16 +2,17 @@ import { useState } from "react";
 import { useKeyManager, AccessKey } from "@/hooks/useKeyManager";
 import { useSavedTickets, SavedTicket } from "@/hooks/useSavedTickets";
 import { AppHeader } from "@/components/AppHeader";
+import { PersonalizationPanel } from "@/components/PersonalizationPanel";
 import {
   ArrowLeft, Plus, Copy, Trash2, ToggleLeft, ToggleRight, Loader2,
   Key, BarChart3, Ticket, Users, TrendingUp, CheckCircle2, XCircle, Clock,
-  Shield, Calendar, Search
+  Shield, Calendar, Search, Palette
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
-type Tab = "dashboard" | "keys" | "tickets";
+type Tab = "dashboard" | "keys" | "tickets" | "personalization";
 
 function StatCard({ icon: Icon, label, value, sub, color }: {
   icon: typeof Key; label: string; value: string | number; sub?: string; color: string;
@@ -69,6 +70,7 @@ export default function AdminPanel() {
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "keys", label: "Chaves", icon: Key },
     { id: "tickets", label: "Bilhetes", icon: Ticket },
+    { id: "personalization", label: "Personalizar", icon: Palette },
   ];
 
   return (
@@ -365,6 +367,9 @@ export default function AdminPanel() {
             )}
           </div>
         )}
+
+        {/* Personalization Tab */}
+        {tab === "personalization" && <PersonalizationPanel />}
       </main>
     </div>
   );

@@ -16,7 +16,7 @@ export function AppHeader() {
         <div className="flex items-center gap-3">
           <BarChart3 className="h-6 w-6 text-neon" />
           <Link to="/" className="text-lg font-extrabold tracking-tight text-foreground">
-            Props<span className="text-neon">BR</span>
+            Ronny<span className="text-neon">BR</span>
           </Link>
           {keySession.valid && keySession.plan && (
             <span className={`rounded-lg px-2.5 py-0.5 text-[10px] font-bold tracking-wider ${
