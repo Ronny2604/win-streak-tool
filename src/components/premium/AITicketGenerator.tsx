@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { NormalizedFixture } from "@/lib/odds-api";
 import { supabase } from "@/integrations/supabase/client";
-import { Bot, Sparkles, Loader2, RefreshCw, Zap, AlertTriangle } from "lucide-react";
+import { useSavedTickets } from "@/hooks/useSavedTickets";
+import { Bot, Sparkles, Loader2, RefreshCw, Zap, Save } from "lucide-react";
 import { toast } from "sonner";
 
 interface AITicketGeneratorProps {
