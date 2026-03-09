@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useNavigate } from "react-router-dom";
-import { BarChart3, Loader2 } from "lucide-react";
+import { BarChart3, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -37,6 +39,23 @@ export default function LoginPage() {
     setLoading(false);
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) {
+      toast.error("Erro ao enviar email: " + error.message);
+    } else {
+      toast.success("Email enviado! Verifique sua caixa de entrada.");
+      setIsForgotPassword(false);
+    }
+    setLoading(false);
+  };
+
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
@@ -53,6 +72,54 @@ export default function LoginPage() {
     }
     setGoogleLoading(false);
   };
+
+  if (isForgotPassword) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="w-full max-w-sm space-y-6">
+          <div className="text-center space-y-2">
+            <div className="flex items-center justify-center gap-2">
+              <BarChart3 className="h-8 w-8 text-neon" />
+              <span className="text-2xl font-extrabold text-foreground">
+                Props<span className="text-neon">BR</span>
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Digite seu email para recuperar a senha
+            </p>
+          </div>
+
+          <form onSubmit={handleForgotPassword} className="space-y-4">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              className="w-full rounded-xl bg-card border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-neon/50"
+            />
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-neon py-3 text-sm font-bold text-filter-chip-active-foreground transition-all hover:opacity-90 glow-neon disabled:opacity-50"
+            >
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              Enviar email de recuperação
+            </button>
+          </form>
+
+          <button
+            onClick={() => setIsForgotPassword(false)}
+            className="flex items-center justify-center gap-2 w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar ao login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -133,6 +200,16 @@ export default function LoginPage() {
             placeholder="Senha"
             className="w-full rounded-xl bg-card border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-neon/50"
           />
+
+          {!isSignUp && (
+            <button
+              type="button"
+              onClick={() => setIsForgotPassword(true)}
+              className="text-xs text-neon hover:underline"
+            >
+              Esqueceu a senha?
+            </button>
+          )}
 
           <button
             type="submit"
