@@ -48,10 +48,13 @@ interface SavedTicketCardProps {
   ticket: SavedTicket;
   onUpdateResult: (id: string, result: "pending" | "green" | "red") => void;
   onDelete: (id: string) => void;
+  onUpdateNotes: (id: string, notes: string) => void;
 }
 
-function SavedTicketCard({ ticket, onUpdateResult, onDelete }: SavedTicketCardProps) {
+function SavedTicketCard({ ticket, onUpdateResult, onDelete, onUpdateNotes }: SavedTicketCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notesText, setNotesText] = useState(ticket.notes || "");
   const Icon = TYPE_ICONS[ticket.type] ?? Zap;
   const colors = TYPE_COLORS[ticket.type] ?? TYPE_COLORS.moderate;
   const resultConf = RESULT_CONFIG[ticket.result];
