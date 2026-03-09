@@ -134,6 +134,36 @@ export type Database = {
         }
         Relationships: []
       }
+      tips_chat: {
+        Row: {
+          created_at: string
+          fixture_info: string | null
+          id: string
+          message: string
+          tip_type: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          fixture_info?: string | null
+          id?: string
+          message: string
+          tip_type?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          fixture_info?: string | null
+          id?: string
+          message?: string
+          tip_type?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
