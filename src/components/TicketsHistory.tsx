@@ -353,6 +353,7 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
               ticket={ticket}
               onUpdateResult={handleUpdateResult}
               onDelete={handleDelete}
+              onUpdateNotes={handleUpdateNotes}
             />
           ))}
         </div>
