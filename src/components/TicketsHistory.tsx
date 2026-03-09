@@ -251,7 +251,7 @@ interface TicketsHistoryProps {
 }
 
 export function TicketsHistory({ onBack }: TicketsHistoryProps) {
-  const { tickets, isLoading, stats, updateResult, deleteTicket } = useSavedTickets();
+  const { tickets, isLoading, stats, updateResult, deleteTicket, updateNotes } = useSavedTickets();
   const [filter, setFilter] = useState<"all" | "pending" | "green" | "red">("all");
 
   const filtered = filter === "all" ? tickets : tickets.filter((t) => t.result === filter);
