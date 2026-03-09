@@ -1,8 +1,25 @@
-import { Sun, Moon, Check, Palette } from "lucide-react";
-import { useTheme, THEME_PRESETS, ThemePreset } from "@/contexts/ThemeContext";
+import { Sun, Moon, Check, Palette, Type, Maximize2 } from "lucide-react";
+import {
+  useTheme,
+  THEME_PRESETS,
+  FONT_OPTIONS,
+  FONT_SIZE_OPTIONS,
+  BORDER_RADIUS_OPTIONS,
+} from "@/contexts/ThemeContext";
 
 export function PersonalizationPanel() {
-  const { theme, preset, setTheme, setPreset } = useTheme();
+  const {
+    theme,
+    preset,
+    fontFamily,
+    fontSize,
+    borderRadius,
+    setTheme,
+    setPreset,
+    setFontFamily,
+    setFontSize,
+    setBorderRadius,
+  } = useTheme();
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -69,6 +86,96 @@ export function PersonalizationPanel() {
                 {p.name}
               </span>
               {preset === p.id && <Check className="h-4 w-4 text-primary ml-auto" />}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Font Family */}
+      <div className="rounded-xl bg-card border border-border p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Type className="h-4 w-4 text-primary" />
+          <h2 className="text-sm font-semibold text-foreground">Fonte</h2>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {FONT_OPTIONS.map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setFontFamily(f.id)}
+              className={`flex items-center gap-3 rounded-xl p-3 border-2 transition-all ${
+                fontFamily === f.id
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:border-muted-foreground"
+              }`}
+            >
+              <span
+                className={`text-sm font-medium ${fontFamily === f.id ? "text-foreground" : "text-muted-foreground"}`}
+                style={{ fontFamily: f.css }}
+              >
+                {f.name}
+              </span>
+              {fontFamily === f.id && <Check className="h-4 w-4 text-primary ml-auto" />}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Font Size */}
+      <div className="rounded-xl bg-card border border-border p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Type className="h-4 w-4 text-primary" />
+          <h2 className="text-sm font-semibold text-foreground">Tamanho do Texto</h2>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {FONT_SIZE_OPTIONS.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setFontSize(s.id)}
+              className={`flex items-center justify-center gap-2 rounded-xl p-3 border-2 transition-all ${
+                fontSize === s.id
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:border-muted-foreground"
+              }`}
+            >
+              <span
+                className={`font-medium ${fontSize === s.id ? "text-foreground" : "text-muted-foreground"}`}
+                style={{ fontSize: s.scale }}
+              >
+                Aa
+              </span>
+              <span className={`text-xs ${fontSize === s.id ? "text-foreground" : "text-muted-foreground"}`}>
+                {s.name}
+              </span>
+              {fontSize === s.id && <Check className="h-4 w-4 text-primary ml-auto" />}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Border Radius */}
+      <div className="rounded-xl bg-card border border-border p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Maximize2 className="h-4 w-4 text-primary" />
+          <h2 className="text-sm font-semibold text-foreground">Raio dos Cantos</h2>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {BORDER_RADIUS_OPTIONS.map((r) => (
+            <button
+              key={r.id}
+              onClick={() => setBorderRadius(r.id)}
+              className={`flex flex-col items-center gap-2 rounded-xl p-3 border-2 transition-all ${
+                borderRadius === r.id
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:border-muted-foreground"
+              }`}
+            >
+              <div
+                className="w-10 h-10 bg-primary/30 border-2 border-primary"
+                style={{ borderRadius: r.value }}
+              />
+              <span className={`text-xs font-medium ${borderRadius === r.id ? "text-foreground" : "text-muted-foreground"}`}>
+                {r.name}
+              </span>
             </button>
           ))}
         </div>
