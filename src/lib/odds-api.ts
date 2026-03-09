@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const ODDS_API_KEY = "d28a1069bc56332e46147be343abb995";
+const ODDS_API_KEY = "aea68609eb6c802ff8fa4173bf489ba9";
 const BASE_URL = "https://api.the-odds-api.com/v4";
 
 export interface OddsEvent {
