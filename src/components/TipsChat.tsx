@@ -33,10 +33,10 @@ export function TipsChat() {
     const channel = supabase
       .channel("tips_chat_realtime")
       .on(
-        "postgres_changes",
+        "postgres_changes" as "postgres_changes",
         { event: "INSERT", schema: "public", table: "tips_chat" },
         (payload) => {
-          setMessages((prev) => [...prev, payload.new as TipMessage]);
+          setMessages((prev) => [...prev, payload.new as unknown as TipMessage]);
         }
       )
       .subscribe();
