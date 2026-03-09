@@ -128,6 +128,59 @@ function SavedTicketCard({ ticket, onUpdateResult, onDelete, onUpdateNotes }: Sa
             </div>
           ))}
 
+          {/* Notes Section */}
+          <div className="px-4 py-3 border-b border-border/30 bg-muted/10">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                <StickyNote className="h-3.5 w-3.5" />
+                Notas do Bilhete
+              </div>
+              {!editingNotes && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setEditingNotes(true); }}
+                  className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+            
+            {editingNotes ? (
+              <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                <Textarea
+                  value={notesText}
+                  onChange={(e) => setNotesText(e.target.value)}
+                  placeholder="Adicione suas notas aqui..."
+                  className="min-h-[60px] text-xs resize-none"
+                />
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => {
+                      setNotesText(ticket.notes || "");
+                      setEditingNotes(false);
+                    }}
+                    className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted transition-all"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      onUpdateNotes(ticket.id, notesText);
+                      setEditingNotes(false);
+                    }}
+                    className="p-1.5 rounded-lg text-emerald-400 hover:bg-emerald-500/10 transition-all"
+                  >
+                    <Check className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground whitespace-pre-wrap">
+                {ticket.notes || "Nenhuma nota adicionada."}
+              </p>
+            )}
+          </div>
+
           {/* Actions */}
           <div className="px-4 py-3 bg-card/50 flex items-center justify-between">
             <div className="flex gap-2">
