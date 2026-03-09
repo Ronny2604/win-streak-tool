@@ -25,6 +25,7 @@ interface GeneratedTicket {
 }
 
 export function AITicketGenerator({ fixtures }: AITicketGeneratorProps) {
+  const { saveTicket, isSaving } = useSavedTickets();
   const [loading, setLoading] = useState(false);
   const [ticket, setTicket] = useState<GeneratedTicket | null>(null);
   const [riskLevel, setRiskLevel] = useState<"conservative" | "moderate" | "aggressive">("moderate");
