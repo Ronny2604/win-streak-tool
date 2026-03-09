@@ -88,10 +88,10 @@ export default function Index() {
 
       <main className="container max-w-2xl py-4 space-y-4">
         {/* Tabs */}
-        <div className="flex gap-6 border-b border-border">
+        <div className="flex gap-4 border-b border-border overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveTab("futebol")}
-            className={`pb-2 text-sm font-semibold transition-colors border-b-2 ${
+            className={`pb-2 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
               activeTab === "futebol"
                 ? "border-neon text-neon"
                 : "border-transparent text-muted-foreground hover:text-foreground"
@@ -101,7 +101,7 @@ export default function Index() {
           </button>
           <button
             onClick={() => isPro && setActiveTab("live")}
-            className={`pb-2 text-sm font-semibold transition-colors border-b-2 flex items-center gap-1.5 ${
+            className={`pb-2 text-sm font-semibold transition-colors border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
               !isPro
                 ? "border-transparent text-muted-foreground/40 cursor-not-allowed"
                 : activeTab === "live"
@@ -115,7 +115,7 @@ export default function Index() {
           </button>
           <button
             onClick={() => setActiveTab("bilhetes")}
-            className={`pb-2 text-sm font-semibold transition-colors border-b-2 flex items-center gap-1.5 ${
+            className={`pb-2 text-sm font-semibold transition-colors border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === "bilhetes"
                 ? "border-neon text-neon"
                 : "border-transparent text-muted-foreground hover:text-foreground"
@@ -123,12 +123,62 @@ export default function Index() {
           >
             🎫 Bilhetes
           </button>
+          <button
+            onClick={() => isPro && setActiveTab("premium")}
+            className={`pb-2 text-sm font-semibold transition-colors border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
+              !isPro
+                ? "border-transparent text-muted-foreground/40 cursor-not-allowed"
+                : activeTab === "premium"
+                  ? "border-badge-star text-badge-star"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Zap className="h-3 w-3" />
+            Premium
+            {!isPro && <Lock className="h-3 w-3 ml-1" />}
+          </button>
         </div>
 
         {activeTab === "historico" ? (
           <TicketsHistory onBack={() => setActiveTab("bilhetes")} />
         ) : activeTab === "bilhetes" ? (
           <TicketsSection fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} onOpenHistory={() => setActiveTab("historico")} />
+        ) : activeTab === "premium" ? (
+          <div className="space-y-4">
+            {/* Premium sub-nav */}
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {[
+                { id: "valuebets", icon: Zap, label: "Value Bets" },
+                { id: "form", icon: BarChart3, label: "Forma" },
+                { id: "roi", icon: Trophy, label: "ROI" },
+                { id: "chat", icon: MessageCircle, label: "Chat" },
+                { id: "kelly", icon: Calculator, label: "Kelly" },
+              ].map(({ id, icon: Icon, label }) => (
+                <button
+                  key={id}
+                  onClick={() => setPremiumSection(id as typeof premiumSection)}
+                  className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all whitespace-nowrap ${
+                    premiumSection === id
+                      ? "bg-badge-star/10 border border-badge-star/50 text-badge-star"
+                      : "bg-card border border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {premiumSection === "valuebets" && fixturesData && (
+              <ValueBetsPanel fixtures={fixturesData} />
+            )}
+            {premiumSection === "form" && fixturesData && (
+              <FormAnalysisPanel fixtures={fixturesData} />
+            )}
+            {premiumSection === "roi" && <LeagueROIPanel />}
+            {premiumSection === "chat" && <TipsChat />}
+            {premiumSection === "kelly" && <BankrollSimulator />}
+          </div>
         ) : (<>
         {/* Market filters */}
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
