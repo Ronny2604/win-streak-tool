@@ -75,7 +75,7 @@ export default function Index() {
     );
   }
 
-  if (!session.valid && !isAdmin) return <KeyGateScreen />;
+  if (!session.valid && !isAdmin) return <Navigate to="/login" replace />;
 
   return (
     <div className="min-h-screen bg-background">
