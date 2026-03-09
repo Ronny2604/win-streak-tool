@@ -14,6 +14,7 @@ import { KeyGateScreen } from "@/components/KeyGateScreen";
 import { useKeyGate } from "@/contexts/KeyGateContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Star, Flame, Target, Search, Loader2, Lock } from "lucide-react";
+import { Navigate } from "react-router-dom";
 
 const MARKETS = ["Chance Dupla", "S/ Empate", "Escanteios", "Cartões", "Gols", "Ambas Marcam"];
 const HIGHLIGHTS = [
