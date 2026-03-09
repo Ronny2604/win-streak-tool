@@ -274,6 +274,15 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
     }
   };
 
+  const handleUpdateNotes = async (id: string, notes: string) => {
+    try {
+      await updateNotes({ id, notes });
+      toast.success("Notas atualizadas");
+    } catch {
+      toast.error("Erro ao atualizar notas");
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Header */}
