@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useSavedTickets, SavedTicket } from "@/hooks/useSavedTickets";
 import { shareViaWhatsApp, shareViaLink } from "@/lib/share-ticket";
+import { Textarea } from "./ui/textarea";
 import {
   CheckCircle2,
   XCircle,
@@ -18,6 +19,10 @@ import {
   ArrowLeft,
   MessageCircle,
   Link,
+  StickyNote,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
