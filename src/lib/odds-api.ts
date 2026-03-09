@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const ODDS_API_KEY = "aea68609eb6c802ff8fa4173bf489ba9";
+const DEFAULT_ODDS_API_KEY = "aea68609eb6c802ff8fa4173bf489ba9";
 const BASE_URL = "https://api.the-odds-api.com/v4";
 
 export interface OddsEvent {
@@ -90,6 +90,27 @@ const SPORT_KEY_TO_LEAGUE_ID: Record<string, number> = {
   soccer_brazil_campeonato: 71,
   soccer_uefa_champs_league: 2,
 };
+
+let cachedOddsApiKey = DEFAULT_ODDS_API_KEY;
+let lastKeyFetchAt = 0;
+const KEY_CACHE_TTL_MS = 60 * 1000;
+
+async function resolveOddsApiKey(): Promise<string> {
+  const now = Date.now();
+  if (now - lastKeyFetchAt < KEY_CACHE_TTL_MS && cachedOddsApiKey) return cachedOddsApiKey;
+
+  try {
+    const { data, error } = await supabase.rpc("get_app_setting", { _key: "odds_api_key" });
+    if (!error && typeof data === "string" && data.trim()) {
+      cachedOddsApiKey = data.trim();
+    }
+  } catch {
+    // keep fallback key
+  }
+
+  lastKeyFetchAt = now;
+  return cachedOddsApiKey || DEFAULT_ODDS_API_KEY;
+}
 
 function extractOdds(bookmakers?: Bookmaker[]): { home: string; draw: string; away: string } | null {
   if (!bookmakers || bookmakers.length === 0) return null;
@@ -219,9 +240,9 @@ async function fetchFromApiFootball(leagueId?: number): Promise<NormalizedFixtur
   return results;
 }
 
-async function tryOddsApi(sportKey: string): Promise<NormalizedFixture[]> {
+async function tryOddsApi(sportKey: string, apiKey: string): Promise<NormalizedFixture[]> {
   try {
-    const url = `${BASE_URL}/sports/${sportKey}/odds/?apiKey=${ODDS_API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
+    const url = `${BASE_URL}/sports/${sportKey}/odds/?apiKey=${apiKey}&regions=eu&markets=h2h&oddsFormat=decimal`;
     const res = await fetch(url);
     if (!res.ok) return [];
     const events: OddsEvent[] = await res.json();
@@ -232,9 +253,11 @@ async function tryOddsApi(sportKey: string): Promise<NormalizedFixture[]> {
 }
 
 export async function getSoccerOdds(sportKey?: string): Promise<NormalizedFixture[]> {
+  const apiKey = await resolveOddsApiKey();
+
   // Try Odds API first for a single league
   if (sportKey) {
-    const oddsResults = await tryOddsApi(sportKey);
+    const oddsResults = await tryOddsApi(sportKey, apiKey);
     if (oddsResults.length > 0) return oddsResults;
     // Fallback to API-Football for that specific league
     const leagueId = SPORT_KEY_TO_LEAGUE_ID[sportKey];
@@ -242,11 +265,11 @@ export async function getSoccerOdds(sportKey?: string): Promise<NormalizedFixtur
   }
 
   // For all leagues: try Odds API for one sport key as a probe
-  const probe = await tryOddsApi("soccer_epl");
+  const probe = await tryOddsApi("soccer_epl", apiKey);
   if (probe.length > 0) {
     // Odds API is working — fetch all leagues
     const sports = LEAGUES.map((l) => l.id);
-    const fetches = sports.map((sport) => tryOddsApi(sport));
+    const fetches = sports.map((sport) => tryOddsApi(sport, apiKey));
     const allResults = await Promise.all(fetches);
     const results: NormalizedFixture[] = [];
     allResults.forEach((r) => results.push(...r));
@@ -261,6 +284,8 @@ export async function getSoccerOdds(sportKey?: string): Promise<NormalizedFixtur
 }
 
 export async function getLiveScores(sportKey?: string): Promise<NormalizedFixture[]> {
+  const apiKey = await resolveOddsApiKey();
+
   // Try Odds API first
   const sports = sportKey ? [sportKey] : LEAGUES.map((l) => l.id);
   const results: NormalizedFixture[] = [];
@@ -268,7 +293,7 @@ export async function getLiveScores(sportKey?: string): Promise<NormalizedFixtur
   let oddsWorking = false;
   const fetches = sports.map(async (sport) => {
     try {
-      const url = `${BASE_URL}/sports/${sport}/scores/?apiKey=${ODDS_API_KEY}&daysFrom=1`;
+      const url = `${BASE_URL}/sports/${sport}/scores/?apiKey=${apiKey}&daysFrom=1`;
       const res = await fetch(url);
       if (!res.ok) return [];
       oddsWorking = true;
@@ -293,3 +318,4 @@ export async function getLiveScores(sportKey?: string): Promise<NormalizedFixtur
   results.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   return results;
 }
+
