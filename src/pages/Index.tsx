@@ -32,7 +32,8 @@ export default function Index() {
   const { isAdmin, loading: authLoading } = useAuth();
   const isPro = isAdmin || session.plan === "pro";
   const LITE_LIMIT = 5;
-  const [activeTab, setActiveTab] = useState<"futebol" | "live" | "bilhetes" | "historico">("futebol");
+  const [activeTab, setActiveTab] = useState<"futebol" | "live" | "bilhetes" | "historico" | "premium">("futebol");
+  const [premiumSection, setPremiumSection] = useState<"valuebets" | "form" | "roi" | "chat" | "kelly">("valuebets");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
   const [activeHighlight, setActiveHighlight] = useState<number | null>(null);
