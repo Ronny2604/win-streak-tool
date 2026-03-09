@@ -17,7 +17,18 @@ import { FormAnalysisPanel } from "@/components/FormAnalysisPanel";
 import { LeagueROIPanel } from "@/components/LeagueROIPanel";
 import { TipsChat } from "@/components/TipsChat";
 import { BankrollSimulator } from "@/components/BankrollSimulator";
-import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator } from "lucide-react";
+import {
+  PerformanceDashboard,
+  HeadToHead,
+  TeamRankings,
+  FinancialHistory,
+  BankrollGoals,
+  FavoritesWidget,
+  OddsComparator,
+  GamesCalendar,
+  AITicketGenerator
+} from "@/components/premium";
+import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot } from "lucide-react";
 import { Navigate } from "react-router-dom";
 
 const MARKETS = ["Chance Dupla", "S/ Empate", "Escanteios", "Cartões", "Gols", "Ambas Marcam"];
@@ -27,13 +38,15 @@ const HIGHLIGHTS = [
   { label: "TOP", icon: Target, color: "text-chart-negative" },
 ];
 
+type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai";
+
 export default function Index() {
   const { session, loading: keyLoading } = useKeyGate();
   const { isAdmin, loading: authLoading } = useAuth();
   const isPro = isAdmin || session.plan === "pro";
   const LITE_LIMIT = 5;
   const [activeTab, setActiveTab] = useState<"futebol" | "live" | "bilhetes" | "historico" | "premium">("futebol");
-  const [premiumSection, setPremiumSection] = useState<"valuebets" | "form" | "roi" | "chat" | "kelly">("valuebets");
+  const [premiumSection, setPremiumSection] = useState<PremiumSection>("dashboard");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
   const [activeHighlight, setActiveHighlight] = useState<number | null>(null);
@@ -144,19 +157,28 @@ export default function Index() {
         ) : activeTab === "bilhetes" ? (
           <TicketsSection fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} onOpenHistory={() => setActiveTab("historico")} />
         ) : activeTab === "premium" ? (
-          <div className="space-y-4">
+        <div className="space-y-4">
             {/* Premium sub-nav */}
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
               {[
-                { id: "valuebets", icon: Zap, label: "Value Bets" },
-                { id: "form", icon: BarChart3, label: "Forma" },
-                { id: "roi", icon: Trophy, label: "ROI" },
-                { id: "chat", icon: MessageCircle, label: "Chat" },
-                { id: "kelly", icon: Calculator, label: "Kelly" },
+                { id: "dashboard" as PremiumSection, icon: BarChart3, label: "Dashboard" },
+                { id: "ai" as PremiumSection, icon: Bot, label: "IA" },
+                { id: "valuebets" as PremiumSection, icon: Zap, label: "Value" },
+                { id: "h2h" as PremiumSection, icon: Users, label: "H2H" },
+                { id: "rankings" as PremiumSection, icon: Trophy, label: "Rankings" },
+                { id: "odds" as PremiumSection, icon: Zap, label: "Odds" },
+                { id: "calendar" as PremiumSection, icon: Calendar, label: "Calendário" },
+                { id: "financial" as PremiumSection, icon: DollarSign, label: "Financeiro" },
+                { id: "goals" as PremiumSection, icon: Target, label: "Metas" },
+                { id: "favorites" as PremiumSection, icon: Star, label: "Favoritos" },
+                { id: "form" as PremiumSection, icon: BarChart3, label: "Forma" },
+                { id: "roi" as PremiumSection, icon: Trophy, label: "ROI" },
+                { id: "chat" as PremiumSection, icon: MessageCircle, label: "Chat" },
+                { id: "kelly" as PremiumSection, icon: Calculator, label: "Kelly" },
               ].map(({ id, icon: Icon, label }) => (
                 <button
                   key={id}
-                  onClick={() => setPremiumSection(id as typeof premiumSection)}
+                  onClick={() => setPremiumSection(id)}
                   className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all whitespace-nowrap ${
                     premiumSection === id
                       ? "bg-badge-star/10 border border-badge-star/50 text-badge-star"
@@ -169,12 +191,20 @@ export default function Index() {
               ))}
             </div>
 
-            {premiumSection === "valuebets" && fixturesData && (
-              <ValueBetsPanel fixtures={fixturesData} />
-            )}
-            {premiumSection === "form" && fixturesData && (
-              <FormAnalysisPanel fixtures={fixturesData} />
-            )}
+            {/* New Premium Sections */}
+            {premiumSection === "dashboard" && <PerformanceDashboard />}
+            {premiumSection === "ai" && fixturesData && <AITicketGenerator fixtures={fixturesData} />}
+            {premiumSection === "h2h" && fixturesData && <HeadToHead fixtures={fixturesData} />}
+            {premiumSection === "rankings" && fixturesData && <TeamRankings fixtures={fixturesData} />}
+            {premiumSection === "odds" && fixturesData && <OddsComparator fixtures={fixturesData} />}
+            {premiumSection === "calendar" && fixturesData && <GamesCalendar fixtures={fixturesData} onSelectFixture={setSelectedMatch} />}
+            {premiumSection === "financial" && <FinancialHistory />}
+            {premiumSection === "goals" && <BankrollGoals />}
+            {premiumSection === "favorites" && fixturesData && <FavoritesWidget fixtures={fixturesData} onSelectFixture={setSelectedMatch} />}
+            
+            {/* Original Premium Sections */}
+            {premiumSection === "valuebets" && fixturesData && <ValueBetsPanel fixtures={fixturesData} />}
+            {premiumSection === "form" && fixturesData && <FormAnalysisPanel fixtures={fixturesData} />}
             {premiumSection === "roi" && <LeagueROIPanel />}
             {premiumSection === "chat" && <TipsChat />}
             {premiumSection === "kelly" && <BankrollSimulator />}

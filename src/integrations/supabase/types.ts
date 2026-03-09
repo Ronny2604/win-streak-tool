@@ -95,6 +95,93 @@ export type Database = {
         }
         Relationships: []
       }
+      bankroll_goals: {
+        Row: {
+          achieved: boolean | null
+          created_at: string
+          current_amount: number
+          end_date: string
+          goal_type: string
+          id: string
+          start_date: string
+          target_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          achieved?: boolean | null
+          created_at?: string
+          current_amount?: number
+          end_date: string
+          goal_type: string
+          id?: string
+          start_date?: string
+          target_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          achieved?: boolean | null
+          created_at?: string
+          current_amount?: number
+          end_date?: string
+          goal_type?: string
+          id?: string
+          start_date?: string
+          target_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      betting_history: {
+        Row: {
+          bet_date: string
+          bet_type: string
+          created_at: string
+          fixture_info: string
+          id: string
+          notes: string | null
+          odd: number
+          potential_return: number | null
+          profit: number | null
+          result: string | null
+          settled_at: string | null
+          stake: number
+          user_id: string
+        }
+        Insert: {
+          bet_date?: string
+          bet_type: string
+          created_at?: string
+          fixture_info: string
+          id?: string
+          notes?: string | null
+          odd?: number
+          potential_return?: number | null
+          profit?: number | null
+          result?: string | null
+          settled_at?: string | null
+          stake?: number
+          user_id: string
+        }
+        Update: {
+          bet_date?: string
+          bet_type?: string
+          created_at?: string
+          fixture_info?: string
+          id?: string
+          notes?: string | null
+          odd?: number
+          potential_return?: number | null
+          profit?: number | null
+          result?: string | null
+          settled_at?: string | null
+          stake?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -209,6 +296,36 @@ export type Database = {
           tip_type?: string
           user_id?: string
           username?: string
+        }
+        Relationships: []
+      }
+      user_favorites: {
+        Row: {
+          created_at: string
+          favorite_type: string
+          id: string
+          reference_id: string
+          reference_logo: string | null
+          reference_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          favorite_type: string
+          id?: string
+          reference_id: string
+          reference_logo?: string | null
+          reference_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          favorite_type?: string
+          id?: string
+          reference_id?: string
+          reference_logo?: string | null
+          reference_name?: string
+          user_id?: string
         }
         Relationships: []
       }
