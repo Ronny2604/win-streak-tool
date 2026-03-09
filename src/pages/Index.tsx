@@ -17,7 +17,18 @@ import { FormAnalysisPanel } from "@/components/FormAnalysisPanel";
 import { LeagueROIPanel } from "@/components/LeagueROIPanel";
 import { TipsChat } from "@/components/TipsChat";
 import { BankrollSimulator } from "@/components/BankrollSimulator";
-import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator } from "lucide-react";
+import {
+  PerformanceDashboard,
+  HeadToHead,
+  TeamRankings,
+  FinancialHistory,
+  BankrollGoals,
+  FavoritesWidget,
+  OddsComparator,
+  GamesCalendar,
+  AITicketGenerator
+} from "@/components/premium";
+import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot } from "lucide-react";
 import { Navigate } from "react-router-dom";
 
 const MARKETS = ["Chance Dupla", "S/ Empate", "Escanteios", "Cartões", "Gols", "Ambas Marcam"];
@@ -27,13 +38,15 @@ const HIGHLIGHTS = [
   { label: "TOP", icon: Target, color: "text-chart-negative" },
 ];
 
+type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai";
+
 export default function Index() {
   const { session, loading: keyLoading } = useKeyGate();
   const { isAdmin, loading: authLoading } = useAuth();
   const isPro = isAdmin || session.plan === "pro";
   const LITE_LIMIT = 5;
   const [activeTab, setActiveTab] = useState<"futebol" | "live" | "bilhetes" | "historico" | "premium">("futebol");
-  const [premiumSection, setPremiumSection] = useState<"valuebets" | "form" | "roi" | "chat" | "kelly">("valuebets");
+  const [premiumSection, setPremiumSection] = useState<PremiumSection>("dashboard");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
   const [activeHighlight, setActiveHighlight] = useState<number | null>(null);
