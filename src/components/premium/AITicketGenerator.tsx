@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { NormalizedFixture } from "@/lib/odds-api";
 import { supabase } from "@/integrations/supabase/client";
-import { Bot, Sparkles, Loader2, RefreshCw, Zap, AlertTriangle } from "lucide-react";
+import { useSavedTickets } from "@/hooks/useSavedTickets";
+import { Bot, Sparkles, Loader2, RefreshCw, Zap, Save } from "lucide-react";
 import { toast } from "sonner";
 
 interface AITicketGeneratorProps {
@@ -24,6 +25,7 @@ interface GeneratedTicket {
 }
 
 export function AITicketGenerator({ fixtures }: AITicketGeneratorProps) {
+  const { saveTicket, isSaving } = useSavedTickets();
   const [loading, setLoading] = useState(false);
   const [ticket, setTicket] = useState<GeneratedTicket | null>(null);
   const [riskLevel, setRiskLevel] = useState<"conservative" | "moderate" | "aggressive">("moderate");
@@ -235,15 +237,48 @@ export function AITicketGenerator({ fixtures }: AITicketGeneratorProps) {
             ))}
           </div>
 
-          {/* Regenerate */}
-          <button
-            onClick={generateTicket}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 rounded-lg bg-surface border border-border py-2 text-xs font-semibold text-muted-foreground hover:text-foreground hover:border-neon/30 transition-colors"
-          >
-            <RefreshCw className="h-3 w-3" />
-            Gerar novo bilhete
-          </button>
+          {/* Save & Regenerate */}
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                try {
+                  await saveTicket({
+                    id: `AI-${Date.now()}`,
+                    name: `Bilhete IA (${riskLevel === "conservative" ? "Conservador" : riskLevel === "moderate" ? "Moderado" : "Agressivo"})`,
+                    type: riskLevel === "conservative" ? "safe" : riskLevel === "moderate" ? "moderate" : "aggressive",
+                    selections: ticket.picks.map((p) => ({
+                      fixture: { id: 0, teams: { home: { name: p.fixture.split(" vs ")[0] }, away: { name: p.fixture.split(" vs ")[1] } }, league: { name: "" }, date: "", status: "" } as any,
+                      betType: "home" as any,
+                      label: p.market,
+                      odd: p.odd,
+                      confidence: p.confidence,
+                      reasoning: p.reasoning,
+                    })),
+                    totalOdd: ticket.totalOdd,
+                    confidence: ticket.confidence,
+                    suggestedStake: "R$ 10,00",
+                    potentialReturn: `R$ ${(10 * ticket.totalOdd).toFixed(2).replace(".", ",")}`,
+                  });
+                  toast.success("Bilhete IA salvo com sucesso!");
+                } catch (err: any) {
+                  toast.error("Erro ao salvar: " + (err?.message ?? "Tente novamente"));
+                }
+              }}
+              disabled={isSaving}
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-neon/10 border border-neon/30 py-2 text-xs font-semibold text-neon hover:bg-neon/20 transition-colors disabled:opacity-50"
+            >
+              <Save className="h-3 w-3" />
+              {isSaving ? "Salvando..." : "Salvar Bilhete"}
+            </button>
+            <button
+              onClick={generateTicket}
+              disabled={loading}
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-surface border border-border py-2 text-xs font-semibold text-muted-foreground hover:text-foreground hover:border-neon/30 transition-colors"
+            >
+              <RefreshCw className="h-3 w-3" />
+              Gerar novo
+            </button>
+          </div>
         </div>
       )}
 
