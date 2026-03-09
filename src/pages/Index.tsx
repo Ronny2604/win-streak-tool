@@ -2,9 +2,14 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSoccerOdds, getLiveScores, LEAGUES, type NormalizedFixture } from "@/lib/odds-api";
 import { MatchCard } from "@/components/MatchCard";
+import { MatchCardSkeleton } from "@/components/MatchCardSkeleton";
 import { MatchDetailModal } from "@/components/MatchDetailModal";
 import { MarketInsightPanel } from "@/components/MarketInsightPanel";
 import { CustomTicketBar } from "@/components/CustomTicketBar";
+import { StatsSummaryBar } from "@/components/StatsSummaryBar";
+import { QuickFilters, type QuickFilterType } from "@/components/QuickFilters";
+import { EmptyState } from "@/components/EmptyState";
+import { BottomNav } from "@/components/BottomNav";
 import type { MarketType } from "@/lib/market-analysis";
 import { TicketsSection } from "@/components/TicketsSection";
 import { TicketsHistory } from "@/components/TicketsHistory";
@@ -40,6 +45,38 @@ const HIGHLIGHTS = [
 
 type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai";
 
+function applyQuickFilter(fixtures: NormalizedFixture[], filter: QuickFilterType): NormalizedFixture[] {
+  switch (filter) {
+    case "high-odds":
+      return fixtures.filter(f => {
+        if (!f.odds) return false;
+        const h = parseFloat(f.odds.home);
+        return !isNaN(h) && h >= 2.5;
+      });
+    case "safe":
+      return fixtures.filter(f => {
+        if (!f.odds) return false;
+        const h = parseFloat(f.odds.home);
+        const a = parseFloat(f.odds.away);
+        return (!isNaN(h) && h <= 1.5) || (!isNaN(a) && a <= 1.5);
+      });
+    case "value":
+      return fixtures.filter(f => {
+        if (!f.odds) return false;
+        const h = parseFloat(f.odds.home);
+        return !isNaN(h) && h >= 1.8 && h <= 2.5;
+      });
+    case "today-best":
+      return [...fixtures].sort((a, b) => {
+        const aOdd = a.odds ? parseFloat(a.odds.home) : 99;
+        const bOdd = b.odds ? parseFloat(b.odds.home) : 99;
+        return Math.abs(aOdd - 1.8) - Math.abs(bOdd - 1.8);
+      }).slice(0, 10);
+    default:
+      return fixtures;
+  }
+}
+
 export default function Index() {
   const { session, loading: keyLoading } = useKeyGate();
   const { isAdmin, loading: authLoading } = useAuth();
@@ -50,6 +87,7 @@ export default function Index() {
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
   const [activeHighlight, setActiveHighlight] = useState<number | null>(null);
+  const [quickFilter, setQuickFilter] = useState<QuickFilterType>("all");
   const [search, setSearch] = useState("");
   const [selectedMatch, setSelectedMatch] = useState<NormalizedFixture | null>(null);
 
@@ -69,7 +107,7 @@ export default function Index() {
   const fixtures = activeTab === "live" ? liveData : fixturesData;
   const isLoading = activeTab === "live" ? loadingLive : loadingFixtures;
 
-  const filteredFixtures = fixtures?.filter((f) => {
+  const searchFiltered = fixtures?.filter((f) => {
     if (!search) return true;
     const q = search.toLowerCase();
     return (
@@ -79,10 +117,10 @@ export default function Index() {
     );
   });
 
+  const filteredFixtures = searchFiltered ? applyQuickFilter(searchFiltered, quickFilter) : undefined;
+
   const toggleMarket = (m: string) => {
-    setActiveMarkets((prev) =>
-      prev.includes(m) ? [] : [m]
-    );
+    setActiveMarkets((prev) => prev.includes(m) ? [] : [m]);
   };
 
   if (keyLoading || authLoading) {
@@ -96,12 +134,12 @@ export default function Index() {
   if (!session.valid && !isAdmin) return <Navigate to="/login" replace />;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-4">
       <AppHeader />
 
       <main className="container max-w-2xl py-4 space-y-4">
-        {/* Tabs */}
-        <div className="flex gap-4 border-b border-border overflow-x-auto scrollbar-none">
+        {/* Tabs - hidden on mobile since we have bottom nav */}
+        <div className="hidden md:flex gap-4 border-b border-border overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveTab("futebol")}
             className={`pb-2 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
@@ -191,7 +229,6 @@ export default function Index() {
               ))}
             </div>
 
-            {/* New Premium Sections */}
             {premiumSection === "dashboard" && <PerformanceDashboard />}
             {premiumSection === "ai" && fixturesData && <AITicketGenerator fixtures={fixturesData} />}
             {premiumSection === "h2h" && fixturesData && <HeadToHead fixtures={fixturesData} />}
@@ -201,8 +238,6 @@ export default function Index() {
             {premiumSection === "financial" && <FinancialHistory />}
             {premiumSection === "goals" && <BankrollGoals />}
             {premiumSection === "favorites" && fixturesData && <FavoritesWidget fixtures={fixturesData} onSelectFixture={setSelectedMatch} />}
-            
-            {/* Original Premium Sections */}
             {premiumSection === "valuebets" && fixturesData && <ValueBetsPanel fixtures={fixturesData} />}
             {premiumSection === "form" && fixturesData && <FormAnalysisPanel fixtures={fixturesData} />}
             {premiumSection === "roi" && <LeagueROIPanel />}
@@ -210,6 +245,12 @@ export default function Index() {
             {premiumSection === "kelly" && <BankrollSimulator />}
           </div>
         ) : (<>
+        {/* Stats Summary */}
+        <StatsSummaryBar fixtures={fixtures} isLoading={isLoading} />
+
+        {/* Quick Filters */}
+        <QuickFilters active={quickFilter} onChange={setQuickFilter} />
+
         {/* Market filters */}
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           {MARKETS.map((m) => (
@@ -302,24 +343,29 @@ export default function Index() {
 
         {/* Results */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-neon" />
-            <p className="text-sm text-muted-foreground">Carregando jogos...</p>
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <MatchCardSkeleton key={i} />
+            ))}
           </div>
         ) : filteredFixtures && filteredFixtures.length > 0 ? (
           <div className="space-y-3">
-            {filteredFixtures.slice(0, isPro ? 50 : LITE_LIMIT).map((fixture) => (
-              <MatchCard key={fixture.id} fixture={fixture} showOdds={isPro} onClick={() => setSelectedMatch(fixture)} />
+            {filteredFixtures.slice(0, isPro ? 50 : LITE_LIMIT).map((fixture, index) => (
+              <MatchCard
+                key={fixture.id}
+                fixture={fixture}
+                showOdds={isPro}
+                onClick={() => setSelectedMatch(fixture)}
+                animationDelay={index * 50}
+              />
             ))}
             {!isPro && filteredFixtures.length > LITE_LIMIT && (
               <div className="relative">
-                {/* Blurred preview of next items */}
                 <div className="space-y-3 blur-sm pointer-events-none select-none opacity-50">
                   {filteredFixtures.slice(LITE_LIMIT, LITE_LIMIT + 2).map((fixture) => (
                     <MatchCard key={fixture.id} fixture={fixture} showOdds={false} />
                   ))}
                 </div>
-                {/* Upgrade overlay */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm rounded-xl">
                   <Lock className="h-6 w-6 text-neon mb-2" />
                   <p className="text-sm font-semibold text-foreground">
@@ -333,10 +379,10 @@ export default function Index() {
             )}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 gap-2">
-            <p className="text-sm text-muted-foreground">Nenhum jogo encontrado para hoje</p>
-            <p className="text-xs text-muted-foreground">Tente selecionar outra liga ou volte mais tarde</p>
-          </div>
+          <EmptyState
+            type={search ? "no-results" : "no-games"}
+            searchTerm={search || undefined}
+          />
         )}
         </>)}
       </main>
@@ -352,6 +398,9 @@ export default function Index() {
 
       {/* Custom Ticket Bar */}
       <CustomTicketBar />
+
+      {/* Bottom Navigation (mobile only) */}
+      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isPro={isPro} />
     </div>
   );
 }
