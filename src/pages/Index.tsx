@@ -10,10 +10,14 @@ import { TicketsSection } from "@/components/TicketsSection";
 import { TicketsHistory } from "@/components/TicketsHistory";
 import { FilterChip } from "@/components/FilterChip";
 import { AppHeader } from "@/components/AppHeader";
-import { KeyGateScreen } from "@/components/KeyGateScreen";
 import { useKeyGate } from "@/contexts/KeyGateContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { Star, Flame, Target, Search, Loader2, Lock } from "lucide-react";
+import { ValueBetsPanel } from "@/components/ValueBetsPanel";
+import { FormAnalysisPanel } from "@/components/FormAnalysisPanel";
+import { LeagueROIPanel } from "@/components/LeagueROIPanel";
+import { TipsChat } from "@/components/TipsChat";
+import { BankrollSimulator } from "@/components/BankrollSimulator";
+import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator } from "lucide-react";
 import { Navigate } from "react-router-dom";
 
 const MARKETS = ["Chance Dupla", "S/ Empate", "Escanteios", "Cartões", "Gols", "Ambas Marcam"];
