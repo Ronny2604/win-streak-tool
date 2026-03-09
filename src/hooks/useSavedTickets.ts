@@ -34,17 +34,22 @@ export function useSavedTickets() {
 
   const saveMutation = useMutation({
     mutationFn: async (ticket: BettingTicket) => {
+      const { data: { user } } = await supabase.auth.getUser();
       const { error } = await supabase.from("saved_tickets").insert({
         name: ticket.name,
         type: ticket.type,
         selections: ticket.selections as any,
         total_odd: ticket.totalOdd,
         confidence: ticket.confidence,
-        suggested_stake: ticket.suggestedStake,
-        potential_return: ticket.potentialReturn,
-        created_by: "system",
+        suggested_stake: ticket.suggestedStake ?? null,
+        potential_return: ticket.potentialReturn ?? null,
+        result: "pending",
+        created_by: user?.id ?? "anon",
       });
-      if (error) throw error;
+      if (error) {
+        console.error("Save ticket error:", error);
+        throw new Error(error.message);
+      }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["saved-tickets"] }),
   });
