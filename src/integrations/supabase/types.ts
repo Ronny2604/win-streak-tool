@@ -50,8 +50,11 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          border_radius: string | null
           created_at: string
           display_name: string | null
+          font_family: string | null
+          font_size: string | null
           id: string
           theme_mode: string | null
           theme_preset: string | null
@@ -60,8 +63,11 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          border_radius?: string | null
           created_at?: string
           display_name?: string | null
+          font_family?: string | null
+          font_size?: string | null
           id?: string
           theme_mode?: string | null
           theme_preset?: string | null
@@ -70,8 +76,11 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          border_radius?: string | null
           created_at?: string
           display_name?: string | null
+          font_family?: string | null
+          font_size?: string | null
           id?: string
           theme_mode?: string | null
           theme_preset?: string | null
