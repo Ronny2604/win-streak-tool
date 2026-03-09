@@ -279,15 +279,29 @@ async function tryOddsApi(sportKey: string, apiKey: string): Promise<NormalizedF
 }
 
 export async function getSoccerOdds(sportKey?: string): Promise<NormalizedFixture[]> {
+  const cacheKey = `odds:${sportKey || "all"}`;
+
+  // Check cache first
+  const cached = await getCache(cacheKey);
+  if (cached && cached.length > 0) {
+    console.log(`[Cache HIT] ${cacheKey} — ${cached.length} fixtures`);
+    return cached;
+  }
+
   const apiKey = await resolveOddsApiKey();
 
   // Try Odds API first for a single league
   if (sportKey) {
     const oddsResults = await tryOddsApi(sportKey, apiKey);
-    if (oddsResults.length > 0) return oddsResults;
+    if (oddsResults.length > 0) {
+      setCache(cacheKey, oddsResults, ODDS_CACHE_TTL);
+      return oddsResults;
+    }
     // Fallback to API-Football for that specific league
     const leagueId = SPORT_KEY_TO_LEAGUE_ID[sportKey];
-    return fetchFromApiFootball(leagueId);
+    const fallback = await fetchFromApiFootball(leagueId);
+    if (fallback.length > 0) setCache(cacheKey, fallback, ODDS_CACHE_TTL);
+    return fallback;
   }
 
   // For all leagues: try Odds API for one sport key as a probe
@@ -300,16 +314,27 @@ export async function getSoccerOdds(sportKey?: string): Promise<NormalizedFixtur
     const results: NormalizedFixture[] = [];
     allResults.forEach((r) => results.push(...r));
     results.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    if (results.length > 0) setCache(cacheKey, results, ODDS_CACHE_TTL);
     return results;
   }
 
   // Odds API is out of credits — use API-Football
   const results = await fetchFromApiFootball();
   results.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  if (results.length > 0) setCache(cacheKey, results, ODDS_CACHE_TTL);
   return results;
 }
 
 export async function getLiveScores(sportKey?: string): Promise<NormalizedFixture[]> {
+  const cacheKey = `live:${sportKey || "all"}`;
+
+  // Check cache first (shorter TTL for live)
+  const cached = await getCache(cacheKey);
+  if (cached && cached.length > 0) {
+    console.log(`[Cache HIT] ${cacheKey} — ${cached.length} live`);
+    return cached;
+  }
+
   const apiKey = await resolveOddsApiKey();
 
   // Try Odds API first
@@ -338,10 +363,13 @@ export async function getLiveScores(sportKey?: string): Promise<NormalizedFixtur
     const leagueId = sportKey ? SPORT_KEY_TO_LEAGUE_ID[sportKey] : undefined;
     const live = await fetchFromApiFootball(leagueId);
     const liveOnly = live.filter((f) => f.status.short === "LIVE");
-    return liveOnly.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    liveOnly.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    if (liveOnly.length > 0) setCache(cacheKey, liveOnly, LIVE_CACHE_TTL);
+    return liveOnly;
   }
 
   results.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  if (results.length > 0) setCache(cacheKey, results, LIVE_CACHE_TTL);
   return results;
 }
 
