@@ -7,3 +7,4 @@ export { FavoritesWidget } from "./FavoritesWidget";
 export { OddsComparator } from "./OddsComparator";
 export { GamesCalendar } from "./GamesCalendar";
 export { AITicketGenerator } from "./AITicketGenerator";
+export { SurebetDetector } from "./SurebetDetector";

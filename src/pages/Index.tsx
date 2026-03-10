@@ -31,9 +31,10 @@ import {
   FavoritesWidget,
   OddsComparator,
   GamesCalendar,
-  AITicketGenerator
+  AITicketGenerator,
+  SurebetDetector
 } from "@/components/premium";
-import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot } from "lucide-react";
+import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield } from "lucide-react";
 import { Navigate } from "react-router-dom";
 
 const MARKETS = ["Chance Dupla", "S/ Empate", "Escanteios", "Cartões", "Gols", "Ambas Marcam"];
@@ -43,7 +44,7 @@ const HIGHLIGHTS = [
   { label: "TOP", icon: Target, color: "text-chart-negative" },
 ];
 
-type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai";
+type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai" | "surebet";
 
 function applyQuickFilter(fixtures: NormalizedFixture[], filter: QuickFilterType): NormalizedFixture[] {
   switch (filter) {
@@ -213,6 +214,7 @@ export default function Index() {
                 { id: "roi" as PremiumSection, icon: Trophy, label: "ROI" },
                 { id: "chat" as PremiumSection, icon: MessageCircle, label: "Chat" },
                 { id: "kelly" as PremiumSection, icon: Calculator, label: "Kelly" },
+                { id: "surebet" as PremiumSection, icon: Shield, label: "Surebet" },
               ].map(({ id, icon: Icon, label }) => (
                 <button
                   key={id}
@@ -243,6 +245,7 @@ export default function Index() {
             {premiumSection === "roi" && <LeagueROIPanel />}
             {premiumSection === "chat" && <TipsChat />}
             {premiumSection === "kelly" && <BankrollSimulator />}
+            {premiumSection === "surebet" && fixturesData && <SurebetDetector fixtures={fixturesData} />}
           </div>
         ) : (<>
         {/* Stats Summary */}
