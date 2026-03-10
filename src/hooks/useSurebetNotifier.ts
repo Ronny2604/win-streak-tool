@@ -83,7 +83,7 @@ export function useSurebetNotifier(fixtures: NormalizedFixture[] | undefined) {
     for (const sb of newSurebets) {
       const matchName = `${sb.fixture.teams.home.name} vs ${sb.fixture.teams.away.name}`;
       toast.success(`🚨 SUREBET: ${matchName}`, {
-        description: `Lucro garantido de +${sb.profitPercent}% | Odds: ${sb.bestOdds.home.toFixed(2)} / ${sb.bestOdds.draw.toFixed(2)} / ${sb.bestOdds.away.toFixed(2)}`,
+        description: `Lucro garantido de +${sb.profitPercent}% | Odds: ${sb.bestOdds.home.odd.toFixed(2)} / ${sb.bestOdds.draw.odd.toFixed(2)} / ${sb.bestOdds.away.odd.toFixed(2)}`,
         duration: 15000,
         action: {
           label: "Ver detalhes",

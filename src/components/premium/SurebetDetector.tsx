@@ -272,11 +272,16 @@ function OpportunityCard({
   );
 }
 
-function OddCell({ label, odd, stake }: { label: string; odd: number; stake: number }) {
+function OddCell({ label, info, stake }: { label: string; info: BestOddInfo; stake: number }) {
   return (
     <div className="rounded-lg bg-background border border-border p-2 text-center">
       <p className="text-[9px] text-muted-foreground mb-0.5">{label}</p>
-      <p className="text-sm font-bold text-neon">{odd.toFixed(2)}</p>
+      <p className="text-sm font-bold text-neon">{info.odd.toFixed(2)}</p>
+      {info.bookmaker && info.bookmaker !== "—" && (
+        <p className="text-[8px] font-semibold text-accent-foreground truncate mt-0.5" title={info.bookmaker}>
+          🏪 {info.bookmaker}
+        </p>
+      )}
       <p className="text-[10px] text-muted-foreground mt-0.5">
         R$ {stake.toFixed(2).replace(".", ",")}
       </p>
