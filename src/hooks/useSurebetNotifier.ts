@@ -14,13 +14,12 @@ function requestNotificationPermission() {
 function sendBrowserNotification(title: string, body: string) {
   if ("Notification" in window && Notification.permission === "granted") {
     try {
-      new Notification(title, {
+      const options: NotificationOptions & Record<string, unknown> = {
         body,
         icon: "/favicon.ico",
-        badge: "/favicon.ico",
         tag: "surebet-alert",
-        renotify: true,
-      });
+      };
+      new Notification(title, options);
     } catch {
       // Notification constructor may fail on some mobile browsers
     }
