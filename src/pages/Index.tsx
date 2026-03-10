@@ -214,6 +214,7 @@ export default function Index() {
                 { id: "roi" as PremiumSection, icon: Trophy, label: "ROI" },
                 { id: "chat" as PremiumSection, icon: MessageCircle, label: "Chat" },
                 { id: "kelly" as PremiumSection, icon: Calculator, label: "Kelly" },
+                { id: "surebet" as PremiumSection, icon: Shield, label: "Surebet" },
               ].map(({ id, icon: Icon, label }) => (
                 <button
                   key={id}
