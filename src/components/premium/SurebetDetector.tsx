@@ -231,11 +231,16 @@ function OpportunityCard({
 
       {expanded && (
         <div className="px-3.5 pb-3.5 space-y-3 border-t border-border pt-3">
-          {/* Odds */}
+          {/* Bookmaker count */}
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <span>📊 Analisando {opp.bookmakerCount} casas de apostas</span>
+          </div>
+
+          {/* Odds with bookmaker names */}
           <div className="grid grid-cols-3 gap-2">
-            <OddCell label="Casa" odd={opp.bestOdds.home} stake={opp.stakes.home} />
-            <OddCell label="Empate" odd={opp.bestOdds.draw} stake={opp.stakes.draw} />
-            <OddCell label="Fora" odd={opp.bestOdds.away} stake={opp.stakes.away} />
+            <OddCell label="Casa" info={opp.bestOdds.home} stake={opp.stakes.home} />
+            <OddCell label="Empate" info={opp.bestOdds.draw} stake={opp.stakes.draw} />
+            <OddCell label="Fora" info={opp.bestOdds.away} stake={opp.stakes.away} />
           </div>
 
           {/* Return info */}
