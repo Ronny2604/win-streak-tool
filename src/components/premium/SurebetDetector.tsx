@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { NormalizedFixture } from "@/lib/odds-api";
-import { detectSurebets, SurebetOpportunity } from "@/lib/surebet-detector";
+import { detectSurebets, SurebetOpportunity, BestOddInfo } from "@/lib/surebet-detector";
 import {
   Shield,
   AlertTriangle,
