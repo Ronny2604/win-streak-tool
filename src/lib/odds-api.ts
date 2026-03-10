@@ -26,6 +26,13 @@ interface Market {
   outcomes: { name: string; price: number }[];
 }
 
+export interface BookmakerOdds {
+  bookmaker: string;
+  home: number;
+  draw: number;
+  away: number;
+}
+
 export interface NormalizedFixture {
   id: string;
   date: string;
@@ -37,6 +44,7 @@ export interface NormalizedFixture {
   };
   goals: { home: number | null; away: number | null };
   odds?: { home: string; draw: string; away: string } | null;
+  bookmakerOdds?: BookmakerOdds[];
 }
 
 const SPORT_LOGOS: Record<string, string> = {
