@@ -36,6 +36,7 @@ import {
 } from "@/components/premium";
 import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield } from "lucide-react";
 import { Navigate } from "react-router-dom";
+import { useSurebetNotifier } from "@/hooks/useSurebetNotifier";
 
 const MARKETS = ["Chance Dupla", "S/ Empate", "Escanteios", "Cartões", "Gols", "Ambas Marcam"];
 const HIGHLIGHTS = [
@@ -97,6 +98,9 @@ export default function Index() {
     queryFn: () => getSoccerOdds(selectedLeague),
     staleTime: 60000,
   });
+
+  // Monitor for surebets and notify
+  useSurebetNotifier(fixturesData);
 
   const { data: liveData, isLoading: loadingLive } = useQuery({
     queryKey: ["live-fixtures"],

@@ -54,7 +54,7 @@ export function SurebetDetector({ fixtures }: SurebetDetectorProps) {
   const lowMargin = opportunities.filter((o) => o.rating === "low-margin");
 
   return (
-    <div className="space-y-4">
+    <div id="surebet-panel" className="space-y-4">
       {/* Header */}
       <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
         <div className="flex items-center gap-2.5">
