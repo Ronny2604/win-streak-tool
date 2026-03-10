@@ -214,6 +214,7 @@ function normalizeOddsEvent(event: OddsEvent, sportKey: string): NormalizedFixtu
       away: awayScore ? parseInt(awayScore.score) : null,
     },
     odds: extractOdds(event.bookmakers),
+    bookmakerOdds: extractAllBookmakerOdds(event),
   };
 }
 
