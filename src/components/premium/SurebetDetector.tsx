@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { NormalizedFixture } from "@/lib/odds-api";
-import { detectSurebets, SurebetOpportunity } from "@/lib/surebet-detector";
+import { detectSurebets, SurebetOpportunity, BestOddInfo } from "@/lib/surebet-detector";
 import {
   Shield,
   AlertTriangle,
@@ -231,11 +231,16 @@ function OpportunityCard({
 
       {expanded && (
         <div className="px-3.5 pb-3.5 space-y-3 border-t border-border pt-3">
-          {/* Odds */}
+          {/* Bookmaker count */}
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <span>📊 Analisando {opp.bookmakerCount} casas de apostas</span>
+          </div>
+
+          {/* Odds with bookmaker names */}
           <div className="grid grid-cols-3 gap-2">
-            <OddCell label="Casa" odd={opp.bestOdds.home} stake={opp.stakes.home} />
-            <OddCell label="Empate" odd={opp.bestOdds.draw} stake={opp.stakes.draw} />
-            <OddCell label="Fora" odd={opp.bestOdds.away} stake={opp.stakes.away} />
+            <OddCell label="Casa" info={opp.bestOdds.home} stake={opp.stakes.home} />
+            <OddCell label="Empate" info={opp.bestOdds.draw} stake={opp.stakes.draw} />
+            <OddCell label="Fora" info={opp.bestOdds.away} stake={opp.stakes.away} />
           </div>
 
           {/* Return info */}
@@ -267,11 +272,16 @@ function OpportunityCard({
   );
 }
 
-function OddCell({ label, odd, stake }: { label: string; odd: number; stake: number }) {
+function OddCell({ label, info, stake }: { label: string; info: BestOddInfo; stake: number }) {
   return (
     <div className="rounded-lg bg-background border border-border p-2 text-center">
       <p className="text-[9px] text-muted-foreground mb-0.5">{label}</p>
-      <p className="text-sm font-bold text-neon">{odd.toFixed(2)}</p>
+      <p className="text-sm font-bold text-neon">{info.odd.toFixed(2)}</p>
+      {info.bookmaker && info.bookmaker !== "—" && (
+        <p className="text-[8px] font-semibold text-accent-foreground truncate mt-0.5" title={info.bookmaker}>
+          🏪 {info.bookmaker}
+        </p>
+      )}
       <p className="text-[10px] text-muted-foreground mt-0.5">
         R$ {stake.toFixed(2).replace(".", ",")}
       </p>

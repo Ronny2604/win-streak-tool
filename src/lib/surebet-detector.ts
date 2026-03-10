@@ -1,13 +1,18 @@
-import { NormalizedFixture } from "./odds-api";
+import { NormalizedFixture, BookmakerOdds } from "./odds-api";
+
+export interface BestOddInfo {
+  odd: number;
+  bookmaker: string;
+}
 
 export interface SurebetOpportunity {
   fixture: NormalizedFixture;
-  margin: number; // negative margin = surebet (profit %)
+  margin: number;
   profitPercent: number;
   bestOdds: {
-    home: number;
-    draw: number;
-    away: number;
+    home: BestOddInfo;
+    draw: BestOddInfo;
+    away: BestOddInfo;
   };
   stakes: {
     home: number;
@@ -17,28 +22,14 @@ export interface SurebetOpportunity {
   totalStake: number;
   guaranteedReturn: number;
   rating: "surebet" | "near-surebet" | "low-margin";
+  bookmakerCount: number;
 }
 
-function parseOdd(val: string | undefined): number {
-  if (!val) return 0;
-  const n = parseFloat(val);
-  return isNaN(n) || n <= 1 ? 0 : n;
-}
-
-/**
- * Calculates the margin for a 1X2 market.
- * margin < 0 means surebet (arbitrage opportunity)
- * margin = 0 means fair odds
- * margin > 0 means bookmaker edge
- */
 function calculateMargin(home: number, draw: number, away: number): number {
   if (home <= 1 || draw <= 1 || away <= 1) return Infinity;
   return (1 / home + 1 / draw + 1 / away - 1) * 100;
 }
 
-/**
- * Calculates optimal stakes for a given bankroll to guarantee profit
- */
 function calculateStakes(
   home: number,
   draw: number,
@@ -53,6 +44,24 @@ function calculateStakes(
   };
 }
 
+function findBestOdds(bookmakers: BookmakerOdds[]): {
+  home: BestOddInfo;
+  draw: BestOddInfo;
+  away: BestOddInfo;
+} {
+  let bestHome: BestOddInfo = { odd: 0, bookmaker: "" };
+  let bestDraw: BestOddInfo = { odd: 0, bookmaker: "" };
+  let bestAway: BestOddInfo = { odd: 0, bookmaker: "" };
+
+  for (const bk of bookmakers) {
+    if (bk.home > bestHome.odd) bestHome = { odd: bk.home, bookmaker: bk.bookmaker };
+    if (bk.draw > bestDraw.odd) bestDraw = { odd: bk.draw, bookmaker: bk.bookmaker };
+    if (bk.away > bestAway.odd) bestAway = { odd: bk.away, bookmaker: bk.bookmaker };
+  }
+
+  return { home: bestHome, draw: bestDraw, away: bestAway };
+}
+
 export function detectSurebets(
   fixtures: NormalizedFixture[],
   bankroll: number = 100
@@ -60,46 +69,78 @@ export function detectSurebets(
   const opportunities: SurebetOpportunity[] = [];
 
   for (const fixture of fixtures) {
-    if (!fixture.odds) continue;
+    const bookmakers = fixture.bookmakerOdds;
 
-    const home = parseOdd(fixture.odds.home);
-    const draw = parseOdd(fixture.odds.draw);
-    const away = parseOdd(fixture.odds.away);
+    // Use cross-bookmaker analysis if available (2+ bookmakers)
+    if (bookmakers && bookmakers.length >= 2) {
+      const best = findBestOdds(bookmakers);
+      if (best.home.odd <= 1 || best.draw.odd <= 1 || best.away.odd <= 1) continue;
 
-    if (home === 0 || draw === 0 || away === 0) continue;
+      const margin = calculateMargin(best.home.odd, best.draw.odd, best.away.odd);
+      if (margin > 5) continue;
 
-    const margin = calculateMargin(home, draw, away);
-    if (margin > 5) continue; // skip high-margin games
+      const profitPercent = margin < 0 ? Math.abs(margin) : 0;
+      const stakes = calculateStakes(best.home.odd, best.draw.odd, best.away.odd, bankroll);
+      const guaranteedReturn = margin < 0
+        ? Math.round((bankroll * (1 + profitPercent / 100)) * 100) / 100
+        : Math.round((bankroll * (1 - margin / 100)) * 100) / 100;
 
-    const profitPercent = margin < 0 ? Math.abs(margin) : 0;
-    const stakes = calculateStakes(home, draw, away, bankroll);
-    const guaranteedReturn = margin < 0
-      ? Math.round((bankroll * (1 + profitPercent / 100)) * 100) / 100
-      : Math.round((bankroll * (1 - margin / 100)) * 100) / 100;
+      let rating: SurebetOpportunity["rating"];
+      if (margin < 0) rating = "surebet";
+      else if (margin < 2) rating = "near-surebet";
+      else rating = "low-margin";
 
-    let rating: SurebetOpportunity["rating"];
-    if (margin < 0) {
-      rating = "surebet";
-    } else if (margin < 2) {
-      rating = "near-surebet";
-    } else {
-      rating = "low-margin";
+      opportunities.push({
+        fixture,
+        margin: Math.round(margin * 100) / 100,
+        profitPercent: Math.round(profitPercent * 100) / 100,
+        bestOdds: best,
+        stakes,
+        totalStake: bankroll,
+        guaranteedReturn,
+        rating,
+        bookmakerCount: bookmakers.length,
+      });
+    } else if (fixture.odds) {
+      // Fallback: single bookmaker odds
+      const home = parseFloat(fixture.odds.home);
+      const draw = parseFloat(fixture.odds.draw);
+      const away = parseFloat(fixture.odds.away);
+
+      if (isNaN(home) || isNaN(draw) || isNaN(away) || home <= 1 || draw <= 1 || away <= 1) continue;
+
+      const margin = calculateMargin(home, draw, away);
+      if (margin > 5) continue;
+
+      const profitPercent = margin < 0 ? Math.abs(margin) : 0;
+      const stakes = calculateStakes(home, draw, away, bankroll);
+      const guaranteedReturn = margin < 0
+        ? Math.round((bankroll * (1 + profitPercent / 100)) * 100) / 100
+        : Math.round((bankroll * (1 - margin / 100)) * 100) / 100;
+
+      let rating: SurebetOpportunity["rating"];
+      if (margin < 0) rating = "surebet";
+      else if (margin < 2) rating = "near-surebet";
+      else rating = "low-margin";
+
+      opportunities.push({
+        fixture,
+        margin: Math.round(margin * 100) / 100,
+        profitPercent: Math.round(profitPercent * 100) / 100,
+        bestOdds: {
+          home: { odd: home, bookmaker: "—" },
+          draw: { odd: draw, bookmaker: "—" },
+          away: { odd: away, bookmaker: "—" },
+        },
+        stakes,
+        totalStake: bankroll,
+        guaranteedReturn,
+        rating,
+        bookmakerCount: 1,
+      });
     }
-
-    opportunities.push({
-      fixture,
-      margin: Math.round(margin * 100) / 100,
-      profitPercent: Math.round(profitPercent * 100) / 100,
-      bestOdds: { home, draw, away },
-      stakes,
-      totalStake: bankroll,
-      guaranteedReturn,
-      rating,
-    });
   }
 
-  // Sort: surebets first, then by margin ascending
   opportunities.sort((a, b) => a.margin - b.margin);
-
   return opportunities;
 }

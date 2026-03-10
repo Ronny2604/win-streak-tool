@@ -26,6 +26,13 @@ interface Market {
   outcomes: { name: string; price: number }[];
 }
 
+export interface BookmakerOdds {
+  bookmaker: string;
+  home: number;
+  draw: number;
+  away: number;
+}
+
 export interface NormalizedFixture {
   id: string;
   date: string;
@@ -37,6 +44,7 @@ export interface NormalizedFixture {
   };
   goals: { home: number | null; away: number | null };
   odds?: { home: string; draw: string; away: string } | null;
+  bookmakerOdds?: BookmakerOdds[];
 }
 
 const SPORT_LOGOS: Record<string, string> = {
@@ -152,6 +160,31 @@ function extractOdds(bookmakers?: Bookmaker[]): { home: string; draw: string; aw
   };
 }
 
+function extractAllBookmakerOdds(event: OddsEvent): BookmakerOdds[] {
+  if (!event.bookmakers || event.bookmakers.length === 0) return [];
+  const results: BookmakerOdds[] = [];
+
+  for (const bk of event.bookmakers) {
+    const h2h = bk.markets?.find((m) => m.key === "h2h");
+    if (!h2h || h2h.outcomes.length < 3) continue;
+
+    const homeOutcome = h2h.outcomes.find((o) => o.name === event.home_team);
+    const drawOutcome = h2h.outcomes.find((o) => o.name === "Draw");
+    const awayOutcome = h2h.outcomes.find((o) => o.name === event.away_team);
+
+    if (homeOutcome && drawOutcome && awayOutcome) {
+      results.push({
+        bookmaker: bk.title,
+        home: homeOutcome.price,
+        draw: drawOutcome.price,
+        away: awayOutcome.price,
+      });
+    }
+  }
+
+  return results;
+}
+
 function normalizeOddsEvent(event: OddsEvent, sportKey: string): NormalizedFixture {
   const homeScore = event.scores?.find((s) => s.name === event.home_team);
   const awayScore = event.scores?.find((s) => s.name === event.away_team);
@@ -181,6 +214,7 @@ function normalizeOddsEvent(event: OddsEvent, sportKey: string): NormalizedFixtu
       away: awayScore ? parseInt(awayScore.score) : null,
     },
     odds: extractOdds(event.bookmakers),
+    bookmakerOdds: extractAllBookmakerOdds(event),
   };
 }
 
