@@ -99,6 +99,9 @@ export default function Index() {
     staleTime: 60000,
   });
 
+  // Monitor for surebets and notify
+  useSurebetNotifier(fixturesData);
+
   const { data: liveData, isLoading: loadingLive } = useQuery({
     queryKey: ["live-fixtures"],
     queryFn: () => getLiveScores(),
