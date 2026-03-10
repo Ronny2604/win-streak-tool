@@ -245,6 +245,7 @@ export default function Index() {
             {premiumSection === "roi" && <LeagueROIPanel />}
             {premiumSection === "chat" && <TipsChat />}
             {premiumSection === "kelly" && <BankrollSimulator />}
+            {premiumSection === "surebet" && fixturesData && <SurebetDetector fixtures={fixturesData} />}
           </div>
         ) : (<>
         {/* Stats Summary */}
