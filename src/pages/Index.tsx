@@ -31,7 +31,8 @@ import {
   FavoritesWidget,
   OddsComparator,
   GamesCalendar,
-  AITicketGenerator
+  AITicketGenerator,
+  SurebetDetector
 } from "@/components/premium";
 import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot } from "lucide-react";
 import { Navigate } from "react-router-dom";
