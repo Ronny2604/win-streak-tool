@@ -1,7 +1,8 @@
-import { Zap, Ticket, Trophy, Radio, Star } from "lucide-react";
+import { Zap, Ticket, Trophy, Radio, Star, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
-type Tab = "futebol" | "live" | "bilhetes" | "historico" | "premium";
+type Tab = "futebol" | "live" | "bilhetes" | "historico" | "premium" | "perfil";
 
 interface BottomNavProps {
   activeTab: Tab;
@@ -14,6 +15,7 @@ const tabs = [
   { id: "live" as Tab, label: "Ao Vivo", icon: Radio, proOnly: true },
   { id: "bilhetes" as Tab, label: "Bilhetes", icon: Ticket },
   { id: "premium" as Tab, label: "Premium", icon: Star, proOnly: true },
+  { id: "perfil" as Tab, label: "Perfil", icon: User },
 ];
 
 export function BottomNav({ activeTab, onTabChange, isPro }: BottomNavProps) {
