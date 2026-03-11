@@ -1,6 +1,6 @@
-import { BarChart3, Shield, Sun, Moon, LogIn, LogOut, KeyRound, Palette } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { BarChart3, Shield, Sun, Moon, LogIn, LogOut, KeyRound, Palette, Bell } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKeyGate } from "@/contexts/KeyGateContext";
