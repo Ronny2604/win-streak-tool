@@ -55,6 +55,30 @@ export function AppHeader() {
             )}
           </div>
           <div className="flex items-center gap-1">
+            {/* Surebet notification bell */}
+            <button
+              onClick={() => {
+                const el = document.getElementById("surebet-panel");
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth" });
+                } else {
+                  navigate("/");
+                }
+              }}
+              className={`relative rounded-lg p-2 transition-all ${
+                surebetCount > 0
+                  ? "text-primary hover:bg-primary/10"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              } ${surebetPulse ? "animate-bounce" : ""}`}
+              title={surebetCount > 0 ? `${surebetCount} surebet(s) ativa(s)` : "Sem surebets no momento"}
+            >
+              <Bell className={`h-4 w-4 ${surebetCount > 0 ? "fill-primary" : ""}`} />
+              {surebetCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-chart-negative text-[9px] font-bold text-primary-foreground animate-pulse-subtle">
+                  {surebetCount}
+                </span>
+              )}
+            </button>
             {keySession.valid && (
               <span className="hidden sm:block text-xs text-muted-foreground mr-2 truncate max-w-[120px]">
                 {keySession.username}
