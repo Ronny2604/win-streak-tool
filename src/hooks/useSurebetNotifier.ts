@@ -74,6 +74,9 @@ export function useSurebetNotifier(fixtures: NormalizedFixture[] | undefined) {
     const currentIds = new Set(realSurebets.map((s) => s.fixture.id));
     previousSurebetIds.current = currentIds;
 
+    // Dispatch event for header notification bell
+    window.dispatchEvent(new CustomEvent("surebet-update", { detail: { count: realSurebets.length } }));
+
     if (newSurebets.length === 0) return;
 
     // Play alert sound
