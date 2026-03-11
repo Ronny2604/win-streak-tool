@@ -160,11 +160,44 @@ function extractOdds(bookmakers?: Bookmaker[]): { home: string; draw: string; aw
   };
 }
 
+// Casas de apostas que operam no Brasil (keys da The Odds API)
+const BRAZILIAN_BOOKMAKER_KEYS = new Set([
+  "betfair",
+  "betfair_ex_eu",
+  "sport888",
+  "bet365",
+  "pinnacle",
+  "1xbet",
+  "betano",
+  "sportingbet",
+  "superbet",
+  "rivalo",
+  "betway",
+  "sbobet",
+  "marathonbet",
+  "williamhill",
+  "unibet",
+  "bwin",
+  "pixbet",
+  "stakes",
+  "novibet",
+  "parimatch",
+  "estrelabet",
+  "f12bet",
+  "galera_bet",
+  "betsson",
+  "mrjack",
+  "kto",
+]);
+
 function extractAllBookmakerOdds(event: OddsEvent): BookmakerOdds[] {
   if (!event.bookmakers || event.bookmakers.length === 0) return [];
   const results: BookmakerOdds[] = [];
 
   for (const bk of event.bookmakers) {
+    // Filtrar apenas casas brasileiras
+    if (!BRAZILIAN_BOOKMAKER_KEYS.has(bk.key)) continue;
+
     const h2h = bk.markets?.find((m) => m.key === "h2h");
     if (!h2h || h2h.outcomes.length < 3) continue;
 
