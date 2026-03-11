@@ -11,7 +11,26 @@ export function AppHeader() {
   const { theme, toggleTheme } = useTheme();
   const { user, isAdmin, signOut } = useAuth();
   const { session: keySession, logout: keyLogout } = useKeyGate();
+  const navigate = useNavigate();
   const [showPersonalization, setShowPersonalization] = useState(false);
+  const [surebetCount, setSurebetCount] = useState(0);
+  const [surebetPulse, setSurebetPulse] = useState(false);
+  const prevCountRef = useRef(0);
+
+  // Listen for surebet events from the notifier
+  useEffect(() => {
+    const handler = (e: CustomEvent) => {
+      const count = e.detail?.count || 0;
+      setSurebetCount(count);
+      if (count > prevCountRef.current) {
+        setSurebetPulse(true);
+        setTimeout(() => setSurebetPulse(false), 3000);
+      }
+      prevCountRef.current = count;
+    };
+    window.addEventListener("surebet-update" as any, handler as any);
+    return () => window.removeEventListener("surebet-update" as any, handler as any);
+  }, []);
 
   return (
     <>
