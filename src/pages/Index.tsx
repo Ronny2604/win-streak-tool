@@ -136,7 +136,7 @@ export default function Index() {
     );
   }
 
-  if (!session.valid && !isAdmin) return <Navigate to="/login" replace />;
+  // Free users can access basic features - no redirect needed
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-4">
