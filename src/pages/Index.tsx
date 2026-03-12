@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSoccerOdds, getLiveScores, LEAGUES, type NormalizedFixture } from "@/lib/odds-api";
 import { MatchCard } from "@/components/MatchCard";
