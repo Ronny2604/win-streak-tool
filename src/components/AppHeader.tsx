@@ -120,7 +120,11 @@ export function AppHeader() {
             )}
             {user ? (
               <button
-                onClick={signOut}
+                onClick={async () => {
+                  keyLogout();
+                  await signOut();
+                  navigate("/");
+                }}
                 className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
                 title="Sair"
               >
