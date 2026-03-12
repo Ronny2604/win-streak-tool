@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useKeyGate } from "@/contexts/KeyGateContext";
 import { PersonalizationPanel } from "@/components/PersonalizationPanel";
 import { VipBadge } from "@/components/VipBadge";
+import { toast } from "sonner";
 
 export function AppHeader() {
   const { theme, toggleTheme } = useTheme();
@@ -58,11 +59,22 @@ export function AppHeader() {
             {/* Surebet notification bell */}
             <button
               onClick={() => {
-                const el = document.getElementById("surebet-panel");
-                if (el) {
-                  el.scrollIntoView({ behavior: "smooth" });
+                if (surebetCount > 0) {
+                  // Dispatch event to switch to premium tab and scroll to surebet
+                  window.dispatchEvent(new CustomEvent("navigate-to-surebet"));
+                  const el = document.getElementById("surebet-panel");
+                  if (el) {
+                    el.scrollIntoView({ behavior: "smooth" });
+                  } else {
+                    navigate("/");
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent("navigate-to-surebet"));
+                    }, 500);
+                  }
                 } else {
-                  navigate("/");
+                  toast.info("Nenhuma surebet ativa no momento", {
+                    description: "Você será notificado quando uma oportunidade surgir.",
+                  });
                 }
               }}
               className={`relative rounded-lg p-2 transition-all ${
@@ -108,7 +120,11 @@ export function AppHeader() {
             )}
             {user ? (
               <button
-                onClick={signOut}
+                onClick={async () => {
+                  keyLogout();
+                  await signOut();
+                  navigate("/");
+                }}
                 className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
                 title="Sair"
               >

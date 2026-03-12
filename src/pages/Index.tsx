@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSoccerOdds, getLiveScores, LEAGUES, type NormalizedFixture } from "@/lib/odds-api";
 import { MatchCard } from "@/components/MatchCard";
@@ -101,6 +101,21 @@ export default function Index() {
 
   // Monitor for surebets and notify
   useSurebetNotifier(fixturesData);
+
+  // Listen for navigate-to-surebet event from notification bell
+  useEffect(() => {
+    const handler = () => {
+      if (isPro) {
+        setActiveTab("premium");
+        setPremiumSection("surebet");
+        setTimeout(() => {
+          document.getElementById("surebet-panel")?.scrollIntoView({ behavior: "smooth" });
+        }, 300);
+      }
+    };
+    window.addEventListener("navigate-to-surebet", handler);
+    return () => window.removeEventListener("navigate-to-surebet", handler);
+  }, [isPro]);
 
   const { data: liveData, isLoading: loadingLive } = useQuery({
     queryKey: ["live-fixtures"],
