@@ -103,28 +103,13 @@ export default function ProfilePage() {
 
         {/* Premium Features */}
         {!isPro && (
-          <div className="rounded-2xl bg-card border border-border p-6 space-y-4">
-            <div className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-badge-star" />
-              <h3 className="text-sm font-bold text-foreground">Recursos Premium</h3>
-            </div>
-            <div className="space-y-2">
-              {[
-                "Jogos ao vivo em tempo real",
-                "Odds detalhadas de todas as casas",
-                "Detector de Surebets",
-                "Gerador de bilhetes com IA",
-                "Dashboard de performance",
-                "Histórico financeiro e metas",
-                "Todos os jogos sem limite",
-              ].map((feature) => (
-                <div key={feature} className="flex items-center gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <span className="text-xs text-muted-foreground">{feature}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <button
+            onClick={() => navigate("/premium")}
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-all hover:opacity-90"
+          >
+            <Crown className="h-4 w-4" />
+            Ver Planos Premium
+          </button>
         )}
 
         {/* Activate Key */}
