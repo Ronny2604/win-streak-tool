@@ -105,7 +105,7 @@ export default function ProfilePage() {
         {!isPro && (
           <button
             onClick={() => navigate("/premium")}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-yellow-400 py-3.5 text-sm font-bold text-primary-foreground transition-all hover:opacity-90"
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-all hover:opacity-90"
           >
             <Crown className="h-4 w-4" />
             Ver Planos Premium
