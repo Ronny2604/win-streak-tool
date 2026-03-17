@@ -10,9 +10,11 @@ interface BottomNavProps {
   isPro: boolean;
 }
 
+const NBAIcon = () => <span className="text-sm leading-none">🏀</span>;
+
 const tabs = [
-  { id: "futebol" as Tab, label: "Jogos", icon: Trophy },
-  { id: "live" as Tab, label: "Ao Vivo", icon: Radio, proOnly: true },
+  { id: "futebol" as Tab, label: "Futebol", icon: Trophy },
+  { id: "nba" as Tab, label: "NBA", icon: Trophy, customIcon: true },
   { id: "bilhetes" as Tab, label: "Bilhetes", icon: Ticket },
   { id: "premium" as Tab, label: "Premium", icon: Star, proOnly: true },
   { id: "perfil" as Tab, label: "Perfil", icon: User },
