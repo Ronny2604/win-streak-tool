@@ -34,6 +34,7 @@ import {
   AITicketGenerator,
   SurebetDetector
 } from "@/components/premium";
+import { NBASection } from "@/components/nba/NBASection";
 import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { useSurebetNotifier } from "@/hooks/useSurebetNotifier";
