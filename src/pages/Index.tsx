@@ -213,6 +213,8 @@ export default function Index() {
 
         {activeTab === "historico" ? (
           <TicketsHistory onBack={() => setActiveTab("bilhetes")} />
+        ) : activeTab === "nba" ? (
+          <NBASection />
         ) : activeTab === "bilhetes" ? (
           <TicketsSection fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} onOpenHistory={() => setActiveTab("historico")} />
         ) : activeTab === "premium" ? (
