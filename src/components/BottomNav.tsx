@@ -37,7 +37,7 @@ export function BottomNav({ activeTab, onTabChange, isPro }: BottomNavProps) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-lg md:hidden safe-area-bottom">
       <div className="flex items-center justify-around px-2 py-1">
-        {tabs.map(({ id, label, icon: Icon, proOnly }) => {
+      {tabs.map(({ id, label, icon: Icon, proOnly, customIcon }) => {
           const disabled = proOnly && !isPro;
           const active = activeTab === id;
           return (
@@ -46,14 +46,14 @@ export function BottomNav({ activeTab, onTabChange, isPro }: BottomNavProps) {
               onClick={() => !disabled && handleTabChange(id)}
               disabled={disabled}
               className={cn(
-                "flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all min-w-[60px]",
+                "flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all min-w-[52px]",
                 active && "text-neon",
                 !active && !disabled && "text-muted-foreground",
                 disabled && "text-muted-foreground/30 cursor-not-allowed"
               )}
             >
               <div className="relative">
-                <Icon className={cn("h-5 w-5", active && "drop-shadow-[0_0_6px_hsl(var(--neon)/0.5)]")} />
+                {customIcon ? <NBAIcon /> : <Icon className={cn("h-5 w-5", active && "drop-shadow-[0_0_6px_hsl(var(--neon)/0.5)]")} />}
                 {id === "live" && !disabled && (
                   <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-chart-negative animate-pulse-neon" />
                 )}
