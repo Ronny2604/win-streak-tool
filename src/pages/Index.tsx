@@ -34,6 +34,7 @@ import {
   AITicketGenerator,
   SurebetDetector
 } from "@/components/premium";
+import { NBASection } from "@/components/nba/NBASection";
 import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { useSurebetNotifier } from "@/hooks/useSurebetNotifier";
@@ -84,7 +85,7 @@ export default function Index() {
   const { isAdmin, loading: authLoading } = useAuth();
   const isPro = isAdmin || session.plan === "pro";
   const LITE_LIMIT = 5;
-  const [activeTab, setActiveTab] = useState<"futebol" | "live" | "bilhetes" | "historico" | "premium" | "perfil">("futebol");
+  const [activeTab, setActiveTab] = useState<"futebol" | "nba" | "live" | "bilhetes" | "historico" | "premium" | "perfil">("futebol");
   const [premiumSection, setPremiumSection] = useState<PremiumSection>("dashboard");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
@@ -168,7 +169,17 @@ export default function Index() {
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            Futebol
+            ⚽ Futebol
+          </button>
+          <button
+            onClick={() => setActiveTab("nba")}
+            className={`pb-2 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
+              activeTab === "nba"
+                ? "border-neon text-neon"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            🏀 NBA
           </button>
           <button
             onClick={() => isPro && setActiveTab("live")}
@@ -212,6 +223,8 @@ export default function Index() {
 
         {activeTab === "historico" ? (
           <TicketsHistory onBack={() => setActiveTab("bilhetes")} />
+        ) : activeTab === "nba" ? (
+          <NBASection />
         ) : activeTab === "bilhetes" ? (
           <TicketsSection fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} onOpenHistory={() => setActiveTab("historico")} />
         ) : activeTab === "premium" ? (
