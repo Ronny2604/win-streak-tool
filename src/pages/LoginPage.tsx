@@ -24,15 +24,28 @@ export default function LoginPage() {
     if (isSignUp) {
       const { error } = await signUp(email, password, displayName);
       if (error) {
-        toast.error(error.message);
+        toast.error("Erro ao criar conta", {
+          description: error.message.includes("already registered")
+            ? "Este email já está cadastrado. Tente fazer login."
+            : error.message,
+        });
       } else {
-        toast.success("Conta criada! Verifique seu email para confirmar.");
+        toast.success("Conta criada com sucesso! 🎉", {
+          description: "Verifique seu email para confirmar o cadastro.",
+          duration: 6000,
+        });
       }
     } else {
       const { error } = await signIn(email, password);
       if (error) {
-        toast.error("Email ou senha incorretos");
+        toast.error("Falha no login", {
+          description: "Email ou senha incorretos. Tente novamente.",
+        });
       } else {
+        toast.success("Bem-vindo de volta! 👋", {
+          description: "Login realizado com sucesso.",
+          duration: 3000,
+        });
         navigate("/");
       }
     }
@@ -48,9 +61,14 @@ export default function LoginPage() {
     });
 
     if (error) {
-      toast.error("Erro ao enviar email: " + error.message);
+      toast.error("Erro ao recuperar senha", {
+        description: error.message,
+      });
     } else {
-      toast.success("Email enviado! Verifique sua caixa de entrada.");
+      toast.success("Email enviado! 📧", {
+        description: "Verifique sua caixa de entrada e spam para o link de recuperação.",
+        duration: 6000,
+      });
       setIsForgotPassword(false);
     }
     setLoading(false);

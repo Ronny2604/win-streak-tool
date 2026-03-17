@@ -44,6 +44,10 @@ export default function ProfilePage() {
   const handleSignOut = async () => {
     keyLogout();
     await signOut();
+    toast.success("Até logo! 👋", {
+      description: "Você saiu da sua conta com sucesso.",
+      duration: 3000,
+    });
     navigate("/");
   };
 

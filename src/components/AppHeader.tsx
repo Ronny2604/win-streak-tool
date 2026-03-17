@@ -123,6 +123,10 @@ export function AppHeader() {
                 onClick={async () => {
                   keyLogout();
                   await signOut();
+                  toast.success("Até logo! 👋", {
+                    description: "Você saiu da sua conta com sucesso.",
+                    duration: 3000,
+                  });
                   navigate("/");
                 }}
                 className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
