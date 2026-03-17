@@ -85,7 +85,7 @@ export default function Index() {
   const { isAdmin, loading: authLoading } = useAuth();
   const isPro = isAdmin || session.plan === "pro";
   const LITE_LIMIT = 5;
-  const [activeTab, setActiveTab] = useState<"futebol" | "live" | "bilhetes" | "historico" | "premium" | "perfil">("futebol");
+  const [activeTab, setActiveTab] = useState<"futebol" | "nba" | "live" | "bilhetes" | "historico" | "premium" | "perfil">("futebol");
   const [premiumSection, setPremiumSection] = useState<PremiumSection>("dashboard");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
