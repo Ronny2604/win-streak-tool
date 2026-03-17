@@ -61,9 +61,14 @@ export default function LoginPage() {
     });
 
     if (error) {
-      toast.error("Erro ao enviar email: " + error.message);
+      toast.error("Erro ao recuperar senha", {
+        description: error.message,
+      });
     } else {
-      toast.success("Email enviado! Verifique sua caixa de entrada.");
+      toast.success("Email enviado! 📧", {
+        description: "Verifique sua caixa de entrada e spam para o link de recuperação.",
+        duration: 6000,
+      });
       setIsForgotPassword(false);
     }
     setLoading(false);
