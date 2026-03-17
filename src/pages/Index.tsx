@@ -169,7 +169,17 @@ export default function Index() {
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            Futebol
+            ⚽ Futebol
+          </button>
+          <button
+            onClick={() => setActiveTab("nba")}
+            className={`pb-2 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
+              activeTab === "nba"
+                ? "border-neon text-neon"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            🏀 NBA
           </button>
           <button
             onClick={() => isPro && setActiveTab("live")}
