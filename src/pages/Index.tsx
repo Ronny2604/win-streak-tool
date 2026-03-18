@@ -82,8 +82,8 @@ function applyQuickFilter(fixtures: NormalizedFixture[], filter: QuickFilterType
 
 export default function Index() {
   const { session, loading: keyLoading } = useKeyGate();
-  const { isAdmin, loading: authLoading } = useAuth();
-  const isPro = isAdmin || session.plan === "pro";
+  const { isAdmin, loading: authLoading, subscription } = useAuth();
+  const isPro = isAdmin || session.plan === "pro" || subscription.subscribed;
   const LITE_LIMIT = 5;
   const [activeTab, setActiveTab] = useState<"futebol" | "nba" | "live" | "bilhetes" | "historico" | "premium" | "perfil">("futebol");
   const [premiumSection, setPremiumSection] = useState<PremiumSection>("dashboard");

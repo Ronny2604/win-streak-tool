@@ -66,10 +66,10 @@ const PLANS = [
 ];
 
 export default function PremiumPage() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, subscription } = useAuth();
   const { session: keySession } = useKeyGate();
   const navigate = useNavigate();
-  const isPro = isAdmin || keySession.plan === "pro";
+  const isPro = isAdmin || keySession.plan === "pro" || subscription.subscribed;
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
   const handleSubscribe = async (planId: string) => {

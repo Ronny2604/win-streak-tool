@@ -38,7 +38,7 @@ export function CustomTicketBar() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-sm border-t border-border px-4 py-3 safe-area-bottom">
+    <div className="fixed bottom-16 left-0 right-0 z-40 bg-card/95 backdrop-blur-sm border-t border-border px-4 py-3 md:bottom-0 safe-area-bottom">
       <div className="container max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
