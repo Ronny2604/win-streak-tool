@@ -67,10 +67,56 @@ export default function AdminPanel() {
     t.name.toLowerCase().includes(searchTickets.toLowerCase())
   );
 
+  const [couponName, setCouponName] = useState("");
+  const [couponPercent, setCouponPercent] = useState(10);
+  const [couponDuration, setCouponDuration] = useState<"once" | "forever" | "repeating">("once");
+  const [couponMonths, setCouponMonths] = useState(3);
+  const [creatingCoupon, setCreatingCoupon] = useState(false);
+  const [coupons, setCoupons] = useState<any[]>([]);
+  const [loadingCoupons, setLoadingCoupons] = useState(false);
+
+  // Fetch coupons when tab changes
+  useEffect(() => {
+    if (tab === "coupons" && coupons.length === 0) {
+      loadCoupons();
+    }
+  }, [tab]);
+
+  const loadCoupons = async () => {
+    setLoadingCoupons(true);
+    try {
+      const { data } = await supabase.functions.invoke("manage-coupons", { body: { action: "list" } });
+      if (data?.coupons) setCoupons(data.coupons);
+    } catch { /* silent */ }
+    setLoadingCoupons(false);
+  };
+
+  const handleCreateCoupon = async () => {
+    if (!couponName.trim()) { toast.error("Informe o nome do cupom"); return; }
+    setCreatingCoupon(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-coupons", {
+        body: {
+          action: "create",
+          name: couponName.trim(),
+          percent_off: couponPercent,
+          duration: couponDuration,
+          duration_in_months: couponDuration === "repeating" ? couponMonths : undefined,
+        },
+      });
+      if (error) throw error;
+      toast.success(`Cupom "${data.coupon.name}" criado! ID: ${data.coupon.id}`);
+      setCouponName("");
+      loadCoupons();
+    } catch { toast.error("Erro ao criar cupom"); }
+    setCreatingCoupon(false);
+  };
+
   const TABS: { id: Tab; label: string; icon: typeof Key }[] = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "keys", label: "Chaves", icon: Key },
     { id: "tickets", label: "Bilhetes", icon: Ticket },
+    { id: "coupons", label: "Cupons", icon: Tag },
     { id: "personalization", label: "Personalizar", icon: Palette },
     { id: "api-settings", label: "API", icon: Settings },
   ];
