@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useKeyManager } from "@/hooks/useKeyManager";
 import { useSavedTickets } from "@/hooks/useSavedTickets";
 import { AppHeader } from "@/components/AppHeader";
