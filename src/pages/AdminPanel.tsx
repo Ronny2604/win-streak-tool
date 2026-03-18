@@ -7,7 +7,7 @@ import { ApiSettingsPanel } from "@/components/ApiSettingsPanel";
 import {
   ArrowLeft, Plus, Copy, Trash2, ToggleLeft, ToggleRight, Loader2,
   Key, BarChart3, Ticket, Users, TrendingUp, CheckCircle2, XCircle, Clock,
-  Shield, Calendar, Search, Palette, Settings
+  Shield, Calendar, Search, Palette, Settings, Tag, Percent
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";

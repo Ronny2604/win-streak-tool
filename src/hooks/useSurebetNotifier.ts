@@ -79,38 +79,7 @@ export function useSurebetNotifier(fixtures: NormalizedFixture[] | undefined) {
 
     if (newSurebets.length === 0) return;
 
-    // Play alert sound
-    playAlertSound();
-
-    // In-app toast notifications
-    for (const sb of newSurebets) {
-      const matchName = `${sb.fixture.teams.home.name} vs ${sb.fixture.teams.away.name}`;
-      toast.success(`🚨 SUREBET: ${matchName}`, {
-        description: `Lucro garantido de +${sb.profitPercent}% | Odds: ${sb.bestOdds.home.odd.toFixed(2)} / ${sb.bestOdds.draw.odd.toFixed(2)} / ${sb.bestOdds.away.odd.toFixed(2)}`,
-        duration: 15000,
-        action: {
-          label: "Ver detalhes",
-          onClick: () => {
-            // Scroll to surebet section or navigate
-            document.getElementById("surebet-panel")?.scrollIntoView({ behavior: "smooth" });
-          },
-        },
-      });
-    }
-
-    // Browser push notification (works even when tab is in background)
-    if (newSurebets.length === 1) {
-      const sb = newSurebets[0];
-      sendBrowserNotification(
-        "🚨 Surebet Detectada!",
-        `${sb.fixture.teams.home.name} vs ${sb.fixture.teams.away.name} — Lucro: +${sb.profitPercent}%`
-      );
-    } else {
-      sendBrowserNotification(
-        `🚨 ${newSurebets.length} Surebets Detectadas!`,
-        newSurebets.map((s) => `${s.fixture.teams.home.name} vs ${s.fixture.teams.away.name}`).join(", ")
-      );
-    }
+    // Silent — no toasts or push notifications, just update the bell counter
   }, [fixtures]);
 
   useEffect(() => {
