@@ -12,6 +12,7 @@ import {
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 type Tab = "dashboard" | "keys" | "tickets" | "coupons" | "personalization" | "api-settings";
 
