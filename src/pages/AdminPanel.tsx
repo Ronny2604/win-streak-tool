@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useKeyManager } from "@/hooks/useKeyManager";
 import { useSavedTickets } from "@/hooks/useSavedTickets";
 import { AppHeader } from "@/components/AppHeader";
@@ -7,13 +7,14 @@ import { ApiSettingsPanel } from "@/components/ApiSettingsPanel";
 import {
   ArrowLeft, Plus, Copy, Trash2, ToggleLeft, ToggleRight, Loader2,
   Key, BarChart3, Ticket, Users, TrendingUp, CheckCircle2, XCircle, Clock,
-  Shield, Calendar, Search, Palette, Settings
+  Shield, Calendar, Search, Palette, Settings, Tag, Percent
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
-type Tab = "dashboard" | "keys" | "tickets" | "personalization" | "api-settings";
+type Tab = "dashboard" | "keys" | "tickets" | "coupons" | "personalization" | "api-settings";
 
 function StatCard({ icon: Icon, label, value, sub, color }: {
   icon: typeof Key; label: string; value: string | number; sub?: string; color: string;
@@ -67,10 +68,56 @@ export default function AdminPanel() {
     t.name.toLowerCase().includes(searchTickets.toLowerCase())
   );
 
+  const [couponName, setCouponName] = useState("");
+  const [couponPercent, setCouponPercent] = useState(10);
+  const [couponDuration, setCouponDuration] = useState<"once" | "forever" | "repeating">("once");
+  const [couponMonths, setCouponMonths] = useState(3);
+  const [creatingCoupon, setCreatingCoupon] = useState(false);
+  const [coupons, setCoupons] = useState<any[]>([]);
+  const [loadingCoupons, setLoadingCoupons] = useState(false);
+
+  // Fetch coupons when tab changes
+  useEffect(() => {
+    if (tab === "coupons" && coupons.length === 0) {
+      loadCoupons();
+    }
+  }, [tab]);
+
+  const loadCoupons = async () => {
+    setLoadingCoupons(true);
+    try {
+      const { data } = await supabase.functions.invoke("manage-coupons", { body: { action: "list" } });
+      if (data?.coupons) setCoupons(data.coupons);
+    } catch { /* silent */ }
+    setLoadingCoupons(false);
+  };
+
+  const handleCreateCoupon = async () => {
+    if (!couponName.trim()) { toast.error("Informe o nome do cupom"); return; }
+    setCreatingCoupon(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("manage-coupons", {
+        body: {
+          action: "create",
+          name: couponName.trim(),
+          percent_off: couponPercent,
+          duration: couponDuration,
+          duration_in_months: couponDuration === "repeating" ? couponMonths : undefined,
+        },
+      });
+      if (error) throw error;
+      toast.success(`Cupom "${data.coupon.name}" criado! ID: ${data.coupon.id}`);
+      setCouponName("");
+      loadCoupons();
+    } catch { toast.error("Erro ao criar cupom"); }
+    setCreatingCoupon(false);
+  };
+
   const TABS: { id: Tab; label: string; icon: typeof Key }[] = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "keys", label: "Chaves", icon: Key },
     { id: "tickets", label: "Bilhetes", icon: Ticket },
+    { id: "coupons", label: "Cupons", icon: Tag },
     { id: "personalization", label: "Personalizar", icon: Palette },
     { id: "api-settings", label: "API", icon: Settings },
   ];
@@ -367,6 +414,115 @@ export default function AdminPanel() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Coupons Tab */}
+        {tab === "coupons" && (
+          <div className="space-y-4 animate-in fade-in duration-300">
+            <div className="rounded-xl bg-card border border-border p-5 space-y-4">
+              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Tag className="h-4 w-4 text-primary" />
+                Criar Cupom de Desconto
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input
+                  type="text"
+                  value={couponName}
+                  onChange={(e) => setCouponName(e.target.value)}
+                  placeholder="Nome do cupom (ex: PROMO20)"
+                  className="rounded-lg bg-secondary border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
+                />
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <input
+                      type="number"
+                      value={couponPercent}
+                      onChange={(e) => setCouponPercent(Math.min(100, Math.max(1, Number(e.target.value))))}
+                      min={1}
+                      max={100}
+                      className="w-full rounded-lg bg-secondary border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
+                    />
+                    <Percent className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                  <select
+                    value={couponDuration}
+                    onChange={(e) => setCouponDuration(e.target.value as any)}
+                    className="flex-1 rounded-lg bg-secondary border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
+                  >
+                    <option value="once">Uma vez</option>
+                    <option value="forever">Sempre</option>
+                    <option value="repeating">Recorrente</option>
+                  </select>
+                </div>
+              </div>
+              {couponDuration === "repeating" && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Duração:</span>
+                  <select
+                    value={couponMonths}
+                    onChange={(e) => setCouponMonths(Number(e.target.value))}
+                    className="rounded-lg bg-secondary border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
+                  >
+                    {[1, 2, 3, 6, 12].map((m) => (
+                      <option key={m} value={m}>{m} {m === 1 ? "mês" : "meses"}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <button
+                onClick={handleCreateCoupon}
+                disabled={creatingCoupon}
+                className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
+              >
+                {creatingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                Criar Cupom
+              </button>
+            </div>
+
+            {/* Coupons list */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground font-medium">{coupons.length} cupom(ns)</p>
+                <button onClick={loadCoupons} className="text-xs text-primary hover:underline">Atualizar</button>
+              </div>
+              {loadingCoupons ? (
+                <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+              ) : coupons.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-8 text-center">Nenhum cupom criado</p>
+              ) : (
+                coupons.map((c: any) => (
+                  <div key={c.id} className="rounded-xl bg-card border border-border p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm text-foreground">{c.name || c.id}</span>
+                          <span className="rounded-md px-2 py-0.5 text-[10px] font-bold bg-primary/20 text-primary">
+                            {c.percent_off ? `${c.percent_off}% OFF` : `R$ ${(c.amount_off / 100).toFixed(2)} OFF`}
+                          </span>
+                          <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold ${c.valid ? "bg-chart-positive/20 text-chart-positive" : "bg-destructive/20 text-destructive"}`}>
+                            {c.valid ? "ATIVO" : "INATIVO"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                          <span>ID: {c.id}</span>
+                          <span>•</span>
+                          <span>Duração: {c.duration === "once" ? "Uma vez" : c.duration === "forever" ? "Sempre" : `${c.duration_in_months} meses`}</span>
+                          <span>•</span>
+                          <span>Usado: {c.times_redeemed}x</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => { navigator.clipboard.writeText(c.id); toast.success("ID copiado!"); }}
+                        className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         )}
 
