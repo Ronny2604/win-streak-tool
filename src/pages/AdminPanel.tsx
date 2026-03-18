@@ -13,7 +13,7 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
-type Tab = "dashboard" | "keys" | "tickets" | "personalization" | "api-settings";
+type Tab = "dashboard" | "keys" | "tickets" | "coupons" | "personalization" | "api-settings";
 
 function StatCard({ icon: Icon, label, value, sub, color }: {
   icon: typeof Key; label: string; value: string | number; sub?: string; color: string;
