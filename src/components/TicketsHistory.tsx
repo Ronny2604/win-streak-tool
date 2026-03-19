@@ -256,6 +256,29 @@ interface TicketsHistoryProps {
 export function TicketsHistory({ onBack }: TicketsHistoryProps) {
   const { tickets, isLoading, stats, updateResult, deleteTicket, updateNotes } = useSavedTickets();
   const [filter, setFilter] = useState<"all" | "pending" | "green" | "red">("all");
+  const [completedScores, setCompletedScores] = useState<NormalizedFixture[]>([]);
+  const [settling, setSettling] = useState(false);
+
+  // Auto-settle on mount
+  useAutoSettle(completedScores, tickets);
+
+  const fetchAndSettle = async () => {
+    setSettling(true);
+    try {
+      const scores = await getCompletedScores();
+      setCompletedScores(scores);
+      toast.success(`${scores.length} resultados verificados`);
+    } catch {
+      toast.error("Erro ao buscar resultados");
+    } finally {
+      setSettling(false);
+    }
+  };
+
+  useEffect(() => {
+    // Auto-fetch completed scores on mount
+    getCompletedScores().then(setCompletedScores).catch(() => {});
+  }, []);
 
   const filtered = filter === "all" ? tickets : tickets.filter((t) => t.result === filter);
 
