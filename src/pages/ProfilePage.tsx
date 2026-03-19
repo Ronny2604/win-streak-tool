@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKeyGate } from "@/contexts/KeyGateContext";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import {
   User,
   KeyRound,
@@ -10,8 +11,7 @@ import {
   Shield,
   Loader2,
   Zap,
-  CheckCircle2,
-  Star,
+  Camera,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppHeader } from "@/components/AppHeader";
@@ -23,9 +23,66 @@ export default function ProfilePage() {
   const { session: keySession, validate, logout: keyLogout } = useKeyGate();
   const navigate = useNavigate();
   const isPro = isAdmin || keySession.plan === "pro";
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [accessKey, setAccessKey] = useState("");
   const [keyLoading, setKeyLoading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  // Load avatar on mount
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("avatar_url")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => {
+        if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+      });
+  }, [user]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Imagem muito grande. Máximo 2MB.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${user.id}/avatar.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(path);
+
+      const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+      await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("user_id", user.id);
+
+      setAvatarUrl(publicUrl);
+      toast.success("Foto de perfil atualizada!");
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      toast.error("Erro ao enviar foto: " + (err?.message ?? "Tente novamente"));
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleKeySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,8 +115,37 @@ export default function ProfilePage() {
         {/* User Info Card */}
         <div className="rounded-2xl bg-card border border-border p-6 space-y-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 border-2 border-primary/30">
-              <User className="h-8 w-8 text-primary" />
+            {/* Avatar with upload */}
+            <div className="relative">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || !user}
+                className="relative flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 border-2 border-primary/30 overflow-hidden group transition-all hover:border-primary/60"
+              >
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt="Avatar"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <User className="h-8 w-8 text-primary" />
+                )}
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  {uploading ? (
+                    <Loader2 className="h-5 w-5 text-white animate-spin" />
+                  ) : (
+                    <Camera className="h-5 w-5 text-white" />
+                  )}
+                </div>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
@@ -71,6 +157,14 @@ export default function ProfilePage() {
               <p className="text-sm text-muted-foreground truncate">
                 {user?.email || "Visitante"}
               </p>
+              {user && (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-[11px] text-primary hover:underline mt-0.5"
+                >
+                  {avatarUrl ? "Trocar foto" : "Adicionar foto"}
+                </button>
+              )}
             </div>
           </div>
 
