@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSavedTickets, SavedTicket } from "@/hooks/useSavedTickets";
+import { useAutoSettle } from "@/hooks/useAutoSettle";
+import { getCompletedScores, type NormalizedFixture } from "@/lib/odds-api";
 import { shareViaWhatsApp, shareViaLink } from "@/lib/share-ticket";
 import { Textarea } from "./ui/textarea";
 import {
@@ -23,6 +25,7 @@ import {
   Pencil,
   Check,
   X,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -253,6 +256,29 @@ interface TicketsHistoryProps {
 export function TicketsHistory({ onBack }: TicketsHistoryProps) {
   const { tickets, isLoading, stats, updateResult, deleteTicket, updateNotes } = useSavedTickets();
   const [filter, setFilter] = useState<"all" | "pending" | "green" | "red">("all");
+  const [completedScores, setCompletedScores] = useState<NormalizedFixture[]>([]);
+  const [settling, setSettling] = useState(false);
+
+  // Auto-settle on mount
+  useAutoSettle(completedScores, tickets);
+
+  const fetchAndSettle = async () => {
+    setSettling(true);
+    try {
+      const scores = await getCompletedScores();
+      setCompletedScores(scores);
+      toast.success(`${scores.length} resultados verificados`);
+    } catch {
+      toast.error("Erro ao buscar resultados");
+    } finally {
+      setSettling(false);
+    }
+  };
+
+  useEffect(() => {
+    // Auto-fetch completed scores on mount
+    getCompletedScores().then(setCompletedScores).catch(() => {});
+  }, []);
 
   const filtered = filter === "all" ? tickets : tickets.filter((t) => t.result === filter);
 
@@ -286,18 +312,49 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="p-2 rounded-xl bg-card border border-border hover:border-neon/30 transition-all"
-        >
-          <ArrowLeft className="h-4 w-4 text-foreground" />
-        </button>
-        <div>
-          <h2 className="text-lg font-bold text-foreground">Histórico de Bilhetes</h2>
-          <p className="text-xs text-muted-foreground">Gerencie e acompanhe seus bilhetes</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="p-2 rounded-xl bg-card border border-border hover:border-neon/30 transition-all"
+          >
+            <ArrowLeft className="h-4 w-4 text-foreground" />
+          </button>
+          <div>
+            <h2 className="text-lg font-bold text-foreground">Histórico de Bilhetes</h2>
+            <p className="text-xs text-muted-foreground">Gerencie e acompanhe seus bilhetes</p>
+          </div>
         </div>
+        <button
+          onClick={fetchAndSettle}
+          disabled={settling}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neon/10 text-neon border border-neon/20 hover:bg-neon/20 transition-all disabled:opacity-50"
+          title="Verificar resultados automaticamente"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${settling ? "animate-spin" : ""}`} />
+          Auto
+        </button>
       </div>
+
+      {/* Accuracy Banner */}
+      {stats.total > 0 && stats.green + stats.red > 0 && (
+        <div className="rounded-xl bg-primary/10 border border-primary/20 p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-primary" />
+            <div>
+              <p className="text-xs font-bold text-foreground">Acertividade do App</p>
+              <p className="text-[10px] text-muted-foreground">
+                {stats.green} acertos de {stats.green + stats.red} resolvidos
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className={`text-2xl font-black ${stats.winRate >= 60 ? "text-chart-positive" : stats.winRate >= 40 ? "text-badge-star" : "text-chart-negative"}`}>
+              {stats.winRate}%
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-2">

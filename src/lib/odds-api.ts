@@ -392,6 +392,30 @@ export async function getSoccerOdds(sportKey?: string): Promise<NormalizedFixtur
   return results;
 }
 
+export async function getCompletedScores(): Promise<NormalizedFixture[]> {
+  const apiKey = await resolveOddsApiKey();
+  const sports = LEAGUES.map((l) => l.id);
+  const results: NormalizedFixture[] = [];
+
+  const fetches = sports.map(async (sport) => {
+    try {
+      const url = `${BASE_URL}/sports/${sport}/scores/?apiKey=${apiKey}&daysFrom=3`;
+      const res = await fetch(url);
+      if (!res.ok) return [];
+      const events: OddsEvent[] = await res.json();
+      return events
+        .filter((e) => e.completed === true)
+        .map((e) => normalizeOddsEvent(e, sport));
+    } catch {
+      return [];
+    }
+  });
+
+  const allResults = await Promise.all(fetches);
+  allResults.forEach((r) => results.push(...r));
+  return results;
+}
+
 export async function getLiveScores(sportKey?: string): Promise<NormalizedFixture[]> {
   const cacheKey = `live:${sportKey || "all"}`;
 
