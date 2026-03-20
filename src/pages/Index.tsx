@@ -32,10 +32,15 @@ import {
   OddsComparator,
   GamesCalendar,
   AITicketGenerator,
-  SurebetDetector
+  SurebetDetector,
+  LiveAlerts,
+  StreakTracker,
+  MultiBetBuilder,
+  ProfitCalculator,
+  InsightsFeed
 } from "@/components/premium";
 import { NBASection } from "@/components/nba/NBASection";
-import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield } from "lucide-react";
+import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield, BellRing, Brain } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { useSurebetNotifier } from "@/hooks/useSurebetNotifier";
 
@@ -46,7 +51,7 @@ const HIGHLIGHTS = [
   { label: "TOP", icon: Target, color: "text-chart-negative" },
 ];
 
-type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai" | "surebet";
+type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai" | "surebet" | "livealerts" | "streaks" | "multibet" | "calculator" | "insights";
 
 function applyQuickFilter(fixtures: NormalizedFixture[], filter: QuickFilterType): NormalizedFixture[] {
   switch (filter) {
@@ -247,6 +252,11 @@ export default function Index() {
                 { id: "chat" as PremiumSection, icon: MessageCircle, label: "Chat" },
                 { id: "kelly" as PremiumSection, icon: Calculator, label: "Kelly" },
                 { id: "surebet" as PremiumSection, icon: Shield, label: "Surebet" },
+                { id: "livealerts" as PremiumSection, icon: BellRing, label: "Alertas" },
+                { id: "streaks" as PremiumSection, icon: Flame, label: "Streaks" },
+                { id: "multibet" as PremiumSection, icon: Target, label: "Multi-Bet" },
+                { id: "calculator" as PremiumSection, icon: Calculator, label: "Calculadora" },
+                { id: "insights" as PremiumSection, icon: Brain, label: "Insights" },
               ].map(({ id, icon: Icon, label }) => (
                 <button
                   key={id}
@@ -278,6 +288,11 @@ export default function Index() {
             {premiumSection === "chat" && <TipsChat />}
             {premiumSection === "kelly" && <BankrollSimulator />}
             {premiumSection === "surebet" && fixturesData && <SurebetDetector fixtures={fixturesData} />}
+            {premiumSection === "livealerts" && <LiveAlerts fixtures={fixturesData} />}
+            {premiumSection === "streaks" && fixturesData && <StreakTracker fixtures={fixturesData} />}
+            {premiumSection === "multibet" && fixturesData && <MultiBetBuilder fixtures={fixturesData} />}
+            {premiumSection === "calculator" && <ProfitCalculator />}
+            {premiumSection === "insights" && fixturesData && <InsightsFeed fixtures={fixturesData} />}
           </div>
         ) : (<>
         {/* Stats Summary */}
