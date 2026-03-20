@@ -37,10 +37,15 @@ import {
   StreakTracker,
   MultiBetBuilder,
   ProfitCalculator,
-  InsightsFeed
+  InsightsFeed,
+  LiveOddsTracker,
+  CorrelationAnalysis,
+  DailyReport,
+  ChallengesSystem,
+  PatternDetector
 } from "@/components/premium";
 import { NBASection } from "@/components/nba/NBASection";
-import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield, BellRing, Brain } from "lucide-react";
+import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield, BellRing, Brain, Activity, GitBranch, FileText, Eye } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import { useSurebetNotifier } from "@/hooks/useSurebetNotifier";
 
@@ -51,7 +56,7 @@ const HIGHLIGHTS = [
   { label: "TOP", icon: Target, color: "text-chart-negative" },
 ];
 
-type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai" | "surebet" | "livealerts" | "streaks" | "multibet" | "calculator" | "insights";
+type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai" | "surebet" | "livealerts" | "streaks" | "multibet" | "calculator" | "insights" | "oddstracker" | "correlation" | "report" | "challenges" | "patterns";
 
 function applyQuickFilter(fixtures: NormalizedFixture[], filter: QuickFilterType): NormalizedFixture[] {
   switch (filter) {
@@ -257,6 +262,11 @@ export default function Index() {
                 { id: "multibet" as PremiumSection, icon: Target, label: "Multi-Bet" },
                 { id: "calculator" as PremiumSection, icon: Calculator, label: "Calculadora" },
                 { id: "insights" as PremiumSection, icon: Brain, label: "Insights" },
+                { id: "oddstracker" as PremiumSection, icon: Activity, label: "Odds Live" },
+                { id: "correlation" as PremiumSection, icon: GitBranch, label: "Correlação" },
+                { id: "report" as PremiumSection, icon: FileText, label: "Relatório IA" },
+                { id: "challenges" as PremiumSection, icon: Trophy, label: "Desafios" },
+                { id: "patterns" as PremiumSection, icon: Eye, label: "Padrões" },
               ].map(({ id, icon: Icon, label }) => (
                 <button
                   key={id}
@@ -293,6 +303,11 @@ export default function Index() {
             {premiumSection === "multibet" && fixturesData && <MultiBetBuilder fixtures={fixturesData} />}
             {premiumSection === "calculator" && <ProfitCalculator />}
             {premiumSection === "insights" && fixturesData && <InsightsFeed fixtures={fixturesData} />}
+            {premiumSection === "oddstracker" && <LiveOddsTracker fixtures={fixturesData} />}
+            {premiumSection === "correlation" && fixturesData && <CorrelationAnalysis fixtures={fixturesData} />}
+            {premiumSection === "report" && fixturesData && <DailyReport fixtures={fixturesData} />}
+            {premiumSection === "challenges" && <ChallengesSystem />}
+            {premiumSection === "patterns" && fixturesData && <PatternDetector fixtures={fixturesData} />}
           </div>
         ) : (<>
         {/* Stats Summary */}

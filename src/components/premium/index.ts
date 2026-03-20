@@ -13,3 +13,8 @@ export { StreakTracker } from "./StreakTracker";
 export { MultiBetBuilder } from "./MultiBetBuilder";
 export { ProfitCalculator } from "./ProfitCalculator";
 export { InsightsFeed } from "./InsightsFeed";
+export { LiveOddsTracker } from "./LiveOddsTracker";
+export { CorrelationAnalysis } from "./CorrelationAnalysis";
+export { DailyReport } from "./DailyReport";
+export { ChallengesSystem } from "./ChallengesSystem";
+export { PatternDetector } from "./PatternDetector";
