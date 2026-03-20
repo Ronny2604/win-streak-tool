@@ -1,48 +1,65 @@
 
 
-## Plano: 5 Funcionalidades Premium
+## Plano: Persistência de Login + 5 Funcionalidades Elite
 
-### Funcionalidades Propostas
+### Problema da Sessão
 
-**1. Live Alerts — Alertas Inteligentes de Jogos ao Vivo**
-Notificações em tempo real quando acontecem eventos-chave em jogos ao vivo: gols, cartões vermelhos, mudanças drásticas de odds. O usuário configura quais times/ligas quer monitorar. Componente `LiveAlerts.tsx` com painel de configuração e feed de alertas.
+O Supabase client já está configurado com `persistSession: true` e `autoRefreshToken: true`, então a sessão **já persiste** entre recarregamentos. O problema real é:
 
-**2. Streak Tracker — Sequências e Tendências de Times**
-Painel que mostra sequências ativas dos times (vitórias consecutivas, sem sofrer gol, over 2.5 seguidos, etc.). Identifica padrões estatísticos e sugere apostas baseadas em tendências. Componente `StreakTracker.tsx`.
+1. **LoginPage não redireciona** usuários já logados — se o usuário abre `/login` com sessão ativa, ele vê o formulário de login novamente
+2. **Não há redirecionamento automático** ao abrir o app — o usuário precisa clicar em "Login" manualmente mesmo já estando logado
 
-**3. Multi-Bet Builder com IA — Combinador Inteligente**
-Evolução do gerador de bilhetes: o usuário define valor da aposta e nível de risco, e a IA monta múltiplas combinações otimizadas com correlações calculadas entre jogos. Mostra probabilidade combinada real vs odds oferecidas. Componente `MultiBetBuilder.tsx`.
+**Correção:**
+- Em `LoginPage.tsx`: adicionar `useEffect` que verifica se `user` já existe no `AuthContext` e redireciona para `/` automaticamente
+- Em `AuthContext.tsx`: garantir que o listener `onAuthStateChange` é registrado **antes** de `getSession()` (ordem correta conforme docs do Supabase) para evitar race conditions
 
-**4. Profit Calculator Pro — Calculadora de Lucro Avançada**
-Calculadora interativa que simula cenários: apostas simples, múltiplas, sistema (2/3, 3/4), cashout parcial, e dutching. Mostra gráficos de risco/retorno em tempo real. Componente `ProfitCalculator.tsx`.
+### 5 Funcionalidades Elite
 
-**5. Insights Feed — Feed de Insights com IA**
-Feed personalizado com análises geradas por IA sobre jogos do dia: lesões relevantes, condições climáticas, histórico recente, motivação do time. Cards com resumos rápidos e nível de impacto na aposta. Componente `InsightsFeed.tsx`.
+**1. Comparador de Odds ao Vivo (Live Odds Tracker)**
+- Componente `src/components/premium/LiveOddsTracker.tsx`
+- Monitora variações de odds em tempo real com gráfico de linha mostrando histórico das últimas horas
+- Destaca movimentos suspeitos (variação > 15%) com alerta visual
+- Usa dados já disponíveis do `odds-api.ts`
 
-### Implementação Técnica
+**2. Análise de Correlação entre Jogos**
+- Componente `src/components/premium/CorrelationAnalysis.tsx`
+- Identifica correlações estatísticas entre resultados de jogos simultâneos (ex: se Time A ganha, probabilidade de Time B ganhar)
+- Tabela visual com heatmap de correlações
+- Útil para apostas múltiplas inteligentes
 
-**Novos arquivos:**
-- `src/components/premium/LiveAlerts.tsx`
-- `src/components/premium/StreakTracker.tsx`
-- `src/components/premium/MultiBetBuilder.tsx`
-- `src/components/premium/ProfitCalculator.tsx`
-- `src/components/premium/InsightsFeed.tsx`
-- `supabase/functions/ai-insights/index.ts` — Edge Function para gerar insights via Lovable AI (Gemini Flash)
+**3. Gerador de Relatório Diário com IA**
+- Componente `src/components/premium/DailyReport.tsx`
+- Gera um relatório completo dos jogos do dia com recomendações personalizadas
+- Inclui análise de risco, melhores apostas e jogos a evitar
+- Usa Edge Function existente `ai-insights` com prompt especializado
 
-**Arquivos editados:**
-- `src/components/premium/index.ts` — exportar os 5 novos componentes
-- `src/pages/Index.tsx` — adicionar os 5 itens na sub-nav Premium e renderizar os componentes
-- Migração SQL para tabela `user_alert_preferences` (times/ligas monitoradas)
+**4. Sistema de Metas e Desafios**
+- Componente `src/components/premium/ChallengesSystem.tsx`
+- Gamificação: metas semanais (ex: "Acerte 5 apostas seguidas"), badges de conquista, ranking de pontos
+- Tabela no banco: `user_challenges` com progresso e recompensas
+- Motivação para engajamento contínuo
 
-**Dados:**
-- LiveAlerts e StreakTracker consomem dados já existentes de `odds-api.ts` (live scores + odds)
-- InsightsFeed usa Edge Function com Gemini Flash para gerar análises contextuais
-- ProfitCalculator e MultiBetBuilder são 100% client-side (cálculos matemáticos)
+**5. Detector de Padrões Avançado**
+- Componente `src/components/premium/PatternDetector.tsx`
+- Analisa histórico de resultados para encontrar padrões recorrentes (ex: "Time X sempre perde após 2 vitórias seguidas")
+- Visualização com timeline e indicadores de confiança
+- Baseado em dados da API de futebol
 
-**Sub-nav Premium atualizada com novos itens:**
-- 🔔 Alertas (livealerts)
-- 🔥 Streaks (streaks)  
-- 🎯 Multi-Bet (multibet)
-- 💰 Calculadora (calculator)
-- 🧠 Insights (insights)
+### Arquivos Modificados
+- `src/pages/LoginPage.tsx` — redirect se já logado
+- `src/contexts/AuthContext.tsx` — ordem correta dos listeners
+
+### Arquivos Criados
+- `src/components/premium/LiveOddsTracker.tsx`
+- `src/components/premium/CorrelationAnalysis.tsx`
+- `src/components/premium/DailyReport.tsx`
+- `src/components/premium/ChallengesSystem.tsx`
+- `src/components/premium/PatternDetector.tsx`
+
+### Arquivos Atualizados
+- `src/components/premium/index.ts` — exportar novos componentes
+- `src/pages/Index.tsx` — adicionar na sub-nav Premium
+
+### Migração SQL
+- Tabela `user_challenges` para o sistema de metas e desafios
 
