@@ -8,3 +8,8 @@ export { OddsComparator } from "./OddsComparator";
 export { GamesCalendar } from "./GamesCalendar";
 export { AITicketGenerator } from "./AITicketGenerator";
 export { SurebetDetector } from "./SurebetDetector";
+export { LiveAlerts } from "./LiveAlerts";
+export { StreakTracker } from "./StreakTracker";
+export { MultiBetBuilder } from "./MultiBetBuilder";
+export { ProfitCalculator } from "./ProfitCalculator";
+export { InsightsFeed } from "./InsightsFeed";
