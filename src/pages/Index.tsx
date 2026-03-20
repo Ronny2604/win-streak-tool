@@ -37,7 +37,12 @@ import {
   StreakTracker,
   MultiBetBuilder,
   ProfitCalculator,
-  InsightsFeed
+  InsightsFeed,
+  LiveOddsTracker,
+  CorrelationAnalysis,
+  DailyReport,
+  ChallengesSystem,
+  PatternDetector
 } from "@/components/premium";
 import { NBASection } from "@/components/nba/NBASection";
 import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield, BellRing, Brain } from "lucide-react";
