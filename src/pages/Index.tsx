@@ -252,6 +252,11 @@ export default function Index() {
                 { id: "chat" as PremiumSection, icon: MessageCircle, label: "Chat" },
                 { id: "kelly" as PremiumSection, icon: Calculator, label: "Kelly" },
                 { id: "surebet" as PremiumSection, icon: Shield, label: "Surebet" },
+                { id: "livealerts" as PremiumSection, icon: BellRing, label: "Alertas" },
+                { id: "streaks" as PremiumSection, icon: Flame, label: "Streaks" },
+                { id: "multibet" as PremiumSection, icon: Target, label: "Multi-Bet" },
+                { id: "calculator" as PremiumSection, icon: Calculator, label: "Calculadora" },
+                { id: "insights" as PremiumSection, icon: Brain, label: "Insights" },
               ].map(({ id, icon: Icon, label }) => (
                 <button
                   key={id}
