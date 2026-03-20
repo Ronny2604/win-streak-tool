@@ -32,7 +32,12 @@ import {
   OddsComparator,
   GamesCalendar,
   AITicketGenerator,
-  SurebetDetector
+  SurebetDetector,
+  LiveAlerts,
+  StreakTracker,
+  MultiBetBuilder,
+  ProfitCalculator,
+  InsightsFeed
 } from "@/components/premium";
 import { NBASection } from "@/components/nba/NBASection";
 import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield } from "lucide-react";
