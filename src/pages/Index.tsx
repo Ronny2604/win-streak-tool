@@ -262,6 +262,11 @@ export default function Index() {
                 { id: "multibet" as PremiumSection, icon: Target, label: "Multi-Bet" },
                 { id: "calculator" as PremiumSection, icon: Calculator, label: "Calculadora" },
                 { id: "insights" as PremiumSection, icon: Brain, label: "Insights" },
+                { id: "oddstracker" as PremiumSection, icon: Activity, label: "Odds Live" },
+                { id: "correlation" as PremiumSection, icon: GitBranch, label: "Correlação" },
+                { id: "report" as PremiumSection, icon: FileText, label: "Relatório IA" },
+                { id: "challenges" as PremiumSection, icon: Trophy, label: "Desafios" },
+                { id: "patterns" as PremiumSection, icon: Eye, label: "Padrões" },
               ].map(({ id, icon: Icon, label }) => (
                 <button
                   key={id}
