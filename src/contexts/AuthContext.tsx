@@ -63,17 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdmin(session.user.id);
-        checkSubscription();
-      }
-      setLoading(false);
-      setIsReady(true);
-    });
-
+    // Register listener BEFORE getSession to avoid race conditions
     const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
@@ -86,8 +76,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSubscription(DEFAULT_SUB);
         }
         setLoading(false);
+        setIsReady(true);
       }
     );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdmin(session.user.id);
+        checkSubscription();
+      }
+      setLoading(false);
+      setIsReady(true);
+    });
 
     return () => authSub.unsubscribe();
   }, [checkAdmin, checkSubscription]);
