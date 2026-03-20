@@ -288,6 +288,11 @@ export default function Index() {
             {premiumSection === "chat" && <TipsChat />}
             {premiumSection === "kelly" && <BankrollSimulator />}
             {premiumSection === "surebet" && fixturesData && <SurebetDetector fixtures={fixturesData} />}
+            {premiumSection === "livealerts" && <LiveAlerts fixtures={fixturesData} />}
+            {premiumSection === "streaks" && fixturesData && <StreakTracker fixtures={fixturesData} />}
+            {premiumSection === "multibet" && fixturesData && <MultiBetBuilder fixtures={fixturesData} />}
+            {premiumSection === "calculator" && <ProfitCalculator />}
+            {premiumSection === "insights" && fixturesData && <InsightsFeed fixtures={fixturesData} />}
           </div>
         ) : (<>
         {/* Stats Summary */}
