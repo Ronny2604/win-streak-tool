@@ -303,6 +303,11 @@ export default function Index() {
             {premiumSection === "multibet" && fixturesData && <MultiBetBuilder fixtures={fixturesData} />}
             {premiumSection === "calculator" && <ProfitCalculator />}
             {premiumSection === "insights" && fixturesData && <InsightsFeed fixtures={fixturesData} />}
+            {premiumSection === "oddstracker" && <LiveOddsTracker fixtures={fixturesData} />}
+            {premiumSection === "correlation" && fixturesData && <CorrelationAnalysis fixtures={fixturesData} />}
+            {premiumSection === "report" && fixturesData && <DailyReport fixtures={fixturesData} />}
+            {premiumSection === "challenges" && <ChallengesSystem />}
+            {premiumSection === "patterns" && fixturesData && <PatternDetector fixtures={fixturesData} />}
           </div>
         ) : (<>
         {/* Stats Summary */}
