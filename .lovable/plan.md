@@ -1,50 +1,82 @@
 
 
-## Plano: Corrigir Salvamento de Bilhetes + Multi-Bet Save + Alertas Persistentes + Auto-Settle Melhorado
+## Auditoria Completa — Pronto para Vendas?
 
-### Problemas Identificados
+### Status Geral: **~85% pronto**. Existem itens pendentes que impactam a experiência do usuário e o fluxo de pagamento.
 
-1. **Bilhetes não salvam ao criar**: O `TicketsSection` tem botão de salvar mas o `useSavedTickets.saveMutation` pode falhar silenciosamente se o `created_by` for "anon" e houver problema de tipo. O formato dos `selections` salvos (com `fixture` completo da `NormalizedFixture`) nem sempre contém `teams.home.name` e `teams.away.name` no formato esperado pelo auto-settle.
+---
 
-2. **Multi-Bet Builder não tem botão de salvar**: O componente `MultiBetBuilder.tsx` gera combinações mas não tem nenhuma ação para salvar no banco. Precisa de um botão "Salvar Bilhete" em cada combinação.
+### O QUE ESTÁ FUNCIONANDO
 
-3. **Live Alerts não persiste times monitorados**: O `monitoredTeams` é state local (`useState`), se recarregar a página perde tudo. Precisa salvar no `localStorage` no mínimo.
+1. **Autenticação**: Login/Signup com email, Google OAuth, reset de senha, sessão persistente, redirect automático
+2. **Freemium model**: Acesso básico grátis (5 jogos), upgrade via chave ou Stripe
+3. **Stripe checkout**: Edge functions `create-checkout` e `check-subscription` prontas
+4. **Admin Panel**: Gerenciamento de chaves, bilhetes, cupons Stripe, personalização, API settings
+5. **Dados de futebol**: Integração com The Odds API (odds, live scores)
+6. **25 ferramentas Premium/Elite**: Dashboard, IA, H2H, Rankings, Odds, Calendar, etc.
+7. **Bilhetes**: Geração, salvamento, histórico, auto-settle com matching melhorado
+8. **NBA**: Seção dedicada
+9. **Perfil**: Avatar upload, temas, personalização
+10. **Cupons de desconto**: Criação e listagem via Stripe API
 
-4. **Auto-settle precisa melhorar**: O `useAutoSettle` depende de match por nome de time (`teamsMatch`), que pode falhar com nomes diferentes entre a API de odds e os dados salvos. Além disso, o `getCompletedScores` usa a Odds API que retorna `completed: true` mas o `normalizeOddsEvent` marca como `status.short: "FT"` — isso funciona, mas os scores podem ser `null` se a API não retornar `scores`.
+---
 
-### Correções
+### O QUE FALTA CORRIGIR (7 itens)
 
-**1. `src/components/TicketsSection.tsx`** — Melhorar feedback de erro no save e garantir que o save funciona corretamente
+**1. Campo de cupom ausente no checkout (CRÍTICO para vendas)**
+- O admin cria cupons, mas o `PremiumPage.tsx` **não tem campo para o usuário inserir o cupom** ao assinar
+- O `create-checkout/index.ts` **não aceita parâmetro `coupon`** na sessão Stripe
+- **Solução**: Adicionar input de cupom na PremiumPage + passar coupon ID para o `create-checkout` que aplica via `discounts` no `stripe.checkout.sessions.create`
 
-**2. `src/components/premium/MultiBetBuilder.tsx`** — Adicionar botão "Salvar Bilhete" em cada combinação gerada, usando `useSavedTickets().saveTicket` com formato compatível
+**2. Nome do app inconsistente**
+- LoginPage usa "RonnyBR", ResetPasswordPage usa "PropsBR"
+- **Solução**: Padronizar o nome em todas as páginas
 
-**3. `src/components/premium/LiveAlerts.tsx`** — Persistir `monitoredTeams` em `localStorage`, carregar no mount
+**3. Surebet notifier ainda ativo (console/session replay)**
+- O `useSurebetNotifier` ainda mostra notificação "1 surebet(s) ativa(s)" com bell animada
+- O usuário pediu para remover essas notificações anteriormente
+- **Solução**: Verificar se o notifier foi desabilitado corretamente ou remover a chamada do `useSurebetNotifier`
 
-**4. `src/hooks/useAutoSettle.ts`** — Melhorar matching de times: normalizar mais agressivamente (remover acentos, sufixos comuns), e também tentar match parcial por palavras-chave. Tratar caso onde `sel.betType` pode estar como label textual em vez de enum.
+**4. Console warnings de React refs**
+- `EliteBadge` e `MiniChart` não usam `forwardRef` mas recebem refs do `MatchCard`
+- **Solução**: Adicionar `forwardRef` nos componentes ou remover refs desnecessárias
 
-**5. `src/components/TicketsHistory.tsx`** — Melhorar o botão Auto para mostrar quantos bilhetes foram resolvidos
+**5. ProfilePage não verifica subscription do Stripe**
+- `isPro` no ProfilePage usa apenas `isAdmin || keySession.plan === "pro"` mas **ignora `subscription.subscribed`**
+- Usuários que assinaram via Stripe não verão status PRO no perfil
+- **Solução**: Adicionar `|| subscription.subscribed` na variável `isPro` do ProfilePage
 
-### Arquivos Modificados
-- `src/components/TicketsSection.tsx` — melhorar save com error handling
-- `src/components/premium/MultiBetBuilder.tsx` — botão salvar bilhete por combinação
-- `src/components/premium/LiveAlerts.tsx` — persistir times no localStorage
-- `src/hooks/useAutoSettle.ts` — melhorar matching de nomes e tratar betType label
-- `src/components/TicketsHistory.tsx` — feedback melhorado no auto-settle
+**6. BottomNav não tem aba "Ao Vivo"**
+- O desktop tem tab "Ao Vivo" mas o BottomNav mobile não inclui essa opção
+- Não é bloqueante mas é uma funcionalidade premium que fica inacessível no mobile
+- **Solução**: Opcional — avaliar se quer adicionar
 
-### Detalhes Técnicos
+**7. Trigger `handle_new_user` não registrado**
+- A função SQL `handle_new_user()` existe mas os triggers mostram "no triggers in the database"
+- Novos usuários podem não ter perfil criado automaticamente, causando erros no avatar e personalização
+- **Solução**: Criar migration com `CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user()`
 
-**MultiBetBuilder save**: Converter formato `Combination` para `BettingTicket` com `selections` contendo `fixture` com `teams.home.name` e `teams.away.name` para compatibilidade com auto-settle.
+---
 
-**LiveAlerts localStorage**:
-```typescript
-useEffect(() => {
-  const saved = localStorage.getItem("monitored-teams");
-  if (saved) setMonitoredTeams(JSON.parse(saved));
-}, []);
-useEffect(() => {
-  localStorage.setItem("monitored-teams", JSON.stringify(monitoredTeams));
-}, [monitoredTeams]);
-```
+### PLANO DE IMPLEMENTAÇÃO
 
-**AutoSettle matching melhorado**: Remover acentos com `normalize("NFD").replace(/[\u0300-\u036f]/g, "")`, remover sufixos de liga (FC, SC, CF, etc.), e fazer match bidirecional por tokens.
+**Arquivos a editar:**
+- `src/pages/PremiumPage.tsx` — adicionar campo de cupom
+- `supabase/functions/create-checkout/index.ts` — aceitar e aplicar cupom
+- `src/pages/ResetPasswordPage.tsx` — corrigir nome do app
+- `src/pages/ProfilePage.tsx` — incluir `subscription.subscribed` no `isPro`
+- `src/components/EliteBadge.tsx` — adicionar `forwardRef`
+- `src/components/MiniChart.tsx` — adicionar `forwardRef`
+- `src/hooks/useSurebetNotifier.ts` — verificar se notificações foram desativadas
+
+**Migração SQL:**
+- Criar trigger `on_auth_user_created` para auto-criar perfis
+
+**Prioridade:**
+1. Campo de cupom no checkout (essencial para vendas com descontos)
+2. Trigger de perfil (essencial para novos usuários)
+3. Fix `isPro` no ProfilePage (essencial para assinantes Stripe)
+4. Corrigir nome do app (visual)
+5. Corrigir warnings de ref (qualidade)
+6. Verificar surebet notifier (UX)
 
