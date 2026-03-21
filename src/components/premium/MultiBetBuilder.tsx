@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Bot, Zap, Loader2, DollarSign, BarChart3, RefreshCw } from "lucide-react";
+import { Bot, Zap, Loader2, DollarSign, BarChart3, RefreshCw, Save } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import type { NormalizedFixture } from "@/lib/odds-api";
+import { useSavedTickets } from "@/hooks/useSavedTickets";
+import { toast } from "sonner";
 
 interface Combination {
   id: string;
