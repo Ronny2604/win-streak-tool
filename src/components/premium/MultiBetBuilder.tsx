@@ -49,6 +49,17 @@ export function MultiBetBuilder({ fixtures }: MultiBetBuilderProps) {
             confidence: sel.confidence,
             reasoning: "",
           };
+        }) as any,
+          const [home, away] = sel.fixture.split(" vs ");
+          const betType = sel.bet.includes("(Casa)") ? "home" : sel.bet.includes("(Fora)") ? "away" : sel.bet.includes("Empate") ? "draw" : "home";
+          return {
+            fixture: { teams: { home: { name: home?.trim() }, away: { name: away?.trim() } } },
+            betType,
+            label: sel.bet,
+            odd: sel.odd,
+            confidence: sel.confidence,
+            reasoning: "",
+          };
         }),
         totalOdd: comb.totalOdd,
         confidence: Math.round(comb.realProbability),
