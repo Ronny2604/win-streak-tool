@@ -27,10 +27,20 @@ interface LiveAlertsProps {
 
 export function LiveAlerts({ fixtures }: LiveAlertsProps) {
   const [alerts, setAlerts] = useState<LiveAlert[]>([]);
-  const [monitoredTeams, setMonitoredTeams] = useState<MonitoredTeam[]>([]);
+  const [monitoredTeams, setMonitoredTeams] = useState<MonitoredTeam[]>(() => {
+    try {
+      const saved = localStorage.getItem("monitored-teams");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [newTeam, setNewTeam] = useState("");
   const [alertsEnabled, setAlertsEnabled] = useState(true);
   const [prevFixtures, setPrevFixtures] = useState<NormalizedFixture[]>([]);
+
+  // Persist monitored teams
+  useEffect(() => {
+    localStorage.setItem("monitored-teams", JSON.stringify(monitoredTeams));
+  }, [monitoredTeams]);
 
   // Detect changes in live fixtures to generate alerts
   useEffect(() => {

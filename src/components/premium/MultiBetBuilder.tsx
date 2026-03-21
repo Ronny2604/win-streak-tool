@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Bot, Zap, Loader2, DollarSign, BarChart3, RefreshCw } from "lucide-react";
+import { Bot, Zap, Loader2, DollarSign, BarChart3, RefreshCw, Save } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import type { NormalizedFixture } from "@/lib/odds-api";
+import { useSavedTickets } from "@/hooks/useSavedTickets";
+import { toast } from "sonner";
 
 interface Combination {
   id: string;
@@ -27,6 +29,37 @@ export function MultiBetBuilder({ fixtures }: MultiBetBuilderProps) {
   const [numCombinations, setNumCombinations] = useState(3);
   const [combinations, setCombinations] = useState<Combination[]>([]);
   const [loading, setLoading] = useState(false);
+  const { saveTicket, isSaving } = useSavedTickets();
+
+  const handleSaveCombination = async (comb: Combination) => {
+    try {
+      const stakeVal = parseFloat(stake) || 50;
+      await saveTicket({
+        id: comb.id,
+        name: `Multi-Bet ${comb.riskLevel === "low" ? "Conservador" : comb.riskLevel === "medium" ? "Moderado" : "Agressivo"}`,
+        type: comb.riskLevel === "low" ? "safe" : comb.riskLevel === "medium" ? "moderate" : "aggressive",
+        selections: comb.selections.map(sel => {
+          const [home, away] = sel.fixture.split(" vs ");
+          const betType = sel.bet.includes("(Casa)") ? "home" : sel.bet.includes("(Fora)") ? "away" : sel.bet.includes("Empate") ? "draw" : "home";
+          return {
+            fixture: { teams: { home: { name: home?.trim() }, away: { name: away?.trim() } } },
+            betType,
+            label: sel.bet,
+            odd: sel.odd,
+            confidence: sel.confidence,
+            reasoning: "",
+          };
+        }) as any,
+        totalOdd: comb.totalOdd,
+        confidence: Math.round(comb.realProbability),
+        suggestedStake: `R$${stakeVal.toFixed(2)}`,
+        potentialReturn: `R$${comb.potentialReturn.toFixed(2)}`,
+      });
+      toast.success("Bilhete Multi-Bet salvo!");
+    } catch (err: any) {
+      toast.error("Erro ao salvar: " + (err?.message ?? "Tente novamente"));
+    }
+  };
 
   const riskLabel = riskLevel[0] < 33 ? "Conservador" : riskLevel[0] < 66 ? "Moderado" : "Agressivo";
   const riskColor = riskLevel[0] < 33 ? "text-chart-positive" : riskLevel[0] < 66 ? "text-badge-star" : "text-chart-negative";
@@ -219,6 +252,17 @@ export function MultiBetBuilder({ fixtures }: MultiBetBuilderProps) {
                 <p className="text-lg font-bold text-chart-positive">R${comb.potentialReturn.toFixed(2)}</p>
               </div>
             </div>
+
+            <Button
+              onClick={() => handleSaveCombination(comb)}
+              disabled={isSaving}
+              variant="outline"
+              size="sm"
+              className="w-full mt-2 border-neon/30 text-neon hover:bg-neon/10"
+            >
+              <Save className="h-3.5 w-3.5 mr-1.5" />
+              Salvar Bilhete
+            </Button>
           </CardContent>
         </Card>
       ))}
