@@ -267,7 +267,8 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
     try {
       const scores = await getCompletedScores();
       setCompletedScores(scores);
-      toast.success(`${scores.length} resultados verificados`);
+      const pendingCount = tickets.filter(t => t.result === "pending").length;
+      toast.success(`${scores.length} resultados verificados • ${pendingCount} bilhetes pendentes`);
     } catch {
       toast.error("Erro ao buscar resultados");
     } finally {

@@ -252,6 +252,17 @@ export function MultiBetBuilder({ fixtures }: MultiBetBuilderProps) {
                 <p className="text-lg font-bold text-chart-positive">R${comb.potentialReturn.toFixed(2)}</p>
               </div>
             </div>
+
+            <Button
+              onClick={() => handleSaveCombination(comb)}
+              disabled={isSaving}
+              variant="outline"
+              size="sm"
+              className="w-full mt-2 border-neon/30 text-neon hover:bg-neon/10"
+            >
+              <Save className="h-3.5 w-3.5 mr-1.5" />
+              Salvar Bilhete
+            </Button>
           </CardContent>
         </Card>
       ))}

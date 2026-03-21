@@ -23,22 +23,27 @@ export function TicketsSection({ fixtures, isLoading, isPro, onOpenHistory }: Ti
 
   const handleSaveTicket = async (ticket: typeof tickets[0]) => {
     try {
+      console.log("Saving ticket:", JSON.stringify(ticket, null, 2));
       await saveTicket(ticket);
       toast.success(`"${ticket.name}" salvo com sucesso!`);
     } catch (err: any) {
+      console.error("Save ticket error details:", err);
       toast.error("Erro ao salvar bilhete: " + (err?.message ?? "Tente novamente"));
     }
   };
 
   const handleSaveAll = async () => {
-    try {
-      for (const ticket of tickets) {
+    let saved = 0;
+    for (const ticket of tickets) {
+      try {
         await saveTicket(ticket);
+        saved++;
+      } catch (err) {
+        console.error("Error saving ticket:", ticket.name, err);
       }
-      toast.success(`${tickets.length} bilhetes salvos!`);
-    } catch {
-      toast.error("Erro ao salvar bilhetes");
     }
+    if (saved > 0) toast.success(`${saved} bilhetes salvos!`);
+    else toast.error("Erro ao salvar bilhetes");
   };
 
   if (isLoading) {
