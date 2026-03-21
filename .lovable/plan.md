@@ -1,65 +1,50 @@
 
 
-## Plano: Persistência de Login + 5 Funcionalidades Elite
+## Plano: Corrigir Salvamento de Bilhetes + Multi-Bet Save + Alertas Persistentes + Auto-Settle Melhorado
 
-### Problema da Sessão
+### Problemas Identificados
 
-O Supabase client já está configurado com `persistSession: true` e `autoRefreshToken: true`, então a sessão **já persiste** entre recarregamentos. O problema real é:
+1. **Bilhetes não salvam ao criar**: O `TicketsSection` tem botão de salvar mas o `useSavedTickets.saveMutation` pode falhar silenciosamente se o `created_by` for "anon" e houver problema de tipo. O formato dos `selections` salvos (com `fixture` completo da `NormalizedFixture`) nem sempre contém `teams.home.name` e `teams.away.name` no formato esperado pelo auto-settle.
 
-1. **LoginPage não redireciona** usuários já logados — se o usuário abre `/login` com sessão ativa, ele vê o formulário de login novamente
-2. **Não há redirecionamento automático** ao abrir o app — o usuário precisa clicar em "Login" manualmente mesmo já estando logado
+2. **Multi-Bet Builder não tem botão de salvar**: O componente `MultiBetBuilder.tsx` gera combinações mas não tem nenhuma ação para salvar no banco. Precisa de um botão "Salvar Bilhete" em cada combinação.
 
-**Correção:**
-- Em `LoginPage.tsx`: adicionar `useEffect` que verifica se `user` já existe no `AuthContext` e redireciona para `/` automaticamente
-- Em `AuthContext.tsx`: garantir que o listener `onAuthStateChange` é registrado **antes** de `getSession()` (ordem correta conforme docs do Supabase) para evitar race conditions
+3. **Live Alerts não persiste times monitorados**: O `monitoredTeams` é state local (`useState`), se recarregar a página perde tudo. Precisa salvar no `localStorage` no mínimo.
 
-### 5 Funcionalidades Elite
+4. **Auto-settle precisa melhorar**: O `useAutoSettle` depende de match por nome de time (`teamsMatch`), que pode falhar com nomes diferentes entre a API de odds e os dados salvos. Além disso, o `getCompletedScores` usa a Odds API que retorna `completed: true` mas o `normalizeOddsEvent` marca como `status.short: "FT"` — isso funciona, mas os scores podem ser `null` se a API não retornar `scores`.
 
-**1. Comparador de Odds ao Vivo (Live Odds Tracker)**
-- Componente `src/components/premium/LiveOddsTracker.tsx`
-- Monitora variações de odds em tempo real com gráfico de linha mostrando histórico das últimas horas
-- Destaca movimentos suspeitos (variação > 15%) com alerta visual
-- Usa dados já disponíveis do `odds-api.ts`
+### Correções
 
-**2. Análise de Correlação entre Jogos**
-- Componente `src/components/premium/CorrelationAnalysis.tsx`
-- Identifica correlações estatísticas entre resultados de jogos simultâneos (ex: se Time A ganha, probabilidade de Time B ganhar)
-- Tabela visual com heatmap de correlações
-- Útil para apostas múltiplas inteligentes
+**1. `src/components/TicketsSection.tsx`** — Melhorar feedback de erro no save e garantir que o save funciona corretamente
 
-**3. Gerador de Relatório Diário com IA**
-- Componente `src/components/premium/DailyReport.tsx`
-- Gera um relatório completo dos jogos do dia com recomendações personalizadas
-- Inclui análise de risco, melhores apostas e jogos a evitar
-- Usa Edge Function existente `ai-insights` com prompt especializado
+**2. `src/components/premium/MultiBetBuilder.tsx`** — Adicionar botão "Salvar Bilhete" em cada combinação gerada, usando `useSavedTickets().saveTicket` com formato compatível
 
-**4. Sistema de Metas e Desafios**
-- Componente `src/components/premium/ChallengesSystem.tsx`
-- Gamificação: metas semanais (ex: "Acerte 5 apostas seguidas"), badges de conquista, ranking de pontos
-- Tabela no banco: `user_challenges` com progresso e recompensas
-- Motivação para engajamento contínuo
+**3. `src/components/premium/LiveAlerts.tsx`** — Persistir `monitoredTeams` em `localStorage`, carregar no mount
 
-**5. Detector de Padrões Avançado**
-- Componente `src/components/premium/PatternDetector.tsx`
-- Analisa histórico de resultados para encontrar padrões recorrentes (ex: "Time X sempre perde após 2 vitórias seguidas")
-- Visualização com timeline e indicadores de confiança
-- Baseado em dados da API de futebol
+**4. `src/hooks/useAutoSettle.ts`** — Melhorar matching de times: normalizar mais agressivamente (remover acentos, sufixos comuns), e também tentar match parcial por palavras-chave. Tratar caso onde `sel.betType` pode estar como label textual em vez de enum.
+
+**5. `src/components/TicketsHistory.tsx`** — Melhorar o botão Auto para mostrar quantos bilhetes foram resolvidos
 
 ### Arquivos Modificados
-- `src/pages/LoginPage.tsx` — redirect se já logado
-- `src/contexts/AuthContext.tsx` — ordem correta dos listeners
+- `src/components/TicketsSection.tsx` — melhorar save com error handling
+- `src/components/premium/MultiBetBuilder.tsx` — botão salvar bilhete por combinação
+- `src/components/premium/LiveAlerts.tsx` — persistir times no localStorage
+- `src/hooks/useAutoSettle.ts` — melhorar matching de nomes e tratar betType label
+- `src/components/TicketsHistory.tsx` — feedback melhorado no auto-settle
 
-### Arquivos Criados
-- `src/components/premium/LiveOddsTracker.tsx`
-- `src/components/premium/CorrelationAnalysis.tsx`
-- `src/components/premium/DailyReport.tsx`
-- `src/components/premium/ChallengesSystem.tsx`
-- `src/components/premium/PatternDetector.tsx`
+### Detalhes Técnicos
 
-### Arquivos Atualizados
-- `src/components/premium/index.ts` — exportar novos componentes
-- `src/pages/Index.tsx` — adicionar na sub-nav Premium
+**MultiBetBuilder save**: Converter formato `Combination` para `BettingTicket` com `selections` contendo `fixture` com `teams.home.name` e `teams.away.name` para compatibilidade com auto-settle.
 
-### Migração SQL
-- Tabela `user_challenges` para o sistema de metas e desafios
+**LiveAlerts localStorage**:
+```typescript
+useEffect(() => {
+  const saved = localStorage.getItem("monitored-teams");
+  if (saved) setMonitoredTeams(JSON.parse(saved));
+}, []);
+useEffect(() => {
+  localStorage.setItem("monitored-teams", JSON.stringify(monitoredTeams));
+}, [monitoredTeams]);
+```
+
+**AutoSettle matching melhorado**: Remover acentos com `normalize("NFD").replace(/[\u0300-\u036f]/g, "")`, remover sufixos de liga (FC, SC, CF, etc.), e fazer match bidirecional por tokens.
 
