@@ -22,7 +22,6 @@ export default function ProfilePage() {
   const { user, isAdmin, signOut, subscription } = useAuth();
   const { session: keySession, validate, logout: keyLogout } = useKeyGate();
   const navigate = useNavigate();
-  const { subscription } = useAuth();
   const isPro = isAdmin || keySession.plan === "pro" || subscription.subscribed;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
