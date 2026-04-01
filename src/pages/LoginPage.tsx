@@ -152,7 +152,7 @@ export default function LoginPage() {
           <div className="flex items-center justify-center gap-2">
             <BarChart3 className="h-8 w-8 text-primary" />
             <span className="text-2xl font-extrabold text-foreground">
-              Ronny<span className="text-primary">BR</span>
+              Win<span className="text-primary"> Streak</span>
             </span>
           </div>
           <p className="text-sm text-muted-foreground">

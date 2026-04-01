@@ -221,6 +221,29 @@ export default function PremiumPage() {
           ))}
         </div>
 
+        {/* Coupon */}
+        <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+          <p className="text-xs font-bold text-foreground text-center">Tem um cupom de desconto?</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={couponCode}
+              onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponApplied(false); }}
+              placeholder="CÓDIGO DO CUPOM"
+              className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+            <button
+              onClick={() => { if (couponCode.trim()) { setCouponApplied(true); toast.success("Cupom será aplicado no checkout!"); } }}
+              className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              Aplicar
+            </button>
+          </div>
+          {couponApplied && (
+            <p className="text-[11px] text-chart-positive text-center font-medium">✓ Cupom "{couponCode}" será aplicado ao assinar</p>
+          )}
+        </div>
+
         {/* Key alternative */}
         <div className="rounded-2xl bg-muted/50 border border-border p-4 text-center space-y-2">
           <p className="text-xs text-muted-foreground">

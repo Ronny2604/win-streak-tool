@@ -110,8 +110,7 @@ export default function Index() {
     staleTime: 60000,
   });
 
-  // Monitor for surebets and notify
-  useSurebetNotifier(fixturesData);
+  // Surebet notifier disabled per user request
 
   // Listen for navigate-to-surebet event from notification bell
   useEffect(() => {

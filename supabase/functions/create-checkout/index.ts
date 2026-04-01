@@ -54,6 +54,17 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://win-streak-tool.lovable.app";
 
+    // Validate coupon if provided
+    let discounts: { coupon: string }[] = [];
+    if (coupon) {
+      try {
+        await stripe.coupons.retrieve(coupon);
+        discounts = [{ coupon }];
+      } catch {
+        throw new Error("Cupom inválido ou expirado");
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -72,6 +83,7 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
+      discounts,
       success_url: `${origin}/perfil?payment=success`,
       cancel_url: `${origin}/premium?payment=canceled`,
       metadata: { plan, user_id: user.id },

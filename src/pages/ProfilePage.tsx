@@ -19,7 +19,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { VipBadge } from "@/components/VipBadge";
 
 export default function ProfilePage() {
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, signOut, subscription } = useAuth();
   const { session: keySession, validate, logout: keyLogout } = useKeyGate();
   const navigate = useNavigate();
   const { subscription } = useAuth();

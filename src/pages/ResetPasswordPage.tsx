@@ -62,7 +62,7 @@ export default function ResetPasswordPage() {
           <div className="flex items-center justify-center gap-2">
             <BarChart3 className="h-8 w-8 text-neon" />
             <span className="text-2xl font-extrabold text-foreground">
-              Props<span className="text-neon">BR</span>
+              Win<span className="text-neon"> Streak</span>
             </span>
           </div>
           <p className="text-sm text-muted-foreground">
