@@ -70,6 +70,11 @@ const SPORT_COUNTRIES: Record<string, string> = {
   soccer_france_ligue_one: "France",
   soccer_brazil_campeonato: "Brazil",
   soccer_uefa_champs_league: "World",
+  soccer_fifa_world_cup: "World",
+  soccer_international_friendlies: "World",
+  soccer_conmebol_copa_america: "South America",
+  soccer_fifa_world_cup_qualifiers_conmebol: "South America",
+  soccer_fifa_world_cup_qualifiers_uefa: "Europe",
 };
 
 // API-Football league IDs for the leagues we support
