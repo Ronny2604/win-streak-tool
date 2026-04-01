@@ -192,6 +192,16 @@ export default function Index() {
             🏀 NBA
           </button>
           <button
+            onClick={() => setActiveTab("copa")}
+            className={`pb-2 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
+              activeTab === "copa"
+                ? "border-neon text-neon"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            🌍 Copa
+          </button>
+          <button
             onClick={() => isPro && setActiveTab("live")}
             className={`pb-2 text-sm font-semibold transition-colors border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
               !isPro
