@@ -96,7 +96,7 @@ export default function Index() {
   const { isAdmin, loading: authLoading, subscription } = useAuth();
   const isPro = isAdmin || session.plan === "pro" || subscription.subscribed;
   const LITE_LIMIT = 5;
-  const [activeTab, setActiveTab] = useState<"futebol" | "nba" | "live" | "bilhetes" | "historico" | "premium" | "perfil">("futebol");
+  const [activeTab, setActiveTab] = useState<"futebol" | "nba" | "copa" | "live" | "bilhetes" | "historico" | "premium" | "perfil">("futebol");
   const [premiumSection, setPremiumSection] = useState<PremiumSection>("dashboard");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
