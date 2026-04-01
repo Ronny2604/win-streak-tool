@@ -482,3 +482,22 @@ export async function getLiveScores(sportKey?: string): Promise<NormalizedFixtur
   return results;
 }
 
+export async function getCopaOdds(): Promise<NormalizedFixture[]> {
+  const cacheKey = "odds:copa-all";
+
+  const cached = await getCache(cacheKey);
+  if (cached && cached.length > 0) {
+    console.log(`[Cache HIT] ${cacheKey} — ${cached.length} fixtures`);
+    return cached;
+  }
+
+  const apiKey = await resolveOddsApiKey();
+  const sports = COPA_LEAGUES.map((l) => l.id);
+  const fetches = sports.map((sport) => tryOddsApi(sport, apiKey));
+  const allResults = await Promise.all(fetches);
+  const results: NormalizedFixture[] = [];
+  allResults.forEach((r) => results.push(...r));
+  results.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  if (results.length > 0) setCache(cacheKey, results, ODDS_CACHE_TTL);
+  return results;
+}
