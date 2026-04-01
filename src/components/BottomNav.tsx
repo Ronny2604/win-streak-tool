@@ -1,8 +1,8 @@
-import { Zap, Ticket, Trophy, Radio, Star, User } from "lucide-react";
+import { Zap, Ticket, Trophy, Radio, Star, User, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 
-type Tab = "futebol" | "nba" | "live" | "bilhetes" | "historico" | "premium" | "perfil";
+type Tab = "futebol" | "nba" | "copa" | "live" | "bilhetes" | "historico" | "premium" | "perfil";
 
 interface BottomNavProps {
   activeTab: Tab;
