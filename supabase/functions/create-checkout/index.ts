@@ -32,7 +32,7 @@ serve(async (req) => {
   );
 
   try {
-    const { plan } = await req.json();
+    const { plan, coupon } = await req.json();
     const planConfig = PLANS[plan as keyof typeof PLANS];
     if (!planConfig) throw new Error("Invalid plan");
 
