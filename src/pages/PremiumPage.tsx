@@ -73,6 +73,8 @@ export default function PremiumPage() {
   const navigate = useNavigate();
   const isPro = isAdmin || keySession.plan === "pro" || subscription.subscribed;
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponApplied, setCouponApplied] = useState(false);
 
   const handleSubscribe = async (planId: string) => {
     if (!user) {
@@ -83,8 +85,12 @@ export default function PremiumPage() {
 
     setLoadingPlan(planId);
     try {
+      const body: Record<string, string> = { plan: planId };
+      if (couponCode.trim()) {
+        body.coupon = couponCode.trim();
+      }
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { plan: planId },
+        body,
       });
 
       if (error) throw error;
