@@ -55,6 +55,11 @@ const SPORT_LOGOS: Record<string, string> = {
   soccer_france_ligue_one: "https://media.api-sports.io/football/leagues/61.png",
   soccer_brazil_campeonato: "https://media.api-sports.io/football/leagues/71.png",
   soccer_uefa_champs_league: "https://media.api-sports.io/football/leagues/2.png",
+  soccer_fifa_world_cup: "https://media.api-sports.io/football/leagues/1.png",
+  soccer_international_friendlies: "https://media.api-sports.io/football/leagues/10.png",
+  soccer_conmebol_copa_america: "https://media.api-sports.io/football/leagues/9.png",
+  soccer_fifa_world_cup_qualifiers_conmebol: "https://media.api-sports.io/football/leagues/29.png",
+  soccer_fifa_world_cup_qualifiers_uefa: "https://media.api-sports.io/football/leagues/32.png",
 };
 
 const SPORT_COUNTRIES: Record<string, string> = {
