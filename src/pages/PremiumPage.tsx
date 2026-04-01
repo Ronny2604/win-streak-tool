@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+const APP_NAME = "Win Streak";
+
 const PLANS = [
   {
     id: "lite",
