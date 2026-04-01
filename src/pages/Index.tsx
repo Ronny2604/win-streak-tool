@@ -45,7 +45,8 @@ import {
   PatternDetector
 } from "@/components/premium";
 import { NBASection } from "@/components/nba/NBASection";
-import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield, BellRing, Brain, Activity, GitBranch, FileText, Eye } from "lucide-react";
+import { CopaSection } from "@/components/CopaSection";
+import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield, BellRing, Brain, Activity, GitBranch, FileText, Eye, Globe } from "lucide-react";
 import { Navigate } from "react-router-dom";
 // Surebet notifier disabled per user request
 
