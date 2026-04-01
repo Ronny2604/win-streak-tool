@@ -55,6 +55,11 @@ const SPORT_LOGOS: Record<string, string> = {
   soccer_france_ligue_one: "https://media.api-sports.io/football/leagues/61.png",
   soccer_brazil_campeonato: "https://media.api-sports.io/football/leagues/71.png",
   soccer_uefa_champs_league: "https://media.api-sports.io/football/leagues/2.png",
+  soccer_fifa_world_cup: "https://media.api-sports.io/football/leagues/1.png",
+  soccer_international_friendlies: "https://media.api-sports.io/football/leagues/10.png",
+  soccer_conmebol_copa_america: "https://media.api-sports.io/football/leagues/9.png",
+  soccer_fifa_world_cup_qualifiers_conmebol: "https://media.api-sports.io/football/leagues/29.png",
+  soccer_fifa_world_cup_qualifiers_uefa: "https://media.api-sports.io/football/leagues/32.png",
 };
 
 const SPORT_COUNTRIES: Record<string, string> = {
@@ -65,6 +70,11 @@ const SPORT_COUNTRIES: Record<string, string> = {
   soccer_france_ligue_one: "France",
   soccer_brazil_campeonato: "Brazil",
   soccer_uefa_champs_league: "World",
+  soccer_fifa_world_cup: "World",
+  soccer_international_friendlies: "World",
+  soccer_conmebol_copa_america: "South America",
+  soccer_fifa_world_cup_qualifiers_conmebol: "South America",
+  soccer_fifa_world_cup_qualifiers_uefa: "Europe",
 };
 
 // API-Football league IDs for the leagues we support
@@ -86,6 +96,14 @@ export const LEAGUES = [
   { id: "soccer_france_ligue_one", name: "Ligue 1", country: "France" },
   { id: "soccer_brazil_campeonato", name: "Brasileirão", country: "Brazil" },
   { id: "soccer_uefa_champs_league", name: "Champions League", country: "World" },
+];
+
+export const COPA_LEAGUES = [
+  { id: "soccer_fifa_world_cup", name: "Copa do Mundo", country: "World" },
+  { id: "soccer_international_friendlies", name: "Amistosos Internacionais", country: "World" },
+  { id: "soccer_conmebol_copa_america", name: "Copa América", country: "South America" },
+  { id: "soccer_fifa_world_cup_qualifiers_conmebol", name: "Eliminatórias CONMEBOL", country: "South America" },
+  { id: "soccer_fifa_world_cup_qualifiers_uefa", name: "Eliminatórias UEFA", country: "Europe" },
 ];
 
 // Map our sport key IDs to API-Football league IDs
@@ -464,3 +482,22 @@ export async function getLiveScores(sportKey?: string): Promise<NormalizedFixtur
   return results;
 }
 
+export async function getCopaOdds(): Promise<NormalizedFixture[]> {
+  const cacheKey = "odds:copa-all";
+
+  const cached = await getCache(cacheKey);
+  if (cached && cached.length > 0) {
+    console.log(`[Cache HIT] ${cacheKey} — ${cached.length} fixtures`);
+    return cached;
+  }
+
+  const apiKey = await resolveOddsApiKey();
+  const sports = COPA_LEAGUES.map((l) => l.id);
+  const fetches = sports.map((sport) => tryOddsApi(sport, apiKey));
+  const allResults = await Promise.all(fetches);
+  const results: NormalizedFixture[] = [];
+  allResults.forEach((r) => results.push(...r));
+  results.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  if (results.length > 0) setCache(cacheKey, results, ODDS_CACHE_TTL);
+  return results;
+}

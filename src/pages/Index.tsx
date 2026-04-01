@@ -45,7 +45,8 @@ import {
   PatternDetector
 } from "@/components/premium";
 import { NBASection } from "@/components/nba/NBASection";
-import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield, BellRing, Brain, Activity, GitBranch, FileText, Eye } from "lucide-react";
+import { CopaSection } from "@/components/CopaSection";
+import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield, BellRing, Brain, Activity, GitBranch, FileText, Eye, Globe } from "lucide-react";
 import { Navigate } from "react-router-dom";
 // Surebet notifier disabled per user request
 
@@ -95,7 +96,7 @@ export default function Index() {
   const { isAdmin, loading: authLoading, subscription } = useAuth();
   const isPro = isAdmin || session.plan === "pro" || subscription.subscribed;
   const LITE_LIMIT = 5;
-  const [activeTab, setActiveTab] = useState<"futebol" | "nba" | "live" | "bilhetes" | "historico" | "premium" | "perfil">("futebol");
+  const [activeTab, setActiveTab] = useState<"futebol" | "nba" | "copa" | "live" | "bilhetes" | "historico" | "premium" | "perfil">("futebol");
   const [premiumSection, setPremiumSection] = useState<PremiumSection>("dashboard");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
@@ -191,6 +192,16 @@ export default function Index() {
             🏀 NBA
           </button>
           <button
+            onClick={() => setActiveTab("copa")}
+            className={`pb-2 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
+              activeTab === "copa"
+                ? "border-neon text-neon"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            🌍 Copa
+          </button>
+          <button
             onClick={() => isPro && setActiveTab("live")}
             className={`pb-2 text-sm font-semibold transition-colors border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
               !isPro
@@ -234,6 +245,8 @@ export default function Index() {
           <TicketsHistory onBack={() => setActiveTab("bilhetes")} />
         ) : activeTab === "nba" ? (
           <NBASection />
+        ) : activeTab === "copa" ? (
+          <CopaSection isPro={isPro} />
         ) : activeTab === "bilhetes" ? (
           <TicketsSection fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} onOpenHistory={() => setActiveTab("historico")} />
         ) : activeTab === "premium" ? (

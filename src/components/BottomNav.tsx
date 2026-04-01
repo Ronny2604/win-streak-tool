@@ -1,8 +1,8 @@
-import { Zap, Ticket, Trophy, Radio, Star, User } from "lucide-react";
+import { Zap, Ticket, Trophy, Radio, Star, User, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 
-type Tab = "futebol" | "nba" | "live" | "bilhetes" | "historico" | "premium" | "perfil";
+type Tab = "futebol" | "nba" | "copa" | "live" | "bilhetes" | "historico" | "premium" | "perfil";
 
 interface BottomNavProps {
   activeTab: Tab;
@@ -15,6 +15,7 @@ const NBAIcon = () => <span className="text-sm leading-none">🏀</span>;
 const tabs = [
   { id: "futebol" as Tab, label: "Futebol", icon: Trophy },
   { id: "nba" as Tab, label: "NBA", icon: Trophy, customIcon: true },
+  { id: "copa" as Tab, label: "Copa", icon: Globe },
   { id: "bilhetes" as Tab, label: "Bilhetes", icon: Ticket },
   { id: "premium" as Tab, label: "Premium", icon: Star, proOnly: true },
   { id: "perfil" as Tab, label: "Perfil", icon: User },
