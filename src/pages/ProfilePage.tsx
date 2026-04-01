@@ -19,10 +19,10 @@ import { BottomNav } from "@/components/BottomNav";
 import { VipBadge } from "@/components/VipBadge";
 
 export default function ProfilePage() {
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, signOut, subscription } = useAuth();
   const { session: keySession, validate, logout: keyLogout } = useKeyGate();
   const navigate = useNavigate();
-  const isPro = isAdmin || keySession.plan === "pro";
+  const isPro = isAdmin || keySession.plan === "pro" || subscription.subscribed;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [accessKey, setAccessKey] = useState("");

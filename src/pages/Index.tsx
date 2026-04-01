@@ -47,7 +47,7 @@ import {
 import { NBASection } from "@/components/nba/NBASection";
 import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield, BellRing, Brain, Activity, GitBranch, FileText, Eye } from "lucide-react";
 import { Navigate } from "react-router-dom";
-import { useSurebetNotifier } from "@/hooks/useSurebetNotifier";
+// Surebet notifier disabled per user request
 
 const MARKETS = ["Chance Dupla", "S/ Empate", "Escanteios", "Cartões", "Gols", "Ambas Marcam"];
 const HIGHLIGHTS = [
@@ -110,8 +110,7 @@ export default function Index() {
     staleTime: 60000,
   });
 
-  // Monitor for surebets and notify
-  useSurebetNotifier(fixturesData);
+  // Surebet notifier disabled per user request
 
   // Listen for navigate-to-surebet event from notification bell
   useEffect(() => {
