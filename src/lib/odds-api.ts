@@ -98,6 +98,14 @@ export const LEAGUES = [
   { id: "soccer_uefa_champs_league", name: "Champions League", country: "World" },
 ];
 
+export const COPA_LEAGUES = [
+  { id: "soccer_fifa_world_cup", name: "Copa do Mundo", country: "World" },
+  { id: "soccer_international_friendlies", name: "Amistosos Internacionais", country: "World" },
+  { id: "soccer_conmebol_copa_america", name: "Copa América", country: "South America" },
+  { id: "soccer_fifa_world_cup_qualifiers_conmebol", name: "Eliminatórias CONMEBOL", country: "South America" },
+  { id: "soccer_fifa_world_cup_qualifiers_uefa", name: "Eliminatórias UEFA", country: "Europe" },
+];
+
 // Map our sport key IDs to API-Football league IDs
 const SPORT_KEY_TO_LEAGUE_ID: Record<string, number> = {
   soccer_epl: 39,
