@@ -15,6 +15,7 @@ const NBAIcon = () => <span className="text-sm leading-none">🏀</span>;
 const tabs = [
   { id: "futebol" as Tab, label: "Futebol", icon: Trophy },
   { id: "nba" as Tab, label: "NBA", icon: Trophy, customIcon: true },
+  { id: "copa" as Tab, label: "Copa", icon: Globe },
   { id: "bilhetes" as Tab, label: "Bilhetes", icon: Ticket },
   { id: "premium" as Tab, label: "Premium", icon: Star, proOnly: true },
   { id: "perfil" as Tab, label: "Perfil", icon: User },
