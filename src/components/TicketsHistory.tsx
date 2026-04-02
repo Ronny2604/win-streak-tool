@@ -280,6 +280,8 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
   const { tickets, isLoading, stats, updateResult, deleteTicket, updateNotes } = useSavedTickets();
   const [filter, setFilter] = useState<"all" | "pending" | "green" | "red">("all");
   const [completedScores, setCompletedScores] = useState<NormalizedFixture[]>([]);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [settling, setSettling] = useState(false);
 
   // Auto-settle with periodic polling
