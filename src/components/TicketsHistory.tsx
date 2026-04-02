@@ -509,7 +509,7 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
       )}
 
       {/* Filters */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {(["all", "pending", "green", "red"] as const).map((f) => (
           <button
             key={f}
@@ -523,6 +523,62 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
             {f === "all" ? "Todos" : f === "pending" ? "Pendentes" : f === "green" ? "Green" : "Red"}
           </button>
         ))}
+      </div>
+
+      {/* Date Range Filter */}
+      <div className="flex items-center gap-2">
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
+              dateFrom ? "bg-primary/10 border-primary/30 text-foreground" : "bg-card border-border text-muted-foreground hover:border-primary/30"
+            )}>
+              <CalendarIcon className="h-3.5 w-3.5" />
+              {dateFrom ? format(dateFrom, "dd/MM/yy", { locale: ptBR }) : "De"}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={dateFrom}
+              onSelect={setDateFrom}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
+
+        <span className="text-xs text-muted-foreground">→</span>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
+              dateTo ? "bg-primary/10 border-primary/30 text-foreground" : "bg-card border-border text-muted-foreground hover:border-primary/30"
+            )}>
+              <CalendarIcon className="h-3.5 w-3.5" />
+              {dateTo ? format(dateTo, "dd/MM/yy", { locale: ptBR }) : "Até"}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={dateTo}
+              onSelect={setDateTo}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
+
+        {(dateFrom || dateTo) && (
+          <button
+            onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}
+            className="px-2 py-1.5 rounded-lg text-[10px] font-semibold text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-all"
+          >
+            Limpar
+          </button>
+        )}
       </div>
 
       {/* List */}
