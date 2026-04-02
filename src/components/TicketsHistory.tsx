@@ -112,25 +112,41 @@ function SavedTicketCard({ ticket, onUpdateResult, onDelete, onUpdateNotes, sele
       {expanded && (
         <div className="border-t border-border/50">
           {/* Selections */}
-          {selections.map((sel: any, i: number) => (
-            <div key={i} className="px-4 py-3 border-b border-border/30 last:border-b-0">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-xs font-semibold text-foreground">
-                  {sel.fixture?.teams?.home?.name ?? "?"} vs {sel.fixture?.teams?.away?.name ?? "?"}
-                </p>
-                <span className={`text-xs font-bold ${colors.accent}`}>
-                  {Number(sel.odd).toFixed(2)}
-                </span>
+          {selections.map((sel: any, i: number) => {
+            const selResult = selectionResults[i];
+            const selIcon = selResult?.result === "green" ? CheckCircle2 : selResult?.result === "red" ? XCircle : Clock;
+            const selColor = selResult?.result === "green" ? "text-emerald-400" : selResult?.result === "red" ? "text-red-400" : "text-muted-foreground";
+            const SelIcon = selIcon;
+            return (
+              <div key={i} className="px-4 py-3 border-b border-border/30 last:border-b-0">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <SelIcon className={`h-3.5 w-3.5 ${selColor}`} />
+                    <p className="text-xs font-semibold text-foreground">
+                      {sel.fixture?.teams?.home?.name ?? sel.homeName ?? "?"} vs {sel.fixture?.teams?.away?.name ?? sel.awayName ?? "?"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {selResult?.score && (
+                      <span className="text-[10px] font-bold text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
+                        {selResult.score}
+                      </span>
+                    )}
+                    <span className={`text-xs font-bold ${colors.accent}`}>
+                      {Number(sel.odd).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Trophy className="h-3 w-3 text-neon" />
+                  <span className="text-[11px] font-semibold text-neon">{sel.label}</span>
+                </div>
+                {sel.reasoning && (
+                  <p className="text-[10px] text-muted-foreground mt-1">{sel.reasoning}</p>
+                )}
               </div>
-              <div className="flex items-center gap-1.5">
-                <Trophy className="h-3 w-3 text-neon" />
-                <span className="text-[11px] font-semibold text-neon">{sel.label}</span>
-              </div>
-              {sel.reasoning && (
-                <p className="text-[10px] text-muted-foreground mt-1">{sel.reasoning}</p>
-              )}
-            </div>
-          ))}
+            );
+          })}
 
           {/* Notes Section */}
           <div className="px-4 py-3 border-b border-border/30 bg-muted/10">
