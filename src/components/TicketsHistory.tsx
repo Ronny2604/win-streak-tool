@@ -1,9 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
+import { format, isAfter, isBefore, startOfDay, endOfDay } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useSavedTickets, SavedTicket } from "@/hooks/useSavedTickets";
 import { useAutoSettle, analyzeTicketSelections, type SelectionResult } from "@/hooks/useAutoSettle";
 import { getCompletedScores, type NormalizedFixture } from "@/lib/odds-api";
 import { shareViaWhatsApp, shareViaLink } from "@/lib/share-ticket";
 import { Textarea } from "./ui/textarea";
+import { Calendar } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { cn } from "@/lib/utils";
 import {
   CheckCircle2,
   XCircle,
