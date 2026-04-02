@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSavedTickets, SavedTicket } from "@/hooks/useSavedTickets";
-import { useAutoSettle } from "@/hooks/useAutoSettle";
+import { useAutoSettle, analyzeTicketSelections, type SelectionResult } from "@/hooks/useAutoSettle";
 import { getCompletedScores, type NormalizedFixture } from "@/lib/odds-api";
 import { shareViaWhatsApp, shareViaLink } from "@/lib/share-ticket";
 import { Textarea } from "./ui/textarea";
