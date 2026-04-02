@@ -276,8 +276,20 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
   const [completedScores, setCompletedScores] = useState<NormalizedFixture[]>([]);
   const [settling, setSettling] = useState(false);
 
-  // Auto-settle on mount
+  // Auto-settle with periodic polling
   useAutoSettle(completedScores, tickets);
+
+  // Analyze per-selection results for all tickets
+  const selectionResultsMap = useMemo(() => {
+    const map: Record<string, SelectionResult[]> = {};
+    const finished = completedScores.filter(
+      (f) => f.status.short === "FT" && f.goals.home !== null && f.goals.away !== null
+    );
+    for (const ticket of tickets) {
+      map[ticket.id] = analyzeTicketSelections(ticket, finished);
+    }
+    return map;
+  }, [completedScores, tickets]);
 
   const fetchAndSettle = async () => {
     setSettling(true);
