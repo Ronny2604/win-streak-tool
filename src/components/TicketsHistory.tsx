@@ -318,7 +318,18 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
     getCompletedScores().then(setCompletedScores).catch(() => {});
   }, []);
 
-  const filtered = filter === "all" ? tickets : tickets.filter((t) => t.result === filter);
+  const filtered = useMemo(() => {
+    let result = filter === "all" ? tickets : tickets.filter((t) => t.result === filter);
+    if (dateFrom) {
+      const from = startOfDay(dateFrom);
+      result = result.filter((t) => isAfter(new Date(t.created_at), from));
+    }
+    if (dateTo) {
+      const to = endOfDay(dateTo);
+      result = result.filter((t) => isBefore(new Date(t.created_at), to));
+    }
+    return result;
+  }, [tickets, filter, dateFrom, dateTo]);
 
   const handleUpdateResult = async (id: string, result: "pending" | "green" | "red") => {
     try {
