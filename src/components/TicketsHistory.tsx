@@ -1,9 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
+import { format, isAfter, isBefore, startOfDay, endOfDay } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useSavedTickets, SavedTicket } from "@/hooks/useSavedTickets";
 import { useAutoSettle, analyzeTicketSelections, type SelectionResult } from "@/hooks/useAutoSettle";
 import { getCompletedScores, type NormalizedFixture } from "@/lib/odds-api";
 import { shareViaWhatsApp, shareViaLink } from "@/lib/share-ticket";
 import { Textarea } from "./ui/textarea";
+import { Calendar } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { cn } from "@/lib/utils";
 import {
   CheckCircle2,
   XCircle,
@@ -26,6 +31,7 @@ import {
   Check,
   X,
   RefreshCw,
+  CalendarIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -274,6 +280,8 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
   const { tickets, isLoading, stats, updateResult, deleteTicket, updateNotes } = useSavedTickets();
   const [filter, setFilter] = useState<"all" | "pending" | "green" | "red">("all");
   const [completedScores, setCompletedScores] = useState<NormalizedFixture[]>([]);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
   const [settling, setSettling] = useState(false);
 
   // Auto-settle with periodic polling
@@ -310,7 +318,18 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
     getCompletedScores().then(setCompletedScores).catch(() => {});
   }, []);
 
-  const filtered = filter === "all" ? tickets : tickets.filter((t) => t.result === filter);
+  const filtered = useMemo(() => {
+    let result = filter === "all" ? tickets : tickets.filter((t) => t.result === filter);
+    if (dateFrom) {
+      const from = startOfDay(dateFrom);
+      result = result.filter((t) => isAfter(new Date(t.created_at), from));
+    }
+    if (dateTo) {
+      const to = endOfDay(dateTo);
+      result = result.filter((t) => isBefore(new Date(t.created_at), to));
+    }
+    return result;
+  }, [tickets, filter, dateFrom, dateTo]);
 
   const handleUpdateResult = async (id: string, result: "pending" | "green" | "red") => {
     try {
@@ -490,7 +509,7 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
       )}
 
       {/* Filters */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {(["all", "pending", "green", "red"] as const).map((f) => (
           <button
             key={f}
@@ -504,6 +523,62 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
             {f === "all" ? "Todos" : f === "pending" ? "Pendentes" : f === "green" ? "Green" : "Red"}
           </button>
         ))}
+      </div>
+
+      {/* Date Range Filter */}
+      <div className="flex items-center gap-2">
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
+              dateFrom ? "bg-primary/10 border-primary/30 text-foreground" : "bg-card border-border text-muted-foreground hover:border-primary/30"
+            )}>
+              <CalendarIcon className="h-3.5 w-3.5" />
+              {dateFrom ? format(dateFrom, "dd/MM/yy", { locale: ptBR }) : "De"}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={dateFrom}
+              onSelect={setDateFrom}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
+
+        <span className="text-xs text-muted-foreground">→</span>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
+              dateTo ? "bg-primary/10 border-primary/30 text-foreground" : "bg-card border-border text-muted-foreground hover:border-primary/30"
+            )}>
+              <CalendarIcon className="h-3.5 w-3.5" />
+              {dateTo ? format(dateTo, "dd/MM/yy", { locale: ptBR }) : "Até"}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={dateTo}
+              onSelect={setDateTo}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
+
+        {(dateFrom || dateTo) && (
+          <button
+            onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}
+            className="px-2 py-1.5 rounded-lg text-[10px] font-semibold text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-all"
+          >
+            Limpar
+          </button>
+        )}
       </div>
 
       {/* List */}
