@@ -366,49 +366,128 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
         </button>
       </div>
 
-      {/* Accuracy Banner */}
-      {stats.total > 0 && stats.green + stats.red > 0 && (
-        <div className="rounded-xl bg-primary/10 border border-primary/20 p-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+      {/* Pie Chart + Stats */}
+      {stats.total > 0 && (
+        <div className="rounded-2xl bg-card border border-border p-4 space-y-3">
+          <div className="flex items-center gap-2 mb-1">
             <Trophy className="h-5 w-5 text-primary" />
-            <div>
-              <p className="text-xs font-bold text-foreground">Acertividade do App</p>
-              <p className="text-[10px] text-muted-foreground">
-                {stats.green} acertos de {stats.green + stats.red} resolvidos
-              </p>
-            </div>
+            <p className="text-sm font-bold text-foreground">Resumo de Acertividade</p>
           </div>
-          <div className="text-right">
-            <p className={`text-2xl font-black ${stats.winRate >= 60 ? "text-chart-positive" : stats.winRate >= 40 ? "text-badge-star" : "text-chart-negative"}`}>
-              {stats.winRate}%
-            </p>
+
+          <div className="flex items-center gap-4">
+            {/* SVG Pie Chart */}
+            <div className="relative flex-shrink-0">
+              <svg width="110" height="110" viewBox="0 0 110 110">
+                {(() => {
+                  const resolved = stats.green + stats.red;
+                  const total = resolved + stats.pending;
+                  if (total === 0) return null;
+
+                  const greenPct = total > 0 ? stats.green / total : 0;
+                  const redPct = total > 0 ? stats.red / total : 0;
+                  const pendingPct = total > 0 ? stats.pending / total : 0;
+
+                  const r = 45;
+                  const cx = 55;
+                  const cy = 55;
+                  const circumference = 2 * Math.PI * r;
+
+                  const greenLen = greenPct * circumference;
+                  const redLen = redPct * circumference;
+                  const pendingLen = pendingPct * circumference;
+
+                  const greenOffset = 0;
+                  const redOffset = -greenLen;
+                  const pendingOffset = -(greenLen + redLen);
+
+                  return (
+                    <>
+                      {/* Background circle */}
+                      <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth="14" opacity="0.3" />
+                      {/* Green arc */}
+                      {greenLen > 0 && (
+                        <circle
+                          cx={cx} cy={cy} r={r} fill="none"
+                          stroke="hsl(142, 71%, 45%)"
+                          strokeWidth="14"
+                          strokeDasharray={`${greenLen} ${circumference - greenLen}`}
+                          strokeDashoffset={greenOffset}
+                          strokeLinecap="round"
+                          transform={`rotate(-90 ${cx} ${cy})`}
+                          className="transition-all duration-700"
+                        />
+                      )}
+                      {/* Red arc */}
+                      {redLen > 0 && (
+                        <circle
+                          cx={cx} cy={cy} r={r} fill="none"
+                          stroke="hsl(0, 84%, 60%)"
+                          strokeWidth="14"
+                          strokeDasharray={`${redLen} ${circumference - redLen}`}
+                          strokeDashoffset={redOffset}
+                          strokeLinecap="round"
+                          transform={`rotate(-90 ${cx} ${cy})`}
+                          className="transition-all duration-700"
+                        />
+                      )}
+                      {/* Pending arc */}
+                      {pendingLen > 0 && (
+                        <circle
+                          cx={cx} cy={cy} r={r} fill="none"
+                          stroke="hsl(var(--muted-foreground))"
+                          strokeWidth="14"
+                          strokeDasharray={`${pendingLen} ${circumference - pendingLen}`}
+                          strokeDashoffset={pendingOffset}
+                          strokeLinecap="round"
+                          transform={`rotate(-90 ${cx} ${cy})`}
+                          className="transition-all duration-700"
+                          opacity="0.5"
+                        />
+                      )}
+                    </>
+                  );
+                })()}
+                {/* Center text */}
+                <text x="55" y="50" textAnchor="middle" className="fill-foreground text-xl font-black">
+                  {stats.winRate}%
+                </text>
+                <text x="55" y="68" textAnchor="middle" className="fill-muted-foreground text-[9px]">
+                  win rate
+                </text>
+              </svg>
+            </div>
+
+            {/* Legend + numbers */}
+            <div className="flex-1 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-emerald-500" />
+                  <span className="text-xs text-foreground font-medium">Green</span>
+                </div>
+                <span className="text-sm font-bold text-emerald-400">{stats.green}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-red-500" />
+                  <span className="text-xs text-foreground font-medium">Red</span>
+                </div>
+                <span className="text-sm font-bold text-red-400">{stats.red}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-muted-foreground/50" />
+                  <span className="text-xs text-foreground font-medium">Pendentes</span>
+                </div>
+                <span className="text-sm font-bold text-muted-foreground">{stats.pending}</span>
+              </div>
+              <div className="pt-1.5 border-t border-border/50 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Total</span>
+                <span className="text-sm font-bold text-foreground">{stats.total}</span>
+              </div>
+            </div>
           </div>
         </div>
       )}
-
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-2">
-        <div className="rounded-xl bg-card border border-border p-3 text-center">
-          <BarChart3 className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
-          <p className="text-lg font-bold text-foreground">{stats.total}</p>
-          <p className="text-[10px] text-muted-foreground">Total</p>
-        </div>
-        <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 text-center">
-          <CheckCircle2 className="h-4 w-4 mx-auto text-emerald-400 mb-1" />
-          <p className="text-lg font-bold text-emerald-400">{stats.green}</p>
-          <p className="text-[10px] text-emerald-400/70">Green</p>
-        </div>
-        <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-center">
-          <XCircle className="h-4 w-4 mx-auto text-red-400 mb-1" />
-          <p className="text-lg font-bold text-red-400">{stats.red}</p>
-          <p className="text-[10px] text-red-400/70">Red</p>
-        </div>
-        <div className="rounded-xl bg-neon/10 border border-neon/20 p-3 text-center">
-          <TrendingUp className="h-4 w-4 mx-auto text-neon mb-1" />
-          <p className="text-lg font-bold text-neon">{stats.winRate}%</p>
-          <p className="text-[10px] text-neon/70">Win Rate</p>
-        </div>
-      </div>
 
       {/* Filters */}
       <div className="flex gap-2">
