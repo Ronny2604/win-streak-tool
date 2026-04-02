@@ -52,9 +52,10 @@ interface SavedTicketCardProps {
   onUpdateResult: (id: string, result: "pending" | "green" | "red") => void;
   onDelete: (id: string) => void;
   onUpdateNotes: (id: string, notes: string) => void;
+  selectionResults: SelectionResult[];
 }
 
-function SavedTicketCard({ ticket, onUpdateResult, onDelete, onUpdateNotes }: SavedTicketCardProps) {
+function SavedTicketCard({ ticket, onUpdateResult, onDelete, onUpdateNotes, selectionResults }: SavedTicketCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesText, setNotesText] = useState(ticket.notes || "");
