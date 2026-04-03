@@ -284,6 +284,11 @@ export default function Index() {
                 { id: "report" as PremiumSection, icon: FileText, label: "Relatório IA" },
                 { id: "challenges" as PremiumSection, icon: Trophy, label: "Desafios" },
                 { id: "patterns" as PremiumSection, icon: Eye, label: "Padrões" },
+                { id: "livestats" as PremiumSection, icon: Activity, label: "Ao Vivo+" },
+                { id: "export" as PremiumSection, icon: Download, label: "Exportar" },
+                { id: "bookmaker" as PremiumSection, icon: Globe, label: "Casas" },
+                { id: "smartbet" as PremiumSection, icon: Brain, label: "Smart Bet" },
+                { id: "oddshistory" as PremiumSection, icon: LineChart, label: "Odds Hist." },
               ].map(({ id, icon: Icon, label }) => (
                 <button
                   key={id}
