@@ -42,7 +42,12 @@ import {
   CorrelationAnalysis,
   DailyReport,
   ChallengesSystem,
-  PatternDetector
+  PatternDetector,
+  LiveMatchStats,
+  ExportReports,
+  BookmakerComparator,
+  SmartBetSuggestions,
+  OddsHistoryChart
 } from "@/components/premium";
 import { NBASection } from "@/components/nba/NBASection";
 import { CopaSection } from "@/components/CopaSection";
