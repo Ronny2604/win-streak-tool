@@ -330,6 +330,11 @@ export default function Index() {
             {premiumSection === "report" && fixturesData && <DailyReport fixtures={fixturesData} />}
             {premiumSection === "challenges" && <ChallengesSystem />}
             {premiumSection === "patterns" && fixturesData && <PatternDetector fixtures={fixturesData} />}
+            {premiumSection === "livestats" && <LiveMatchStats fixtures={fixturesData} />}
+            {premiumSection === "export" && <ExportReports />}
+            {premiumSection === "bookmaker" && <BookmakerComparator fixtures={fixturesData} />}
+            {premiumSection === "smartbet" && fixturesData && <SmartBetSuggestions fixtures={fixturesData} />}
+            {premiumSection === "oddshistory" && <OddsHistoryChart fixtures={fixturesData} />}
           </div>
         ) : (<>
         {/* Stats Summary */}
