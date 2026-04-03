@@ -42,11 +42,16 @@ import {
   CorrelationAnalysis,
   DailyReport,
   ChallengesSystem,
-  PatternDetector
+  PatternDetector,
+  LiveMatchStats,
+  ExportReports,
+  BookmakerComparator,
+  SmartBetSuggestions,
+  OddsHistoryChart
 } from "@/components/premium";
 import { NBASection } from "@/components/nba/NBASection";
 import { CopaSection } from "@/components/CopaSection";
-import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield, BellRing, Brain, Activity, GitBranch, FileText, Eye, Globe } from "lucide-react";
+import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield, BellRing, Brain, Activity, GitBranch, FileText, Eye, Globe, LineChart, Download } from "lucide-react";
 import { Navigate } from "react-router-dom";
 // Surebet notifier disabled per user request
 
@@ -57,7 +62,7 @@ const HIGHLIGHTS = [
   { label: "TOP", icon: Target, color: "text-chart-negative" },
 ];
 
-type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai" | "surebet" | "livealerts" | "streaks" | "multibet" | "calculator" | "insights" | "oddstracker" | "correlation" | "report" | "challenges" | "patterns";
+type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai" | "surebet" | "livealerts" | "streaks" | "multibet" | "calculator" | "insights" | "oddstracker" | "correlation" | "report" | "challenges" | "patterns" | "livestats" | "export" | "bookmaker" | "smartbet" | "oddshistory";
 
 function applyQuickFilter(fixtures: NormalizedFixture[], filter: QuickFilterType): NormalizedFixture[] {
   switch (filter) {
@@ -279,6 +284,11 @@ export default function Index() {
                 { id: "report" as PremiumSection, icon: FileText, label: "Relatório IA" },
                 { id: "challenges" as PremiumSection, icon: Trophy, label: "Desafios" },
                 { id: "patterns" as PremiumSection, icon: Eye, label: "Padrões" },
+                { id: "livestats" as PremiumSection, icon: Activity, label: "Ao Vivo+" },
+                { id: "export" as PremiumSection, icon: Download, label: "Exportar" },
+                { id: "bookmaker" as PremiumSection, icon: Globe, label: "Casas" },
+                { id: "smartbet" as PremiumSection, icon: Brain, label: "Smart Bet" },
+                { id: "oddshistory" as PremiumSection, icon: LineChart, label: "Odds Hist." },
               ].map(({ id, icon: Icon, label }) => (
                 <button
                   key={id}
@@ -320,6 +330,11 @@ export default function Index() {
             {premiumSection === "report" && fixturesData && <DailyReport fixtures={fixturesData} />}
             {premiumSection === "challenges" && <ChallengesSystem />}
             {premiumSection === "patterns" && fixturesData && <PatternDetector fixtures={fixturesData} />}
+            {premiumSection === "livestats" && <LiveMatchStats fixtures={fixturesData} />}
+            {premiumSection === "export" && <ExportReports />}
+            {premiumSection === "bookmaker" && <BookmakerComparator fixtures={fixturesData} />}
+            {premiumSection === "smartbet" && fixturesData && <SmartBetSuggestions fixtures={fixturesData} />}
+            {premiumSection === "oddshistory" && <OddsHistoryChart fixtures={fixturesData} />}
           </div>
         ) : (<>
         {/* Stats Summary */}
