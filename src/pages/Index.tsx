@@ -62,7 +62,7 @@ const HIGHLIGHTS = [
   { label: "TOP", icon: Target, color: "text-chart-negative" },
 ];
 
-type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai" | "surebet" | "livealerts" | "streaks" | "multibet" | "calculator" | "insights" | "oddstracker" | "correlation" | "report" | "challenges" | "patterns";
+type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai" | "surebet" | "livealerts" | "streaks" | "multibet" | "calculator" | "insights" | "oddstracker" | "correlation" | "report" | "challenges" | "patterns" | "livestats" | "export" | "bookmaker" | "smartbet" | "oddshistory";
 
 function applyQuickFilter(fixtures: NormalizedFixture[], filter: QuickFilterType): NormalizedFixture[] {
   switch (filter) {
