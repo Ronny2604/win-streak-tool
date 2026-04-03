@@ -18,3 +18,8 @@ export { CorrelationAnalysis } from "./CorrelationAnalysis";
 export { DailyReport } from "./DailyReport";
 export { ChallengesSystem } from "./ChallengesSystem";
 export { PatternDetector } from "./PatternDetector";
+export { LiveMatchStats } from "./LiveMatchStats";
+export { ExportReports } from "./ExportReports";
+export { BookmakerComparator } from "./BookmakerComparator";
+export { SmartBetSuggestions } from "./SmartBetSuggestions";
+export { OddsHistoryChart } from "./OddsHistoryChart";
