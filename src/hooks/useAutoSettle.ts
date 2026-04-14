@@ -98,6 +98,8 @@ export function useAutoSettle(
   const queryClient = useQueryClient();
   const lastSettleRef = useRef<string>("");
 
+  useEffect(() => { requestNotificationPermission(); }, []);
+
   const settle = useCallback(
     async (scores: NormalizedFixture[]) => {
       if (scores.length === 0 || tickets.length === 0) return 0;
