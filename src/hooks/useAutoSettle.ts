@@ -65,6 +65,28 @@ export function analyzeTicketSelections(
   });
 }
 
+// ─── Push notification helper ───────────────────────────────
+
+function requestNotificationPermission() {
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+}
+
+function sendPushNotification(msg: string, greenCount: number, redCount: number) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  try {
+    const icon = greenCount > redCount ? "✅" : "❌";
+    new Notification(`${icon} Bilhete Atualizado`, {
+      body: msg,
+      icon: "/placeholder.svg",
+      tag: "auto-settle",
+    } as NotificationOptions);
+  } catch {
+    // Silent — notifications not supported in this context
+  }
+}
+
 // ─── Main hook ──────────────────────────────────────────────
 
 const POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
@@ -75,6 +97,8 @@ export function useAutoSettle(
 ) {
   const queryClient = useQueryClient();
   const lastSettleRef = useRef<string>("");
+
+  useEffect(() => { requestNotificationPermission(); }, []);
 
   const settle = useCallback(
     async (scores: NormalizedFixture[]) => {
@@ -130,10 +154,9 @@ export function useAutoSettle(
       const total = greenCount + redCount;
       if (total > 0) {
         queryClient.invalidateQueries({ queryKey: ["saved-tickets"] });
-        toast.success(
-          `Auto-settle: ${greenCount} Green ✅ ${redCount} Red ❌`,
-          { duration: 4000 }
-        );
+        const msg = `Auto-settle: ${greenCount} Green ✅ ${redCount} Red ❌`;
+        toast.success(msg, { duration: 4000 });
+        sendPushNotification(msg, greenCount, redCount);
       }
       return total;
     },
