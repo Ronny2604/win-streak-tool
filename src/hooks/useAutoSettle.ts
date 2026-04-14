@@ -4,164 +4,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getCompletedScores, type NormalizedFixture } from "@/lib/odds-api";
 import type { SavedTicket } from "@/hooks/useSavedTickets";
 import { toast } from "sonner";
-
-// ─── Bet type resolution ────────────────────────────────────
-
-type BetType =
-  | "home" | "draw" | "away"
-  | "double_home_draw" | "double_away_draw" | "double_home_away"
-  | "over_1_5" | "over_2_5" | "over_3_5"
-  | "under_1_5" | "under_2_5" | "under_3_5"
-  | "btts_yes" | "btts_no";
-
-const BET_TYPE_MAP: Record<string, BetType> = {
-  home: "home",
-  draw: "draw",
-  away: "away",
-  double_home_draw: "double_home_draw",
-  double_away_draw: "double_away_draw",
-  double_home_away: "double_home_away",
-  // Portuguese labels
-  "vitória casa": "home",
-  "vitoria casa": "home",
-  casa: "home",
-  "1": "home",
-  empate: "draw",
-  x: "draw",
-  "vitória fora": "away",
-  "vitoria fora": "away",
-  fora: "away",
-  "2": "away",
-  "casa ou empate": "double_home_draw",
-  "1x": "double_home_draw",
-  "fora ou empate": "double_away_draw",
-  x2: "double_away_draw",
-  "casa ou fora": "double_home_away",
-  "12": "double_home_away",
-  // Over/Under
-  "over 1.5": "over_1_5",
-  "mais de 1.5": "over_1_5",
-  "over 2.5": "over_2_5",
-  "mais de 2.5": "over_2_5",
-  "over 3.5": "over_3_5",
-  "mais de 3.5": "over_3_5",
-  "under 1.5": "under_1_5",
-  "menos de 1.5": "under_1_5",
-  "under 2.5": "under_2_5",
-  "menos de 2.5": "under_2_5",
-  "under 3.5": "under_3_5",
-  "menos de 3.5": "under_3_5",
-  // BTTS
-  "ambas marcam": "btts_yes",
-  "btts sim": "btts_yes",
-  "btts yes": "btts_yes",
-  "ambas não marcam": "btts_no",
-  "btts não": "btts_no",
-  "btts no": "btts_no",
-};
-
-function resolveBetType(raw: string): BetType | null {
-  if (!raw) return null;
-  const key = raw
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-  return BET_TYPE_MAP[key] ?? null;
-}
-
-// ─── Outcome evaluation ────────────────────────────────────
-
-function didBetWin(betType: BetType, h: number, a: number): boolean {
-  const total = h + a;
-  const homeWin = h > a;
-  const draw = h === a;
-  const awayWin = a > h;
-
-  switch (betType) {
-    case "home": return homeWin;
-    case "draw": return draw;
-    case "away": return awayWin;
-    case "double_home_draw": return homeWin || draw;
-    case "double_away_draw": return awayWin || draw;
-    case "double_home_away": return homeWin || awayWin;
-    case "over_1_5": return total > 1.5;
-    case "over_2_5": return total > 2.5;
-    case "over_3_5": return total > 3.5;
-    case "under_1_5": return total < 1.5;
-    case "under_2_5": return total < 2.5;
-    case "under_3_5": return total < 3.5;
-    case "btts_yes": return h > 0 && a > 0;
-    case "btts_no": return h === 0 || a === 0;
-    default: return false;
-  }
-}
-
-// ─── Name matching ──────────────────────────────────────────
-
-function cleanName(name: string): string {
-  return name
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/\b(fc|cf|sc|ac|rc|as|ss|us|afc|club|cd|ud|sporting|athletic|atletico|city|united|real)\b/gi, "")
-    .replace(/[^a-z0-9\s]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function teamsMatch(a: string, b: string): boolean {
-  const ca = cleanName(a);
-  const cb = cleanName(b);
-  if (ca === cb) return true;
-  if (ca.includes(cb) || cb.includes(ca)) return true;
-  const tokensA = ca.split(" ").filter((t) => t.length > 2);
-  const tokensB = cb.split(" ").filter((t) => t.length > 2);
-  const [shorter, longer] = tokensA.length <= tokensB.length ? [tokensA, cb] : [tokensB, ca];
-  if (shorter.length > 0 && shorter.every((token) => longer.includes(token))) return true;
-  return false;
-}
-
-// ─── Selection data extraction ──────────────────────────────
-
-function extractTeamNames(sel: any): { home: string; away: string } | null {
-  if (sel.fixture?.teams?.home?.name && sel.fixture?.teams?.away?.name) {
-    return { home: sel.fixture.teams.home.name, away: sel.fixture.teams.away.name };
-  }
-  if (typeof sel.fixture === "string" && sel.fixture.includes(" vs ")) {
-    const [home, away] = sel.fixture.split(" vs ");
-    return { home: home.trim(), away: away.trim() };
-  }
-  if (sel.homeName && sel.awayName) {
-    return { home: sel.homeName, away: sel.awayName };
-  }
-  // Try match field (some ticket formats)
-  if (sel.match && typeof sel.match === "string" && sel.match.includes(" vs ")) {
-    const [home, away] = sel.match.split(" vs ");
-    return { home: home.trim(), away: away.trim() };
-  }
-  return null;
-}
-
-function extractBetType(sel: any): BetType | null {
-  for (const field of ["betType", "label", "bet", "market", "tip"]) {
-    if (sel[field]) {
-      const resolved = resolveBetType(String(sel[field]));
-      if (resolved) return resolved;
-    }
-  }
-  // Fallback: check bet field for keywords
-  if (sel.bet) {
-    const bet = sel.bet.toLowerCase();
-    if (bet.includes("(casa)") || bet.includes("home")) return "home";
-    if (bet.includes("empate") || bet.includes("draw")) return "draw";
-    if (bet.includes("(fora)") || bet.includes("away")) return "away";
-    if (bet.includes("over 2.5") || bet.includes("mais de 2.5")) return "over_2_5";
-    if (bet.includes("under 2.5") || bet.includes("menos de 2.5")) return "under_2_5";
-    if (bet.includes("ambas")) return "btts_yes";
-  }
-  return null;
-}
+import {
+  type BetType,
+  resolveBetType,
+  didBetWin,
+  teamsMatch,
+  extractTeamNames,
+  extractBetType,
+} from "@/lib/bet-resolver";
 
 // ─── Selection result type (for per-selection status) ───────
 
@@ -321,9 +171,7 @@ export function useAutoSettle(
       }
     };
 
-    // Initial fetch
     poll();
-
     const interval = setInterval(poll, POLL_INTERVAL);
     return () => clearInterval(interval);
   }, [tickets, settle]);
