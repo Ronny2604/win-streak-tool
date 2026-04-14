@@ -130,10 +130,9 @@ export function useAutoSettle(
       const total = greenCount + redCount;
       if (total > 0) {
         queryClient.invalidateQueries({ queryKey: ["saved-tickets"] });
-        toast.success(
-          `Auto-settle: ${greenCount} Green ✅ ${redCount} Red ❌`,
-          { duration: 4000 }
-        );
+        const msg = `Auto-settle: ${greenCount} Green ✅ ${redCount} Red ❌`;
+        toast.success(msg, { duration: 4000 });
+        sendPushNotification(msg, greenCount, redCount);
       }
       return total;
     },
