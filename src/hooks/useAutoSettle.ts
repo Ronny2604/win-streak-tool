@@ -65,6 +65,29 @@ export function analyzeTicketSelections(
   });
 }
 
+// ─── Push notification helper ───────────────────────────────
+
+function requestNotificationPermission() {
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+}
+
+function sendPushNotification(msg: string, greenCount: number, redCount: number) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  try {
+    const icon = greenCount > redCount ? "✅" : "❌";
+    new Notification(`${icon} Bilhete Atualizado`, {
+      body: msg,
+      icon: "/placeholder.svg",
+      tag: "auto-settle",
+      renotify: true,
+    });
+  } catch {
+    // Silent — notifications not supported in this context
+  }
+}
+
 // ─── Main hook ──────────────────────────────────────────────
 
 const POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
