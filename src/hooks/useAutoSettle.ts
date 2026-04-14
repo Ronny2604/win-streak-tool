@@ -81,8 +81,7 @@ function sendPushNotification(msg: string, greenCount: number, redCount: number)
       body: msg,
       icon: "/placeholder.svg",
       tag: "auto-settle",
-      renotify: true,
-    });
+    } as NotificationOptions);
   } catch {
     // Silent — notifications not supported in this context
   }
