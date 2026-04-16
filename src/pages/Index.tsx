@@ -170,10 +170,10 @@ export default function Index() {
   // Free users can access basic features - no redirect needed
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-4">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-surface/30 pb-20 md:pb-4">
       <AppHeader />
 
-      <main className="container max-w-2xl py-4 space-y-4">
+      <main className="container max-w-2xl py-4 space-y-4 animate-fade-in-up">
         {/* Tabs - hidden on mobile since we have bottom nav */}
         <div className="hidden md:flex gap-4 border-b border-border overflow-x-auto scrollbar-none">
           <button
