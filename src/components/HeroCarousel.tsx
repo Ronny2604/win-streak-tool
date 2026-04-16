@@ -199,6 +199,16 @@ export function HeroCarousel({ fixtures, onSelect }: HeroCarouselProps) {
           </div>
         </>
       )}
+
+      {/* Auto-advance progress bar */}
+      {top.length > 1 && (
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-border/30 overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-neon via-neon-glow to-neon shadow-[0_0_8px_hsl(var(--neon))] transition-[width] duration-[50ms] ease-linear"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 }
