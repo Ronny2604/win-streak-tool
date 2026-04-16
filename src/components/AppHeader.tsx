@@ -35,12 +35,16 @@ export function AppHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/70 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-[0_1px_0_0_hsl(var(--border)/0.3)]">
+        <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-neon/40 to-transparent" />
         <div className="container flex h-14 items-center justify-between">
-          <div className="flex items-center gap-3">
-            <BarChart3 className="h-6 w-6 text-neon" />
-            <Link to="/" className="text-lg font-extrabold tracking-tight text-foreground">
-              Ronny<span className="text-neon">BR</span>
+          <div className="flex items-center gap-2.5">
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-neon/20 to-neon/5 border border-neon/30">
+              <BarChart3 className="h-4.5 w-4.5 text-neon" />
+              <span className="absolute inset-0 rounded-xl bg-neon/10 blur-md -z-10" />
+            </div>
+            <Link to="/" className="text-lg font-extrabold tracking-tight text-foreground leading-none">
+              Ronny<span className="bg-gradient-to-r from-neon to-neon-glow bg-clip-text text-transparent">BR</span>
             </Link>
             {keySession.valid && keySession.plan && (
               <>
