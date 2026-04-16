@@ -170,10 +170,10 @@ export default function Index() {
   // Free users can access basic features - no redirect needed
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-4">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-surface/30 pb-20 md:pb-4">
       <AppHeader />
 
-      <main className="container max-w-2xl py-4 space-y-4">
+      <main className="container max-w-2xl py-4 space-y-4 animate-fade-in-up">
         {/* Tabs - hidden on mobile since we have bottom nav */}
         <div className="hidden md:flex gap-4 border-b border-border overflow-x-auto scrollbar-none">
           <button
@@ -337,62 +337,93 @@ export default function Index() {
             {premiumSection === "oddshistory" && <OddsHistoryChart fixtures={fixturesData} />}
           </div>
         ) : (<>
-        {/* Stats Summary */}
+        {/* Hero Stats Summary */}
         <StatsSummaryBar fixtures={fixtures} isLoading={isLoading} />
+
+        {/* Search */}
+        <div className="relative group">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-neon transition-colors" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar times, jogadores ou ligas..."
+            className="w-full rounded-2xl bg-card/80 backdrop-blur border border-border/60 py-3 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-neon/40 focus:border-neon/40 transition-all shadow-sm"
+          />
+        </div>
 
         {/* Quick Filters */}
         <QuickFilters active={quickFilter} onChange={setQuickFilter} />
 
-        {/* Market filters */}
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-          {MARKETS.map((m) => (
-            <FilterChip
-              key={m}
-              label={m}
-              active={activeMarkets.includes(m)}
-              onClick={() => toggleMarket(m)}
-            />
-          ))}
+        {/* Section: Markets */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 px-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-neon shadow-[0_0_6px_hsl(var(--neon))]" />
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Mercados</h3>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {MARKETS.map((m) => (
+              <FilterChip
+                key={m}
+                label={m}
+                active={activeMarkets.includes(m)}
+                onClick={() => toggleMarket(m)}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Highlights */}
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {HIGHLIGHTS.map((h, i) => (
-            <button
-              key={h.label}
-              onClick={() => setActiveHighlight(activeHighlight === i ? null : i)}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold tracking-wide transition-all whitespace-nowrap ${
-                activeHighlight === i
-                  ? "bg-card border border-neon/50 glow-neon"
-                  : "bg-card border border-border hover:border-neon/30"
-              }`}
-            >
-              <h.icon className={`h-4 w-4 ${h.color}`} />
-              <span className="text-foreground">{h.label}</span>
-            </button>
-          ))}
+        {/* Section: Highlights */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 px-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-badge-star shadow-[0_0_6px_hsl(var(--badge-star))]" />
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Destaques</h3>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {HIGHLIGHTS.map((h, i) => (
+              <button
+                key={h.label}
+                onClick={() => setActiveHighlight(activeHighlight === i ? null : i)}
+                className={`flex items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-bold tracking-wide transition-all whitespace-nowrap ${
+                  activeHighlight === i
+                    ? "bg-gradient-to-r from-card to-surface border border-neon/50 glow-neon scale-[1.02]"
+                    : "bg-card/80 backdrop-blur border border-border/60 hover:border-neon/30 hover:scale-[1.02]"
+                }`}
+              >
+                <h.icon className={`h-4 w-4 ${h.color}`} />
+                <span className="text-foreground">{h.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* League filter */}
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          <FilterChip
-            label="Todos"
-            active={!selectedLeague}
-            onClick={() => setSelectedLeague(undefined)}
-          />
-          {LEAGUES.map((l) => (
+        {/* Section: Leagues */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 px-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-badge-hot shadow-[0_0_6px_hsl(var(--badge-hot))]" />
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Ligas</h3>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
             <FilterChip
-              key={l.id}
-              label={l.name}
-              active={selectedLeague === l.id}
-              onClick={() => setSelectedLeague(selectedLeague === l.id ? undefined : l.id)}
+              label="Todas"
+              active={!selectedLeague}
+              onClick={() => setSelectedLeague(undefined)}
             />
-          ))}
+            {LEAGUES.map((l) => (
+              <FilterChip
+                key={l.id}
+                label={l.name}
+                active={selectedLeague === l.id}
+                onClick={() => setSelectedLeague(selectedLeague === l.id ? undefined : l.id)}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Active filters display */}
         {activeMarkets.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-2 rounded-xl bg-surface/50 border border-border/40 p-2.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Ativos:</span>
             {activeMarkets.map((m) => (
               <FilterChip
                 key={m}
@@ -405,7 +436,7 @@ export default function Index() {
             ))}
             <button
               onClick={() => setActiveMarkets([])}
-              className="text-xs font-medium text-chart-negative hover:underline"
+              className="ml-auto text-xs font-semibold text-chart-negative hover:underline"
             >
               Limpar
             </button>
@@ -421,16 +452,19 @@ export default function Index() {
           />
         )}
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar Jogadores ou Times"
-            className="w-full rounded-xl bg-card border border-border py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-neon/50 focus:border-neon/50 transition-all"
-          />
+        {/* Section: Games */}
+        <div className="flex items-center justify-between px-1 pt-1">
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-chart-positive shadow-[0_0_6px_hsl(var(--chart-positive))]" />
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+              {activeTab === "live" ? "Ao Vivo" : "Próximos Jogos"}
+            </h3>
+          </div>
+          {filteredFixtures && (
+            <span className="text-[10px] font-semibold text-muted-foreground tabular-nums">
+              {filteredFixtures.length} {filteredFixtures.length === 1 ? "jogo" : "jogos"}
+            </span>
+          )}
         </div>
 
         {/* Results */}
