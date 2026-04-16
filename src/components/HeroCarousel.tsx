@@ -61,12 +61,25 @@ export function HeroCarousel({ fixtures, onSelect }: HeroCarouselProps) {
   }, [fixtures]);
 
   const [index, setIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const SLIDE_MS = 5000;
+  const TICK_MS = 50;
 
   useEffect(() => {
     if (top.length <= 1) return;
-    const t = setInterval(() => setIndex((i) => (i + 1) % top.length), 5000);
-    return () => clearInterval(t);
-  }, [top.length]);
+    setProgress(0);
+    const tick = setInterval(() => {
+      setProgress((p) => {
+        const next = p + (TICK_MS / SLIDE_MS) * 100;
+        if (next >= 100) {
+          setIndex((i) => (i + 1) % top.length);
+          return 0;
+        }
+        return next;
+      });
+    }, TICK_MS);
+    return () => clearInterval(tick);
+  }, [top.length, index]);
 
   if (top.length === 0) return null;
 
