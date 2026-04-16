@@ -61,12 +61,25 @@ export function HeroCarousel({ fixtures, onSelect }: HeroCarouselProps) {
   }, [fixtures]);
 
   const [index, setIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const SLIDE_MS = 5000;
+  const TICK_MS = 50;
 
   useEffect(() => {
     if (top.length <= 1) return;
-    const t = setInterval(() => setIndex((i) => (i + 1) % top.length), 5000);
-    return () => clearInterval(t);
-  }, [top.length]);
+    setProgress(0);
+    const tick = setInterval(() => {
+      setProgress((p) => {
+        const next = p + (TICK_MS / SLIDE_MS) * 100;
+        if (next >= 100) {
+          setIndex((i) => (i + 1) % top.length);
+          return 0;
+        }
+        return next;
+      });
+    }, TICK_MS);
+    return () => clearInterval(tick);
+  }, [top.length, index]);
 
   if (top.length === 0) return null;
 
@@ -185,6 +198,16 @@ export function HeroCarousel({ fixtures, onSelect }: HeroCarouselProps) {
             ))}
           </div>
         </>
+      )}
+
+      {/* Auto-advance progress bar */}
+      {top.length > 1 && (
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-border/30 overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-neon via-neon-glow to-neon shadow-[0_0_8px_hsl(var(--neon))] transition-[width] duration-[50ms] ease-linear"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
       )}
     </div>
   );
