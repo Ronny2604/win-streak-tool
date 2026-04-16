@@ -15,6 +15,9 @@ import { TicketsSection } from "@/components/TicketsSection";
 import { TicketsHistory } from "@/components/TicketsHistory";
 import { FilterChip } from "@/components/FilterChip";
 import { AppHeader } from "@/components/AppHeader";
+import { HeroCarousel } from "@/components/HeroCarousel";
+import { CollapsibleFilterGroup } from "@/components/CollapsibleFilterGroup";
+import { Layers, Sparkles, Globe2 } from "lucide-react";
 import { useKeyGate } from "@/contexts/KeyGateContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ValueBetsPanel } from "@/components/ValueBetsPanel";
@@ -337,6 +340,9 @@ export default function Index() {
             {premiumSection === "oddshistory" && <OddsHistoryChart fixtures={fixturesData} />}
           </div>
         ) : (<>
+        {/* Hero Carousel - Top 3 best games */}
+        <HeroCarousel fixtures={fixtures} onSelect={setSelectedMatch} />
+
         {/* Hero Stats Summary */}
         <StatsSummaryBar fixtures={fixtures} isLoading={isLoading} />
 
@@ -355,69 +361,72 @@ export default function Index() {
         {/* Quick Filters */}
         <QuickFilters active={quickFilter} onChange={setQuickFilter} />
 
-        {/* Section: Markets */}
+        {/* Collapsible Filters */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2 px-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-neon shadow-[0_0_6px_hsl(var(--neon))]" />
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Mercados</h3>
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {MARKETS.map((m) => (
-              <FilterChip
-                key={m}
-                label={m}
-                active={activeMarkets.includes(m)}
-                onClick={() => toggleMarket(m)}
-              />
-            ))}
-          </div>
-        </div>
+          <CollapsibleFilterGroup
+            icon={Layers}
+            label="Mercados"
+            accentClass="text-neon"
+            activeCount={activeMarkets.length}
+          >
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {MARKETS.map((m) => (
+                <FilterChip
+                  key={m}
+                  label={m}
+                  active={activeMarkets.includes(m)}
+                  onClick={() => toggleMarket(m)}
+                />
+              ))}
+            </div>
+          </CollapsibleFilterGroup>
 
-        {/* Section: Highlights */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 px-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-badge-star shadow-[0_0_6px_hsl(var(--badge-star))]" />
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Destaques</h3>
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {HIGHLIGHTS.map((h, i) => (
-              <button
-                key={h.label}
-                onClick={() => setActiveHighlight(activeHighlight === i ? null : i)}
-                className={`flex items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-bold tracking-wide transition-all whitespace-nowrap ${
-                  activeHighlight === i
-                    ? "bg-gradient-to-r from-card to-surface border border-neon/50 glow-neon scale-[1.02]"
-                    : "bg-card/80 backdrop-blur border border-border/60 hover:border-neon/30 hover:scale-[1.02]"
-                }`}
-              >
-                <h.icon className={`h-4 w-4 ${h.color}`} />
-                <span className="text-foreground">{h.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+          <CollapsibleFilterGroup
+            icon={Sparkles}
+            label="Destaques"
+            accentClass="text-badge-star"
+            activeCount={activeHighlight !== null ? 1 : 0}
+          >
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {HIGHLIGHTS.map((h, i) => (
+                <button
+                  key={h.label}
+                  onClick={() => setActiveHighlight(activeHighlight === i ? null : i)}
+                  className={`flex items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-bold tracking-wide transition-all whitespace-nowrap ${
+                    activeHighlight === i
+                      ? "bg-gradient-to-r from-card to-surface border border-neon/50 glow-neon scale-[1.02]"
+                      : "bg-card/80 backdrop-blur border border-border/60 hover:border-neon/30 hover:scale-[1.02]"
+                  }`}
+                >
+                  <h.icon className={`h-4 w-4 ${h.color}`} />
+                  <span className="text-foreground">{h.label}</span>
+                </button>
+              ))}
+            </div>
+          </CollapsibleFilterGroup>
 
-        {/* Section: Leagues */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 px-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-badge-hot shadow-[0_0_6px_hsl(var(--badge-hot))]" />
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Ligas</h3>
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-            <FilterChip
-              label="Todas"
-              active={!selectedLeague}
-              onClick={() => setSelectedLeague(undefined)}
-            />
-            {LEAGUES.map((l) => (
+          <CollapsibleFilterGroup
+            icon={Globe2}
+            label="Ligas"
+            accentClass="text-badge-hot"
+            activeCount={selectedLeague ? 1 : 0}
+          >
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
               <FilterChip
-                key={l.id}
-                label={l.name}
-                active={selectedLeague === l.id}
-                onClick={() => setSelectedLeague(selectedLeague === l.id ? undefined : l.id)}
+                label="Todas"
+                active={!selectedLeague}
+                onClick={() => setSelectedLeague(undefined)}
               />
-            ))}
-          </div>
+              {LEAGUES.map((l) => (
+                <FilterChip
+                  key={l.id}
+                  label={l.name}
+                  active={selectedLeague === l.id}
+                  onClick={() => setSelectedLeague(selectedLeague === l.id ? undefined : l.id)}
+                />
+              ))}
+            </div>
+          </CollapsibleFilterGroup>
         </div>
 
         {/* Active filters display */}
