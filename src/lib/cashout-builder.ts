@@ -34,6 +34,34 @@ function buildCandidates(fixtures: NormalizedFixture[]): Candidate[] {
 
     const push = (betType: BetType, label: string, odd: number, fair: number) => {
       const ev = fair * odd - 1;
+      // Build a richer reasoning per market
+      const evPct = ev * 100;
+      const probPct = fair * 100;
+      let valueTag = "Valor neutro";
+      if (evPct >= 8) valueTag = "Valor alto detectado";
+      else if (evPct >= 3) valueTag = "Valor positivo";
+      else if (evPct >= 0) valueTag = "Levemente +EV";
+      else valueTag = "Mercado caro";
+
+      let confTag = "incerto";
+      if (probPct >= 60) confTag = "alta probabilidade";
+      else if (probPct >= 45) confTag = "favorito moderado";
+      else if (probPct >= 30) confTag = "competitivo";
+      else confTag = "azarão calculado";
+
+      const marketDesc =
+        betType === "home"
+          ? `Mando de campo + odds sugerem ${f.teams.home.name} dominante`
+          : betType === "away"
+          ? `Visitante com value real contra ${f.teams.home.name}`
+          : betType === "double_home_draw"
+          ? `Cobertura dupla: ${f.teams.home.name} vence ou empata`
+          : betType === "double_away_draw"
+          ? `Cobertura dupla: ${f.teams.away.name} vence ou empata`
+          : `Mercado equilibrado pelo modelo`;
+
+      const reasoning = `${marketDesc}. ${valueTag} (EV ${ev >= 0 ? "+" : ""}${evPct.toFixed(1)}%) com ${confTag} de ${probPct.toFixed(0)}%. Odd ${odd.toFixed(2)} foi escolhida por equilibrar risco e retorno dentro do alvo do bilhete.`;
+
       out.push({
         fixture: f,
         betType,
@@ -42,7 +70,7 @@ function buildCandidates(fixtures: NormalizedFixture[]): Candidate[] {
         fairProb: fair,
         ev,
         confidence: Math.round(fair * 100),
-        reasoning: `Prob. justa ${(fair * 100).toFixed(0)}% • EV ${ev >= 0 ? "+" : ""}${(ev * 100).toFixed(1)}%`,
+        reasoning,
       });
     };
 
