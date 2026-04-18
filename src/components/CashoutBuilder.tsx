@@ -4,7 +4,7 @@ import { buildCashoutTicket } from "@/lib/cashout-builder";
 import type { BettingTicket } from "@/lib/ticket-generator";
 import { TicketCard } from "./TicketCard";
 import { useSavedTickets } from "@/hooks/useSavedTickets";
-import { Target, Sparkles, Save, Loader2, Shield, Zap, Flame } from "lucide-react";
+import { Target, Sparkles, Save, Loader2, Shield, Zap, Flame, TrendingUp, Percent } from "lucide-react";
 import { toast } from "sonner";
 
 interface CashoutBuilderProps {
@@ -221,16 +221,77 @@ export function CashoutBuilder({ fixtures, isLoading }: CashoutBuilderProps) {
 
           {/* Active ticket detail */}
           {activeVariation?.ticket ? (
-            <div className="relative">
-              <TicketCard ticket={activeVariation.ticket} />
-              <button
-                onClick={() => handleSave(activeVariation.ticket)}
-                disabled={isSaving}
-                className="absolute top-4 right-12 p-1.5 rounded-lg bg-card/80 border border-border hover:border-neon/30 text-muted-foreground hover:text-neon transition-all disabled:opacity-50"
-                title="Salvar este bilhete"
-              >
-                <Save className="h-3.5 w-3.5" />
-              </button>
+            <div className="space-y-3">
+              {/* Stats Banner: real probability + expected net profit */}
+              {(() => {
+                const t = activeVariation.ticket;
+                const stakeNum = parseFloat(t.suggestedStake.replace(/[^\d,.-]/g, "").replace(",", ".")) || 0;
+                const probDecimal = t.confidence / 100;
+                const grossReturn = stakeNum * t.totalOdd;
+                const netIfWin = grossReturn - stakeNum;
+                // Expected net profit = P(win)*netIfWin - P(lose)*stake
+                const expectedNet = probDecimal * netIfWin - (1 - probDecimal) * stakeNum;
+                const evPct = stakeNum > 0 ? (expectedNet / stakeNum) * 100 : 0;
+                const isPositive = expectedNet >= 0;
+                return (
+                  <div className="rounded-2xl border border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/10 via-purple-500/5 to-transparent backdrop-blur-sm p-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-start gap-2">
+                        <div className="p-1.5 rounded-lg bg-fuchsia-500/20 mt-0.5">
+                          <Percent className="h-3.5 w-3.5 text-fuchsia-400" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                            Prob. Real
+                          </div>
+                          <div className="text-lg font-black text-fuchsia-400 leading-tight">
+                            {t.confidence.toFixed(1)}%
+                          </div>
+                          <div className="text-[9px] text-muted-foreground">
+                            chance de acerto
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className={`p-1.5 rounded-lg mt-0.5 ${isPositive ? "bg-emerald-500/20" : "bg-red-500/20"}`}>
+                          <TrendingUp className={`h-3.5 w-3.5 ${isPositive ? "text-emerald-400" : "text-red-400"}`} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                            Lucro Líq. Esperado
+                          </div>
+                          <div className={`text-lg font-black leading-tight ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
+                            {isPositive ? "+" : ""}R$ {expectedNet.toFixed(2).replace(".", ",")}
+                          </div>
+                          <div className="text-[9px] text-muted-foreground">
+                            EV {isPositive ? "+" : ""}{evPct.toFixed(1)}% • stake {t.suggestedStake}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-2.5 pt-2.5 border-t border-fuchsia-500/15 flex items-center justify-between text-[10px]">
+                      <span className="text-muted-foreground">
+                        Se ganhar: <span className="font-bold text-emerald-400">+R$ {netIfWin.toFixed(2).replace(".", ",")}</span>
+                      </span>
+                      <span className="text-muted-foreground">
+                        Se perder: <span className="font-bold text-red-400">-R$ {stakeNum.toFixed(2).replace(".", ",")}</span>
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className="relative">
+                <TicketCard ticket={activeVariation.ticket} />
+                <button
+                  onClick={() => handleSave(activeVariation.ticket)}
+                  disabled={isSaving}
+                  className="absolute top-4 right-12 p-1.5 rounded-lg bg-card/80 border border-border hover:border-neon/30 text-muted-foreground hover:text-neon transition-all disabled:opacity-50"
+                  title="Salvar este bilhete"
+                >
+                  <Save className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
           ) : (
             <div className="rounded-2xl border border-border/40 bg-card/40 p-6 text-center">
