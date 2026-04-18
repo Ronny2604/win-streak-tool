@@ -13,6 +13,8 @@ import { BottomNav } from "@/components/BottomNav";
 import type { MarketType } from "@/lib/market-analysis";
 import { TicketsSection } from "@/components/TicketsSection";
 import { TicketsHistory } from "@/components/TicketsHistory";
+import { CashoutBuilder } from "@/components/CashoutBuilder";
+import { BilhetesView } from "@/components/BilhetesView";
 import { FilterChip } from "@/components/FilterChip";
 import { AppHeader } from "@/components/AppHeader";
 import { HeroCarousel } from "@/components/HeroCarousel";
@@ -256,7 +258,7 @@ export default function Index() {
         ) : activeTab === "copa" ? (
           <CopaSection isPro={isPro} />
         ) : activeTab === "bilhetes" ? (
-          <TicketsSection fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} onOpenHistory={() => setActiveTab("historico")} />
+          <BilhetesView fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} onOpenHistory={() => setActiveTab("historico")} />
         ) : activeTab === "premium" ? (
         <div className="space-y-4">
             {/* Premium sub-nav */}
