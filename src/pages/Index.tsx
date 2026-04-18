@@ -257,7 +257,7 @@ export default function Index() {
         ) : activeTab === "copa" ? (
           <CopaSection isPro={isPro} />
         ) : activeTab === "bilhetes" ? (
-          <TicketsSection fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} onOpenHistory={() => setActiveTab("historico")} />
+          <BilhetesView fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} onOpenHistory={() => setActiveTab("historico")} />
         ) : activeTab === "premium" ? (
         <div className="space-y-4">
             {/* Premium sub-nav */}
