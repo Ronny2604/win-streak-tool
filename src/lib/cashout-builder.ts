@@ -151,10 +151,16 @@ export function buildCashoutTicket(
 
   const stake = targetOdd >= 500 ? 5 : targetOdd >= 200 ? 10 : targetOdd >= 100 ? 20 : 50;
 
+  const ticketType: BettingTicket["type"] =
+    riskTolerance === "conservative" ? "safe" : riskTolerance === "balanced" ? "moderate" : "aggressive";
+
+  const labelPrefix =
+    riskTolerance === "conservative" ? "🟢 Conservadora" : riskTolerance === "balanced" ? "🟡 Equilibrada" : "🔴 Agressiva";
+
   return {
-    id: `CSH-${Date.now().toString(36).toUpperCase()}`,
-    name: `🎯 Cashout ${Math.round(targetOdd)}x`,
-    type: "aggressive",
+    id: `CSH-${riskTolerance}-${Date.now().toString(36).toUpperCase()}`,
+    name: `${labelPrefix} • ${Math.round(targetOdd)}x`,
+    type: ticketType,
     selections,
     totalOdd: Math.round(totalOdd * 100) / 100,
     confidence: confidencePct,
