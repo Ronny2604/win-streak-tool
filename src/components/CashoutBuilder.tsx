@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { NormalizedFixture } from "@/lib/odds-api";
 import { buildCashoutTicket } from "@/lib/cashout-builder";
+import type { BettingTicket } from "@/lib/ticket-generator";
 import { TicketCard } from "./TicketCard";
 import { useSavedTickets } from "@/hooks/useSavedTickets";
-import { Target, Sparkles, Save, Loader2, TrendingUp } from "lucide-react";
+import { Target, Sparkles, Save, Loader2, Shield, Zap, Flame } from "lucide-react";
 import { toast } from "sonner";
 
 interface CashoutBuilderProps {
@@ -12,24 +13,42 @@ interface CashoutBuilderProps {
 }
 
 const PRESETS = [
-  { value: 50, label: "50x", color: "from-emerald-500/20 to-emerald-500/5", text: "text-emerald-400", border: "border-emerald-500/30" },
-  { value: 100, label: "100x", color: "from-amber-500/20 to-amber-500/5", text: "text-amber-400", border: "border-amber-500/30" },
-  { value: 200, label: "200x", color: "from-orange-500/20 to-orange-500/5", text: "text-orange-400", border: "border-orange-500/30" },
-  { value: 500, label: "500x", color: "from-red-500/20 to-red-500/5", text: "text-red-400", border: "border-red-500/30" },
-  { value: 1000, label: "1000x", color: "from-fuchsia-500/20 to-fuchsia-500/5", text: "text-fuchsia-400", border: "border-fuchsia-500/30" },
+  { value: 50, label: "50x" },
+  { value: 100, label: "100x" },
+  { value: 200, label: "200x" },
+  { value: 500, label: "500x" },
+  { value: 1000, label: "1000x" },
 ];
+
+type RiskTier = "conservative" | "balanced" | "aggressive";
+
+const TIERS: { id: RiskTier; label: string; icon: typeof Shield; accent: string; bg: string; border: string }[] = [
+  { id: "conservative", label: "Conservadora", icon: Shield, accent: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30" },
+  { id: "balanced", label: "Equilibrada", icon: Zap, accent: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30" },
+  { id: "aggressive", label: "Agressiva", icon: Flame, accent: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/30" },
+];
+
+interface TicketVariation {
+  tier: RiskTier;
+  ticket: BettingTicket | null;
+}
 
 export function CashoutBuilder({ fixtures, isLoading }: CashoutBuilderProps) {
   const [target, setTarget] = useState<number>(100);
   const [customOdd, setCustomOdd] = useState<string>("");
-  const [riskTolerance, setRiskTolerance] = useState<"balanced" | "aggressive">("balanced");
   const [generatedTarget, setGeneratedTarget] = useState<number | null>(null);
+  const [activeTier, setActiveTier] = useState<RiskTier>("balanced");
   const { saveTicket, isSaving } = useSavedTickets();
 
-  const ticket = useMemo(() => {
-    if (!fixtures || fixtures.length === 0 || generatedTarget === null) return null;
-    return buildCashoutTicket(fixtures, { targetOdd: generatedTarget, riskTolerance });
-  }, [fixtures, generatedTarget, riskTolerance]);
+  const variations = useMemo<TicketVariation[]>(() => {
+    if (!fixtures || fixtures.length === 0 || generatedTarget === null) return [];
+    return TIERS.map((t) => ({
+      tier: t.id,
+      ticket: buildCashoutTicket(fixtures, { targetOdd: generatedTarget, riskTolerance: t.id }),
+    }));
+  }, [fixtures, generatedTarget]);
+
+  const activeVariation = variations.find((v) => v.tier === activeTier);
 
   const handleGenerate = () => {
     const finalTarget = customOdd ? parseFloat(customOdd) : target;
@@ -44,14 +63,29 @@ export function CashoutBuilder({ fixtures, isLoading }: CashoutBuilderProps) {
     setGeneratedTarget(finalTarget);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (ticket: BettingTicket | null) => {
     if (!ticket) return;
     try {
       await saveTicket(ticket);
-      toast.success(`Bilhete Cashout ${Math.round(ticket.totalOdd)}x salvo!`);
+      toast.success(`Bilhete salvo!`);
     } catch (err: any) {
       toast.error("Erro ao salvar: " + (err?.message ?? "tente novamente"));
     }
+  };
+
+  const handleSaveAll = async () => {
+    let saved = 0;
+    for (const v of variations) {
+      if (!v.ticket) continue;
+      try {
+        await saveTicket(v.ticket);
+        saved++;
+      } catch (err) {
+        console.error("save error", err);
+      }
+    }
+    if (saved > 0) toast.success(`${saved} variações salvas!`);
+    else toast.error("Erro ao salvar bilhetes");
   };
 
   return (
@@ -64,11 +98,11 @@ export function CashoutBuilder({ fixtures, isLoading }: CashoutBuilderProps) {
           </div>
           <h3 className="text-sm font-bold text-foreground">Cashout Builder</h3>
           <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-400">
-            NOVO
+            3 VARIAÇÕES
           </span>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Escolha uma odd alvo e a IA combina os melhores jogos com maior valor para entregar um bilhete único.
+          Escolha a odd alvo e a IA gera 3 bilhetes simultâneos: Conservador, Equilibrado e Agressivo, para você comparar e escolher.
         </p>
       </div>
 
@@ -84,11 +118,11 @@ export function CashoutBuilder({ fixtures, isLoading }: CashoutBuilderProps) {
               <button
                 key={p.value}
                 onClick={() => { setTarget(p.value); setCustomOdd(""); }}
-                className={`relative rounded-xl border bg-gradient-to-b ${p.color} ${p.border} px-2 py-3 transition-all ${
-                  active ? "scale-105 ring-2 ring-fuchsia-500/40 shadow-[0_0_16px_-4px_hsl(var(--neon)/0.4)]" : "opacity-70 hover:opacity-100"
+                className={`relative rounded-xl border bg-gradient-to-b from-fuchsia-500/15 to-fuchsia-500/5 border-fuchsia-500/20 px-2 py-3 transition-all ${
+                  active ? "scale-105 ring-2 ring-fuchsia-500/50 shadow-[0_0_16px_-4px_hsl(var(--neon)/0.4)] opacity-100" : "opacity-60 hover:opacity-100"
                 }`}
               >
-                <div className={`text-base font-black ${p.text}`}>{p.label}</div>
+                <div className="text-base font-black text-fuchsia-400">{p.label}</div>
                 <div className="text-[9px] text-muted-foreground mt-0.5">odd</div>
               </button>
             );
@@ -96,49 +130,20 @@ export function CashoutBuilder({ fixtures, isLoading }: CashoutBuilderProps) {
         </div>
       </div>
 
-      {/* Custom + risk */}
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block px-1">
-            Odd Personalizada
-          </label>
-          <input
-            type="number"
-            min="2"
-            step="1"
-            value={customOdd}
-            onChange={(e) => setCustomOdd(e.target.value)}
-            placeholder="Ex: 350"
-            className="w-full rounded-xl bg-card/80 border border-border/60 px-3 py-2.5 text-sm font-bold text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40 focus:border-fuchsia-500/40 transition-all"
-          />
-        </div>
-        <div>
-          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block px-1">
-            Estratégia
-          </label>
-          <div className="flex gap-1 rounded-xl bg-card/80 border border-border/60 p-1">
-            <button
-              onClick={() => setRiskTolerance("balanced")}
-              className={`flex-1 rounded-lg py-1.5 text-xs font-bold transition-all ${
-                riskTolerance === "balanced"
-                  ? "bg-emerald-500/20 text-emerald-400"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Equilibrada
-            </button>
-            <button
-              onClick={() => setRiskTolerance("aggressive")}
-              className={`flex-1 rounded-lg py-1.5 text-xs font-bold transition-all ${
-                riskTolerance === "aggressive"
-                  ? "bg-red-500/20 text-red-400"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Agressiva
-            </button>
-          </div>
-        </div>
+      {/* Custom */}
+      <div>
+        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block px-1">
+          Odd Personalizada (opcional)
+        </label>
+        <input
+          type="number"
+          min="2"
+          step="1"
+          value={customOdd}
+          onChange={(e) => setCustomOdd(e.target.value)}
+          placeholder="Ex: 350"
+          className="w-full rounded-xl bg-card/80 border border-border/60 px-3 py-2.5 text-sm font-bold text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/40 focus:border-fuchsia-500/40 transition-all"
+        />
       </div>
 
       {/* Generate button */}
@@ -152,43 +157,89 @@ export function CashoutBuilder({ fixtures, isLoading }: CashoutBuilderProps) {
         ) : (
           <>
             <Sparkles className="h-4 w-4" />
-            Gerar Bilhete Cashout {customOdd || target}x
+            Gerar 3 Variações ({customOdd || target}x)
           </>
         )}
       </button>
 
-      {/* Result */}
-      {generatedTarget !== null && (
+      {/* Results */}
+      {generatedTarget !== null && variations.length > 0 && (
         <div className="space-y-3 animate-fade-in-up">
-          {ticket ? (
-            <>
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-fuchsia-400" />
-                  <span className="text-sm font-bold text-foreground">Bilhete Gerado</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-400">
-                    Alvo {Math.round(generatedTarget)}x
-                  </span>
-                </div>
+          {/* Comparison cards */}
+          <div className="grid grid-cols-3 gap-2">
+            {TIERS.map((t) => {
+              const v = variations.find((x) => x.tier === t.id);
+              const ticket = v?.ticket;
+              const Icon = t.icon;
+              const isActive = activeTier === t.id;
+              return (
                 <button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-neon/10 text-neon border border-neon/20 hover:bg-neon/20 transition-all disabled:opacity-50"
+                  key={t.id}
+                  onClick={() => setActiveTier(t.id)}
+                  className={`relative rounded-xl border ${t.border} ${t.bg} p-2.5 text-left transition-all ${
+                    isActive ? "ring-2 ring-offset-1 ring-offset-background scale-[1.02]" : "opacity-70 hover:opacity-100"
+                  } ${isActive ? `ring-current ${t.accent}` : ""}`}
                 >
-                  <Save className="h-3.5 w-3.5" />
-                  Salvar
+                  <div className="flex items-center gap-1 mb-1.5">
+                    <Icon className={`h-3 w-3 ${t.accent}`} />
+                    <span className={`text-[9px] font-bold uppercase tracking-wider ${t.accent}`}>
+                      {t.label}
+                    </span>
+                  </div>
+                  {ticket ? (
+                    <>
+                      <div className="text-sm font-black text-foreground">
+                        {ticket.totalOdd.toFixed(0)}x
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-[9px] text-muted-foreground">{ticket.selections.length} jogos</span>
+                        <span className={`text-[9px] font-bold ${t.accent}`}>{ticket.confidence}%</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-[10px] text-muted-foreground italic">Indisponível</div>
+                  )}
                 </button>
-              </div>
-              <TicketCard ticket={ticket} />
-            </>
+              );
+            })}
+          </div>
+
+          {/* Save all */}
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              Bilhete Selecionado
+            </span>
+            <button
+              onClick={handleSaveAll}
+              disabled={isSaving}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-fuchsia-500/10 text-fuchsia-400 border border-fuchsia-500/20 hover:bg-fuchsia-500/20 transition-all disabled:opacity-50"
+            >
+              <Save className="h-3.5 w-3.5" />
+              Salvar Todos
+            </button>
+          </div>
+
+          {/* Active ticket detail */}
+          {activeVariation?.ticket ? (
+            <div className="relative">
+              <TicketCard ticket={activeVariation.ticket} />
+              <button
+                onClick={() => handleSave(activeVariation.ticket)}
+                disabled={isSaving}
+                className="absolute top-4 right-12 p-1.5 rounded-lg bg-card/80 border border-border hover:border-neon/30 text-muted-foreground hover:text-neon transition-all disabled:opacity-50"
+                title="Salvar este bilhete"
+              >
+                <Save className="h-3.5 w-3.5" />
+              </button>
+            </div>
           ) : (
             <div className="rounded-2xl border border-border/40 bg-card/40 p-6 text-center">
               <Target className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
               <p className="text-sm font-semibold text-foreground">
-                Não foi possível atingir a odd alvo
+                Variação {TIERS.find((t) => t.id === activeTier)?.label} indisponível
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Tente uma odd menor ou estratégia agressiva
+                Não há jogos suficientes nessa estratégia para atingir a odd alvo
               </p>
             </div>
           )}

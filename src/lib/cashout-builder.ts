@@ -62,7 +62,7 @@ function buildCandidates(fixtures: NormalizedFixture[]): Candidate[] {
 export interface CashoutOptions {
   targetOdd: number;
   /** Risco: quanto maior, aceita odds maiores por seleção */
-  riskTolerance?: "balanced" | "aggressive";
+  riskTolerance?: "conservative" | "balanced" | "aggressive";
 }
 
 /**
@@ -80,14 +80,20 @@ export function buildCashoutTicket(
   const candidates = buildCandidates(fixtures);
   if (candidates.length === 0) return null;
 
-  // Per-pick odd cap - allow bigger picks for higher targets
-  const maxOddPerPick = riskTolerance === "aggressive"
-    ? Math.max(6, targetOdd / 4)
-    : Math.max(3.5, targetOdd / 6);
+  // Per-pick odd cap and min fair prob - tighter for conservative
+  const maxOddPerPick =
+    riskTolerance === "aggressive"
+      ? Math.max(6, targetOdd / 4)
+      : riskTolerance === "conservative"
+      ? Math.max(2.2, targetOdd / 10)
+      : Math.max(3.5, targetOdd / 6);
+
+  const minFairProb =
+    riskTolerance === "conservative" ? 0.45 : riskTolerance === "aggressive" ? 0.18 : 0.25;
 
   // Score: prioritize +EV with healthy fair prob, penalize extreme odds
   const scored = candidates
-    .filter((c) => c.odd <= maxOddPerPick && c.fairProb >= 0.25)
+    .filter((c) => c.odd <= maxOddPerPick && c.fairProb >= minFairProb)
     .map((c) => ({
       ...c,
       score: c.ev * 100 + c.fairProb * 50 - Math.max(0, c.odd - 2.5) * 4,
@@ -145,10 +151,16 @@ export function buildCashoutTicket(
 
   const stake = targetOdd >= 500 ? 5 : targetOdd >= 200 ? 10 : targetOdd >= 100 ? 20 : 50;
 
+  const ticketType: BettingTicket["type"] =
+    riskTolerance === "conservative" ? "safe" : riskTolerance === "balanced" ? "moderate" : "aggressive";
+
+  const labelPrefix =
+    riskTolerance === "conservative" ? "🟢 Conservadora" : riskTolerance === "balanced" ? "🟡 Equilibrada" : "🔴 Agressiva";
+
   return {
-    id: `CSH-${Date.now().toString(36).toUpperCase()}`,
-    name: `🎯 Cashout ${Math.round(targetOdd)}x`,
-    type: "aggressive",
+    id: `CSH-${riskTolerance}-${Date.now().toString(36).toUpperCase()}`,
+    name: `${labelPrefix} • ${Math.round(targetOdd)}x`,
+    type: ticketType,
     selections,
     totalOdd: Math.round(totalOdd * 100) / 100,
     confidence: confidencePct,
