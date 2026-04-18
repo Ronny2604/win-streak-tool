@@ -62,7 +62,7 @@ function buildCandidates(fixtures: NormalizedFixture[]): Candidate[] {
 export interface CashoutOptions {
   targetOdd: number;
   /** Risco: quanto maior, aceita odds maiores por seleção */
-  riskTolerance?: "balanced" | "aggressive";
+  riskTolerance?: "conservative" | "balanced" | "aggressive";
 }
 
 /**
