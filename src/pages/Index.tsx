@@ -14,6 +14,7 @@ import type { MarketType } from "@/lib/market-analysis";
 import { TicketsSection } from "@/components/TicketsSection";
 import { TicketsHistory } from "@/components/TicketsHistory";
 import { CashoutBuilder } from "@/components/CashoutBuilder";
+import { BilhetesView } from "@/components/BilhetesView";
 import { FilterChip } from "@/components/FilterChip";
 import { AppHeader } from "@/components/AppHeader";
 import { HeroCarousel } from "@/components/HeroCarousel";
