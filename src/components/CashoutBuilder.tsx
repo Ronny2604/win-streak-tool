@@ -333,9 +333,15 @@ export function CashoutBuilder({ fixtures, isLoading }: CashoutBuilderProps) {
                         : activeTier === "aggressive"
                         ? "bg-red-500/10 border-red-500/20"
                         : "bg-amber-500/10 border-amber-500/20";
+                    const homeName = sel.fixture.teams.home.name;
+                    const awayName = sel.fixture.teams.away.name;
+                    const homeLogo = sel.fixture.teams.home.logo
+                      || `https://ui-avatars.com/api/?name=${encodeURIComponent(homeName)}&background=1e293b&color=fff&bold=true&size=64`;
+                    const awayLogo = sel.fixture.teams.away.logo
+                      || `https://ui-avatars.com/api/?name=${encodeURIComponent(awayName)}&background=1e293b&color=fff&bold=true&size=64`;
                     return (
                       <div key={`${sel.fixture.id}-${i}`} className="p-3 hover:bg-card/40 transition-colors">
-                        <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex items-start justify-between gap-3 mb-2.5">
                           <div className="flex items-center gap-1.5 min-w-0">
                             {sel.fixture.league.logo && (
                               <img src={sel.fixture.league.logo} alt="" className="h-3 w-3 object-contain shrink-0" />
@@ -349,9 +355,36 @@ export function CashoutBuilder({ fixtures, isLoading }: CashoutBuilderProps) {
                           </div>
                         </div>
 
-                        <p className="text-xs font-bold text-foreground mb-1.5 leading-tight">
-                          {sel.fixture.teams.home.name} <span className="text-muted-foreground font-normal">vs</span> {sel.fixture.teams.away.name}
-                        </p>
+                        {/* Team showcase */}
+                        <div className="flex items-center justify-between gap-2 mb-2.5 px-2 py-2 rounded-xl bg-gradient-to-r from-card/60 via-card/40 to-card/60 border border-border/40">
+                          <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                            <div className="h-10 w-10 rounded-full bg-card border border-border/60 p-1 flex items-center justify-center overflow-hidden shadow-sm">
+                              <img
+                                src={homeLogo}
+                                alt={homeName}
+                                className="h-full w-full object-contain"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(homeName)}&background=1e293b&color=fff&bold=true&size=64`;
+                                }}
+                              />
+                            </div>
+                            <span className="text-[10px] font-bold text-foreground text-center truncate w-full leading-tight">{homeName}</span>
+                          </div>
+                          <span className="text-[10px] font-black text-muted-foreground shrink-0">VS</span>
+                          <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                            <div className="h-10 w-10 rounded-full bg-card border border-border/60 p-1 flex items-center justify-center overflow-hidden shadow-sm">
+                              <img
+                                src={awayLogo}
+                                alt={awayName}
+                                className="h-full w-full object-contain"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(awayName)}&background=1e293b&color=fff&bold=true&size=64`;
+                                }}
+                              />
+                            </div>
+                            <span className="text-[10px] font-bold text-foreground text-center truncate w-full leading-tight">{awayName}</span>
+                          </div>
+                        </div>
 
                         <div className="flex items-center gap-1.5 mb-2 px-2 py-1 rounded-lg bg-neon/5 border border-neon/15 w-fit">
                           <Trophy className="h-3 w-3 text-neon" />
