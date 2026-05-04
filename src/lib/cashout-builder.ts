@@ -177,7 +177,23 @@ export function buildCashoutTicket(
   const combinedProb = picked.reduce((acc, c) => acc * c.fairProb, 1);
   const confidencePct = Math.max(1, Math.round(combinedProb * 100));
 
-  const stake = targetOdd >= 500 ? 5 : targetOdd >= 200 ? 10 : targetOdd >= 100 ? 20 : 50;
+  // Stake calculation per tier using fractional Kelly Criterion
+  // Kelly = (bp - q) / b, where b = totalOdd-1, p = combinedProb, q = 1-p
+  const bankroll = 1000; // reference bankroll R$ 1000
+  const b = Math.max(0.01, totalOdd - 1);
+  const p = combinedProb;
+  const q = 1 - p;
+  const kellyFull = (b * p - q) / b;
+  // Fractional Kelly per risk profile (capped to avoid absurd stakes)
+  const kellyFraction =
+    riskTolerance === "conservative" ? 0.15 : riskTolerance === "balanced" ? 0.25 : 0.4;
+  const stakePctRaw = Math.max(0, kellyFull) * kellyFraction;
+  // Cap stake percentage by tier safety
+  const maxPct = riskTolerance === "conservative" ? 0.02 : riskTolerance === "balanced" ? 0.035 : 0.05;
+  const stakePct = Math.min(stakePctRaw, maxPct);
+  // Floor stake (always show at least a minimum so users have a reference)
+  const minStake = riskTolerance === "conservative" ? 5 : riskTolerance === "balanced" ? 10 : 15;
+  const stake = Math.max(minStake, Math.round(stakePct * bankroll));
 
   const ticketType: BettingTicket["type"] =
     riskTolerance === "conservative" ? "safe" : riskTolerance === "balanced" ? "moderate" : "aggressive";
