@@ -277,7 +277,7 @@ interface TicketsHistoryProps {
 }
 
 export function TicketsHistory({ onBack }: TicketsHistoryProps) {
-  const { tickets, isLoading, stats, updateResult, deleteTicket, updateNotes } = useSavedTickets();
+  const { tickets, isLoading, stats, updateResult, deleteTicket, updateNotes, deleteByResult, isDeletingByResult } = useSavedTickets();
   const [filter, setFilter] = useState<"all" | "pending" | "green" | "red">("all");
   const [completedScores, setCompletedScores] = useState<NormalizedFixture[]>([]);
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
@@ -355,6 +355,23 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
       toast.success("Notas atualizadas");
     } catch {
       toast.error("Erro ao atualizar notas");
+    }
+  };
+
+  const handleClearByResult = async (which: "green" | "red" | "both") => {
+    const results: ("green" | "red")[] = which === "both" ? ["green", "red"] : [which];
+    const count = results.reduce((acc, r) => acc + (r === "green" ? stats.green : stats.red), 0);
+    if (count === 0) {
+      toast.info("Nada para limpar");
+      return;
+    }
+    const label = which === "green" ? "Green" : which === "red" ? "Red" : "Green e Red";
+    if (!window.confirm(`Limpar ${count} bilhete(s) ${label}? Esta ação não pode ser desfeita.`)) return;
+    try {
+      await deleteByResult(results);
+      toast.success(`${count} bilhete(s) ${label} removido(s)`);
+    } catch {
+      toast.error("Erro ao limpar histórico");
     }
   };
 
@@ -524,6 +541,45 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
           </button>
         ))}
       </div>
+
+      {/* Bulk clear actions */}
+      {(stats.green > 0 || stats.red > 0) && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Limpar histórico:
+          </span>
+          {stats.green > 0 && (
+            <button
+              onClick={() => handleClearByResult("green")}
+              disabled={isDeletingByResult}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all disabled:opacity-50"
+            >
+              <Trash2 className="h-3 w-3" />
+              Green ({stats.green})
+            </button>
+          )}
+          {stats.red > 0 && (
+            <button
+              onClick={() => handleClearByResult("red")}
+              disabled={isDeletingByResult}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all disabled:opacity-50"
+            >
+              <Trash2 className="h-3 w-3" />
+              Red ({stats.red})
+            </button>
+          )}
+          {stats.green > 0 && stats.red > 0 && (
+            <button
+              onClick={() => handleClearByResult("both")}
+              disabled={isDeletingByResult}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-card border border-border text-foreground hover:border-red-500/40 transition-all disabled:opacity-50"
+            >
+              <Trash2 className="h-3 w-3" />
+              Tudo ({stats.green + stats.red})
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Date Range Filter */}
       <div className="flex items-center gap-2">

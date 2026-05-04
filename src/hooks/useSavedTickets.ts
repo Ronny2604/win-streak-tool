@@ -87,6 +87,18 @@ export function useSavedTickets() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["saved-tickets"] }),
   });
 
+  const deleteByResultMutation = useMutation({
+    mutationFn: async (results: ("pending" | "green" | "red")[]) => {
+      const { error, count } = await supabase
+        .from("saved_tickets")
+        .delete({ count: "exact" })
+        .in("result", results);
+      if (error) throw error;
+      return count ?? 0;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["saved-tickets"] }),
+  });
+
   const stats = {
     total: tickets.length,
     green: tickets.filter((t) => t.result === "green").length,
@@ -110,5 +122,7 @@ export function useSavedTickets() {
     updateResult: updateResultMutation.mutateAsync,
     updateNotes: updateNotesMutation.mutateAsync,
     deleteTicket: deleteMutation.mutateAsync,
+    deleteByResult: deleteByResultMutation.mutateAsync,
+    isDeletingByResult: deleteByResultMutation.isPending,
   };
 }
