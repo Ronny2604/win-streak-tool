@@ -87,10 +87,16 @@ function buildCandidates(fixtures: NormalizedFixture[]): Candidate[] {
   return out;
 }
 
+export type MarketFilter = "1x2" | "double_chance";
+
 export interface CashoutOptions {
   targetOdd: number;
   /** Risco: quanto maior, aceita odds maiores por seleção */
   riskTolerance?: "conservative" | "balanced" | "aggressive";
+  /** Restringe a um conjunto de ligas (nomes exatos vindos de fixture.league.name). Vazio = todas */
+  leagues?: string[];
+  /** Mercados permitidos. Vazio/undefined = todos */
+  markets?: MarketFilter[];
 }
 
 /**
