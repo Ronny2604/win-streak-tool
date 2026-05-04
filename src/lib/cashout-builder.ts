@@ -146,7 +146,7 @@ export function buildCashoutTicket(
     riskTolerance === "conservative" ? 0.45 : riskTolerance === "aggressive" ? 0.18 : 0.25;
 
   // Score: prioritize +EV with healthy fair prob, penalize extreme odds
-  const scored = candidates
+  const scored = marketFiltered
     .filter((c) => c.odd <= maxOddPerPick && c.fairProb >= minFairProb)
     .map((c) => ({
       ...c,
