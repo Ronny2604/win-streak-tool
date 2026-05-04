@@ -277,7 +277,7 @@ interface TicketsHistoryProps {
 }
 
 export function TicketsHistory({ onBack }: TicketsHistoryProps) {
-  const { tickets, isLoading, stats, updateResult, deleteTicket, updateNotes } = useSavedTickets();
+  const { tickets, isLoading, stats, updateResult, deleteTicket, updateNotes, deleteByResult, isDeletingByResult } = useSavedTickets();
   const [filter, setFilter] = useState<"all" | "pending" | "green" | "red">("all");
   const [completedScores, setCompletedScores] = useState<NormalizedFixture[]>([]);
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
