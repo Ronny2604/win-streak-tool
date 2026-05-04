@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { NormalizedFixture } from "@/lib/odds-api";
-import { buildCashoutTicket } from "@/lib/cashout-builder";
+import { buildCashoutTicket, type MarketFilter } from "@/lib/cashout-builder";
 import type { BettingTicket } from "@/lib/ticket-generator";
 import { TicketCard } from "./TicketCard";
 import { useSavedTickets } from "@/hooks/useSavedTickets";
-import { Target, Sparkles, Save, Loader2, Shield, Zap, Flame, TrendingUp, Percent, Crown, Brain, Gauge, Trophy } from "lucide-react";
+import { Target, Sparkles, Save, Loader2, Shield, Zap, Flame, TrendingUp, Percent, Crown, Brain, Gauge, Trophy, Filter, Check } from "lucide-react";
 import { toast } from "sonner";
 
 interface CashoutBuilderProps {
