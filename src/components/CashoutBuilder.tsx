@@ -38,15 +38,35 @@ export function CashoutBuilder({ fixtures, isLoading }: CashoutBuilderProps) {
   const [customOdd, setCustomOdd] = useState<string>("");
   const [generatedTarget, setGeneratedTarget] = useState<number | null>(null);
   const [activeTier, setActiveTier] = useState<RiskTier>("balanced");
+  const [selectedLeagues, setSelectedLeagues] = useState<string[]>([]);
+  const [selectedMarkets, setSelectedMarkets] = useState<MarketFilter[]>(["1x2", "double_chance"]);
   const { saveTicket, isSaving } = useSavedTickets();
+
+  // Available leagues from current fixtures (with eligible odds)
+  const availableLeagues = useMemo(() => {
+    if (!fixtures) return [];
+    const map = new Map<string, { name: string; logo: string; count: number }>();
+    for (const f of fixtures) {
+      if (!f.odds) continue;
+      const cur = map.get(f.league.name);
+      if (cur) cur.count++;
+      else map.set(f.league.name, { name: f.league.name, logo: f.league.logo, count: 1 });
+    }
+    return Array.from(map.values()).sort((a, b) => b.count - a.count);
+  }, [fixtures]);
 
   const variations = useMemo<TicketVariation[]>(() => {
     if (!fixtures || fixtures.length === 0 || generatedTarget === null) return [];
     return TIERS.map((t) => ({
       tier: t.id,
-      ticket: buildCashoutTicket(fixtures, { targetOdd: generatedTarget, riskTolerance: t.id }),
+      ticket: buildCashoutTicket(fixtures, {
+        targetOdd: generatedTarget,
+        riskTolerance: t.id,
+        leagues: selectedLeagues,
+        markets: selectedMarkets,
+      }),
     }));
-  }, [fixtures, generatedTarget]);
+  }, [fixtures, generatedTarget, selectedLeagues, selectedMarkets]);
 
   const activeVariation = variations.find((v) => v.tier === activeTier);
 
