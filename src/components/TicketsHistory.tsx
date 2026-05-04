@@ -358,6 +358,23 @@ export function TicketsHistory({ onBack }: TicketsHistoryProps) {
     }
   };
 
+  const handleClearByResult = async (which: "green" | "red" | "both") => {
+    const results: ("green" | "red")[] = which === "both" ? ["green", "red"] : [which];
+    const count = results.reduce((acc, r) => acc + (r === "green" ? stats.green : stats.red), 0);
+    if (count === 0) {
+      toast.info("Nada para limpar");
+      return;
+    }
+    const label = which === "green" ? "Green" : which === "red" ? "Red" : "Green e Red";
+    if (!window.confirm(`Limpar ${count} bilhete(s) ${label}? Esta ação não pode ser desfeita.`)) return;
+    try {
+      await deleteByResult(results);
+      toast.success(`${count} bilhete(s) ${label} removido(s)`);
+    } catch {
+      toast.error("Erro ao limpar histórico");
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Header */}
