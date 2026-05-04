@@ -122,5 +122,7 @@ export function useSavedTickets() {
     updateResult: updateResultMutation.mutateAsync,
     updateNotes: updateNotesMutation.mutateAsync,
     deleteTicket: deleteMutation.mutateAsync,
+    deleteByResult: deleteByResultMutation.mutateAsync,
+    isDeletingByResult: deleteByResultMutation.isPending,
   };
 }
