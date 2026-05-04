@@ -166,6 +166,84 @@ export function CashoutBuilder({ fixtures, isLoading }: CashoutBuilderProps) {
         />
       </div>
 
+      {/* Market filter */}
+      <div>
+        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1 flex items-center gap-1.5">
+          <Filter className="h-3 w-3" /> Mercados
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {([
+            { id: "1x2" as MarketFilter, label: "1X2 (Resultado)" },
+            { id: "double_chance" as MarketFilter, label: "Dupla Chance" },
+          ]).map((m) => {
+            const active = selectedMarkets.includes(m.id);
+            return (
+              <button
+                key={m.id}
+                onClick={() =>
+                  setSelectedMarkets((prev) => {
+                    const next = prev.includes(m.id) ? prev.filter((x) => x !== m.id) : [...prev, m.id];
+                    return next.length === 0 ? prev : next; // never allow empty
+                  })
+                }
+                className={`flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2 text-[11px] font-bold transition-all ${
+                  active
+                    ? "bg-fuchsia-500/15 border-fuchsia-500/40 text-fuchsia-300 ring-1 ring-fuchsia-500/30"
+                    : "bg-card/60 border-border/60 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {active && <Check className="h-3 w-3" />}
+                {m.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* League filter */}
+      {availableLeagues.length > 0 && (
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1 flex items-center justify-between">
+            <span className="flex items-center gap-1.5"><Filter className="h-3 w-3" /> Ligas / Competições</span>
+            {selectedLeagues.length > 0 && (
+              <button
+                onClick={() => setSelectedLeagues([])}
+                className="text-[9px] text-fuchsia-400 hover:text-fuchsia-300 normal-case tracking-normal"
+              >
+                Limpar ({selectedLeagues.length})
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1 rounded-xl bg-card/40 border border-border/40">
+            {availableLeagues.map((l) => {
+              const active = selectedLeagues.includes(l.name);
+              return (
+                <button
+                  key={l.name}
+                  onClick={() =>
+                    setSelectedLeagues((prev) =>
+                      prev.includes(l.name) ? prev.filter((x) => x !== l.name) : [...prev, l.name]
+                    )
+                  }
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[10px] font-semibold transition-all ${
+                    active
+                      ? "bg-fuchsia-500/20 border-fuchsia-500/40 text-fuchsia-300"
+                      : "bg-card/60 border-border/60 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {l.logo && <img src={l.logo} alt="" className="h-3 w-3 object-contain" />}
+                  <span className="truncate max-w-[120px]">{l.name}</span>
+                  <span className="text-[9px] opacity-60">{l.count}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[9px] text-muted-foreground mt-1 px-1">
+            {selectedLeagues.length === 0 ? "Todas as ligas" : `${selectedLeagues.length} liga(s) selecionada(s)`}
+          </p>
+        </div>
+      )}
+
       {/* Generate button */}
       <button
         onClick={handleGenerate}
