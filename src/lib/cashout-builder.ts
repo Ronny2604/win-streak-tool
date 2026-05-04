@@ -108,11 +108,31 @@ export function buildCashoutTicket(
   fixtures: NormalizedFixture[],
   options: CashoutOptions
 ): BettingTicket | null {
-  const { targetOdd, riskTolerance = "balanced" } = options;
+  const { targetOdd, riskTolerance = "balanced", leagues, markets } = options;
   if (targetOdd < 1.5) return null;
 
-  const candidates = buildCandidates(fixtures);
+  // Apply league filter at the fixture level
+  const filteredFixtures =
+    leagues && leagues.length > 0
+      ? fixtures.filter((f) => leagues.includes(f.league.name))
+      : fixtures;
+
+  const candidates = buildCandidates(filteredFixtures);
   if (candidates.length === 0) return null;
+
+  // Apply market filter
+  const allowedBetTypes = new Set<string>();
+  const useMarkets = markets && markets.length > 0 ? markets : (["1x2", "double_chance"] as MarketFilter[]);
+  if (useMarkets.includes("1x2")) {
+    allowedBetTypes.add("home");
+    allowedBetTypes.add("away");
+  }
+  if (useMarkets.includes("double_chance")) {
+    allowedBetTypes.add("double_home_draw");
+    allowedBetTypes.add("double_away_draw");
+  }
+  const marketFiltered = candidates.filter((c) => allowedBetTypes.has(c.betType));
+  if (marketFiltered.length === 0) return null;
 
   // Per-pick odd cap and min fair prob - tighter for conservative
   const maxOddPerPick =
