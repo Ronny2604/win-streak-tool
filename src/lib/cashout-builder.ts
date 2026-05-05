@@ -176,11 +176,30 @@ function buildCandidates(fixtures: NormalizedFixture[]): Candidate[] {
       const desc = `Combinação dos 3 placares mais prováveis (${scoresLbl}) somando ${(combinedProb * 100).toFixed(0)}% de chance pelo modelo`;
       push("multi_correct_score", `Placares ${scoresLbl}`, odd, combinedProb, desc);
     }
+
+    // ---- Anytime Correct Score (Resultado Exato a Qualquer Momento) ----
+    // Compute "passes through" probability for each score using anytime boost
+    const anytimeScores = matrix
+      .map((s) => {
+        const [hg, ag] = s.score.split("-").map(Number);
+        const boosted = Math.min(0.85, s.prob * anytimeBoost(hg, ag));
+        return { score: s.score, prob: boosted, h: hg, a: ag };
+      })
+      .filter((s) => s.h + s.a <= 4) // realistic transit scores
+      .sort((x, y) => y.prob - x.prob);
+    const topAny = anytimeScores[0];
+    if (topAny && topAny.prob > 0.35 && topAny.prob < 0.92) {
+      const fairOdd = 1 / topAny.prob;
+      // Bookmakers margin on this market is usually larger (~10-12%)
+      const odd = +(fairOdd * 0.9).toFixed(2);
+      const desc = `Modelo Poisson + boost de transição estima ${(topAny.prob * 100).toFixed(0)}% de o jogo passar por ${topAny.score} em algum momento`;
+      push("anytime_correct_score", `Placar ${topAny.score} a qualquer momento`, odd, topAny.prob, desc);
+    }
   }
   return out;
 }
 
-export type MarketFilter = "1x2" | "double_chance" | "correct_score" | "multi_correct_score";
+export type MarketFilter = "1x2" | "double_chance" | "correct_score" | "multi_correct_score" | "anytime_correct_score";
 
 export interface CashoutOptions {
   targetOdd: number;
