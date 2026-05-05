@@ -39,7 +39,7 @@ export function CashoutBuilder({ fixtures, isLoading }: CashoutBuilderProps) {
   const [generatedTarget, setGeneratedTarget] = useState<number | null>(null);
   const [activeTier, setActiveTier] = useState<RiskTier>("balanced");
   const [selectedLeagues, setSelectedLeagues] = useState<string[]>([]);
-  const [selectedMarkets, setSelectedMarkets] = useState<MarketFilter[]>(["1x2", "double_chance", "correct_score", "multi_correct_score"]);
+  const [selectedMarkets, setSelectedMarkets] = useState<MarketFilter[]>(["1x2", "double_chance", "correct_score", "multi_correct_score", "anytime_correct_score"]);
   const { saveTicket, isSaving } = useSavedTickets();
 
   // Available leagues from current fixtures (with eligible odds)
@@ -177,6 +177,7 @@ export function CashoutBuilder({ fixtures, isLoading }: CashoutBuilderProps) {
             { id: "double_chance" as MarketFilter, label: "Dupla Chance" },
             { id: "correct_score" as MarketFilter, label: "Resultado Correto" },
             { id: "multi_correct_score" as MarketFilter, label: "Múltiplos Placares" },
+            { id: "anytime_correct_score" as MarketFilter, label: "Placar a Qualquer Momento" },
           ]).map((m) => {
             const active = selectedMarkets.includes(m.id);
             return (
