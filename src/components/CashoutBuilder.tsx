@@ -177,6 +177,7 @@ export function CashoutBuilder({ fixtures, isLoading }: CashoutBuilderProps) {
             { id: "double_chance" as MarketFilter, label: "Dupla Chance" },
             { id: "correct_score" as MarketFilter, label: "Resultado Correto" },
             { id: "multi_correct_score" as MarketFilter, label: "Múltiplos Placares" },
+            { id: "anytime_correct_score" as MarketFilter, label: "Placar a Qualquer Momento" },
           ]).map((m) => {
             const active = selectedMarkets.includes(m.id);
             return (
