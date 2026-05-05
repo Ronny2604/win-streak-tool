@@ -91,7 +91,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsReady(true);
     });
 
-    return () => authSub.unsubscribe();
+    // Refresh session when tab regains focus / becomes visible — keeps users logged in
+    const refreshOnFocus = () => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          setSession(session);
+          setUser(session.user);
+        }
+      });
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") refreshOnFocus();
+    };
+    window.addEventListener("focus", refreshOnFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      authSub.unsubscribe();
+      window.removeEventListener("focus", refreshOnFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [checkAdmin, checkSubscription]);
 
   // Auto-refresh subscription every 60s while logged in

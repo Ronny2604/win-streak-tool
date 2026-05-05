@@ -1,6 +1,6 @@
 import { NormalizedFixture, LEAGUES } from "./odds-api";
 
-export type BetType = "home" | "draw" | "away" | "double_home_draw" | "double_away_draw" | "double_home_away" | "over_2_5" | "under_2_5" | "btts_yes";
+export type BetType = "home" | "draw" | "away" | "double_home_draw" | "double_away_draw" | "double_home_away" | "over_2_5" | "under_2_5" | "btts_yes" | "correct_score" | "multi_correct_score";
 
 export interface BetSelection {
   fixture: NormalizedFixture;
