@@ -18,6 +18,52 @@ function parseOdd(v: string | undefined): number {
   return isNaN(n) ? 0 : n;
 }
 
+// Poisson helpers used to derive correct-score probabilities from 1X2 odds
+function factorial(n: number): number {
+  let r = 1;
+  for (let i = 2; i <= n; i++) r *= i;
+  return r;
+}
+function poisson(k: number, lambda: number): number {
+  return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
+}
+
+interface ScoreProb {
+  score: string; // "h-a"
+  prob: number;
+}
+
+/**
+ * Derive expected goals (lambdaH, lambdaA) from 1X2 fair probabilities.
+ * Uses a heuristic: total goals ~ 2.5 + adjustment from market overround.
+ */
+function deriveLambdas(fairH: number, fairD: number, fairA: number, totalGoalsBase = 2.6): { lh: number; la: number } {
+  // Strength index: log of (P_home / P_away)
+  const ratio = Math.log((fairH + 0.01) / (fairA + 0.01));
+  // Convert to goal split (clamped)
+  const split = Math.max(-0.7, Math.min(0.7, ratio * 0.5));
+  // Lower draw prob -> more goals expected
+  const goalAdj = (0.34 - fairD) * 1.6;
+  const total = Math.max(1.6, Math.min(3.6, totalGoalsBase + goalAdj));
+  const lh = total / 2 + split * (total / 2);
+  const la = total - lh;
+  return { lh: Math.max(0.4, lh), la: Math.max(0.4, la) };
+}
+
+function buildScoreMatrix(lh: number, la: number, maxGoals = 5): ScoreProb[] {
+  const out: ScoreProb[] = [];
+  let total = 0;
+  for (let h = 0; h <= maxGoals; h++) {
+    for (let a = 0; a <= maxGoals; a++) {
+      const p = poisson(h, lh) * poisson(a, la);
+      out.push({ score: `${h}-${a}`, prob: p });
+      total += p;
+    }
+  }
+  // Normalize so probabilities sum to 1
+  return out.map((s) => ({ ...s, prob: s.prob / total }));
+}
+
 function buildCandidates(fixtures: NormalizedFixture[]): Candidate[] {
   const out: Candidate[] = [];
   for (const f of fixtures) {
@@ -32,7 +78,7 @@ function buildCandidates(fixtures: NormalizedFixture[]): Candidate[] {
     const fairD = 1 / d / margin;
     const fairA = 1 / a / margin;
 
-    const push = (betType: BetType, label: string, odd: number, fair: number) => {
+    const push = (betType: BetType, label: string, odd: number, fair: number, customDesc?: string) => {
       const ev = fair * odd - 1;
       // Build a richer reasoning per market
       const evPct = ev * 100;
@@ -50,7 +96,8 @@ function buildCandidates(fixtures: NormalizedFixture[]): Candidate[] {
       else confTag = "azarão calculado";
 
       const marketDesc =
-        betType === "home"
+        customDesc ??
+        (betType === "home"
           ? `Mando de campo + odds sugerem ${f.teams.home.name} dominante`
           : betType === "away"
           ? `Visitante com value real contra ${f.teams.home.name}`
@@ -58,7 +105,7 @@ function buildCandidates(fixtures: NormalizedFixture[]): Candidate[] {
           ? `Cobertura dupla: ${f.teams.home.name} vence ou empata`
           : betType === "double_away_draw"
           ? `Cobertura dupla: ${f.teams.away.name} vence ou empata`
-          : `Mercado equilibrado pelo modelo`;
+          : `Mercado equilibrado pelo modelo`);
 
       const reasoning = `${marketDesc}. ${valueTag} (EV ${ev >= 0 ? "+" : ""}${evPct.toFixed(1)}%) com ${confTag} de ${probPct.toFixed(0)}%. Odd ${odd.toFixed(2)} foi escolhida por equilibrar risco e retorno dentro do alvo do bilhete.`;
 
@@ -83,11 +130,38 @@ function buildCandidates(fixtures: NormalizedFixture[]): Candidate[] {
 
     const dcADOdd = +(1 / (1 / a + 1 / d)).toFixed(2);
     push("double_away_draw", `${f.teams.away.name} ou Empate`, dcADOdd, fairA + fairD);
+
+    // ---- Correct Score (Resultado Correto a qualquer momento) via Poisson ----
+    const { lh, la } = deriveLambdas(fairH, fairD, fairA);
+    const matrix = buildScoreMatrix(lh, la, 5);
+    // Top single score
+    const sortedScores = [...matrix].sort((x, y) => y.prob - x.prob);
+    const top1 = sortedScores[0];
+    if (top1 && top1.prob > 0.06) {
+      // Fair odd, then apply typical bookmaker margin (~12%) so EV stays realistic
+      const fairOdd = 1 / top1.prob;
+      const odd = +(fairOdd * 0.88).toFixed(2);
+      const [hg, ag] = top1.score.split("-");
+      const desc = `Modelo Poisson (λ ${lh.toFixed(2)} x ${la.toFixed(2)}) projeta ${f.teams.home.name} ${hg}-${ag} ${f.teams.away.name} como placar mais provável`;
+      push("correct_score", `Placar exato ${hg}-${ag}`, odd, top1.prob, desc);
+    }
+
+    // ---- Multiple Correct Scores (Múltiplos Resultados Corretos) ----
+    // Cluster top 3 most likely scores into one selection
+    const top3 = sortedScores.slice(0, 3);
+    const combinedProb = top3.reduce((acc, s) => acc + s.prob, 0);
+    if (combinedProb > 0.22) {
+      const fairOdd = 1 / combinedProb;
+      const odd = +(fairOdd * 0.9).toFixed(2);
+      const scoresLbl = top3.map((s) => s.score).join(" / ");
+      const desc = `Combinação dos 3 placares mais prováveis (${scoresLbl}) somando ${(combinedProb * 100).toFixed(0)}% de chance pelo modelo`;
+      push("multi_correct_score", `Placares ${scoresLbl}`, odd, combinedProb, desc);
+    }
   }
   return out;
 }
 
-export type MarketFilter = "1x2" | "double_chance";
+export type MarketFilter = "1x2" | "double_chance" | "correct_score" | "multi_correct_score";
 
 export interface CashoutOptions {
   targetOdd: number;
