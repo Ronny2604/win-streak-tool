@@ -205,19 +205,29 @@ export function buildCashoutTicket(
     allowedBetTypes.add("double_home_draw");
     allowedBetTypes.add("double_away_draw");
   }
+  if (useMarkets.includes("correct_score")) {
+    allowedBetTypes.add("correct_score");
+  }
+  if (useMarkets.includes("multi_correct_score")) {
+    allowedBetTypes.add("multi_correct_score");
+  }
   const marketFiltered = candidates.filter((c) => allowedBetTypes.has(c.betType));
   if (marketFiltered.length === 0) return null;
 
   // Per-pick odd cap and min fair prob - tighter for conservative
+  // Correct-score markets naturally produce higher odds, so be more lenient when only those are selected
+  const onlyScores = useMarkets.every((m) => m === "correct_score" || m === "multi_correct_score");
+  const oddCapBase = onlyScores ? 2.5 : 1;
   const maxOddPerPick =
     riskTolerance === "aggressive"
-      ? Math.max(6, targetOdd / 4)
+      ? Math.max(6 * oddCapBase, targetOdd / 4)
       : riskTolerance === "conservative"
-      ? Math.max(2.2, targetOdd / 10)
-      : Math.max(3.5, targetOdd / 6);
+      ? Math.max(2.2 * oddCapBase, targetOdd / 10)
+      : Math.max(3.5 * oddCapBase, targetOdd / 6);
 
-  const minFairProb =
-    riskTolerance === "conservative" ? 0.45 : riskTolerance === "aggressive" ? 0.18 : 0.25;
+  const minFairProb = onlyScores
+    ? (riskTolerance === "conservative" ? 0.18 : riskTolerance === "aggressive" ? 0.06 : 0.1)
+    : (riskTolerance === "conservative" ? 0.45 : riskTolerance === "aggressive" ? 0.18 : 0.25);
 
   // Score: prioritize +EV with healthy fair prob, penalize extreme odds
   const scored = marketFiltered
