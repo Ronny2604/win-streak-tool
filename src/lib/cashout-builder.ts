@@ -249,12 +249,15 @@ export function buildCashoutTicket(
   if (useMarkets.includes("multi_correct_score")) {
     allowedBetTypes.add("multi_correct_score");
   }
+  if (useMarkets.includes("anytime_correct_score")) {
+    allowedBetTypes.add("anytime_correct_score");
+  }
   const marketFiltered = candidates.filter((c) => allowedBetTypes.has(c.betType));
   if (marketFiltered.length === 0) return null;
 
   // Per-pick odd cap and min fair prob - tighter for conservative
   // Correct-score markets naturally produce higher odds, so be more lenient when only those are selected
-  const onlyScores = useMarkets.every((m) => m === "correct_score" || m === "multi_correct_score");
+  const onlyScores = useMarkets.every((m) => m === "correct_score" || m === "multi_correct_score" || m === "anytime_correct_score");
   const oddCapBase = onlyScores ? 2.5 : 1;
   const maxOddPerPick =
     riskTolerance === "aggressive"
