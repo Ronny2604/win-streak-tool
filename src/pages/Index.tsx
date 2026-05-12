@@ -175,10 +175,10 @@ export default function Index() {
   // Free users can access basic features - no redirect needed
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-surface/30 pb-20 md:pb-4">
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,hsl(var(--neon)/0.06),transparent_60%),linear-gradient(to_bottom,hsl(var(--background)),hsl(var(--surface)/0.3))] pb-24 md:pb-4">
       <AppHeader />
 
-      <main className="container max-w-2xl py-4 space-y-4 animate-fade-in-up">
+      <main className="container max-w-2xl py-5 space-y-5 animate-fade-in-up">
         {/* Tabs - hidden on mobile since we have bottom nav */}
         <div className="hidden md:flex gap-4 border-b border-border overflow-x-auto scrollbar-none">
           <button
@@ -350,13 +350,13 @@ export default function Index() {
 
         {/* Search */}
         <div className="relative group">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-neon transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70 group-focus-within:text-neon transition-colors" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar times, jogadores ou ligas..."
-            className="w-full rounded-2xl bg-card/80 backdrop-blur border border-border/60 py-3 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-neon/40 focus:border-neon/40 transition-all shadow-sm"
+            placeholder="Procurar jogos ou ligas..."
+            className="w-full rounded-2xl bg-card/40 backdrop-blur-md border border-border/40 py-3.5 pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-neon/40 focus:border-neon/40 transition-all"
           />
         </div>
 
@@ -464,15 +464,18 @@ export default function Index() {
         )}
 
         {/* Section: Games */}
-        <div className="flex items-center justify-between px-1 pt-1">
-          <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-chart-positive shadow-[0_0_6px_hsl(var(--chart-positive))]" />
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+        <div className="flex items-center justify-between px-1 pt-2">
+          <div className="flex items-center gap-2.5">
+            <span className="block w-1 h-4 rounded-full bg-neon shadow-[0_0_8px_hsl(var(--neon)/0.6)]" />
+            <h2 className="text-sm font-bold tracking-tight text-foreground">
               {activeTab === "live" ? "Ao Vivo" : "Próximos Jogos"}
-            </h3>
+            </h2>
+            {activeTab === "live" && (
+              <span className="text-[10px] font-bold text-chart-negative bg-chart-negative/10 px-2 py-0.5 rounded uppercase">Live</span>
+            )}
           </div>
           {filteredFixtures && (
-            <span className="text-[10px] font-semibold text-muted-foreground tabular-nums">
+            <span className="text-[10px] font-semibold text-muted-foreground/70 tabular-nums uppercase tracking-wider">
               {filteredFixtures.length} {filteredFixtures.length === 1 ? "jogo" : "jogos"}
             </span>
           )}
