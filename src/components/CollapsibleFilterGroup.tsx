@@ -21,14 +21,15 @@ export function CollapsibleFilterGroup({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/60 backdrop-blur overflow-hidden transition-all">
+    <div className={`rounded-2xl border border-border/30 bg-card/30 backdrop-blur-md overflow-hidden transition-all duration-300 ${open ? "border-border/60" : ""}`}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 hover:bg-surface/50 transition-colors"
+        className="w-full flex items-center justify-between gap-2 px-4 py-3.5 hover:bg-card/40 transition-colors"
       >
-        <div className="flex items-center gap-2">
-          <Icon className={`h-4 w-4 ${accentClass}`} />
-          <span className="text-xs font-bold uppercase tracking-[0.12em] text-foreground">{label}</span>
+        <div className="flex items-center gap-3">
+          <span className={`block w-1 h-4 rounded-full ${accentClass.replace("text-", "bg-")}`} />
+          <Icon className={`h-3.5 w-3.5 ${accentClass} opacity-80`} />
+          <span className="text-[12px] font-semibold tracking-wide text-foreground">{label}</span>
           {activeCount > 0 && (
             <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full bg-neon/15 text-neon text-[10px] font-extrabold tabular-nums">
               {activeCount}
@@ -36,12 +37,12 @@ export function CollapsibleFilterGroup({
           )}
         </div>
         <ChevronDown
-          className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+          className={`h-4 w-4 text-muted-foreground/70 transition-transform duration-300 ${open ? "rotate-180 text-foreground" : ""}`}
         />
       </button>
 
       {open && (
-        <div className="px-3.5 pb-3 pt-1 animate-fade-in-up">
+        <div className="px-4 pb-3.5 pt-1 animate-fade-in-up">
           {children}
         </div>
       )}

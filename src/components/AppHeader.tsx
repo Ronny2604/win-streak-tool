@@ -35,89 +35,74 @@ export function AppHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/70 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-[0_1px_0_0_hsl(var(--border)/0.3)]">
-        <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-neon/40 to-transparent" />
+      <header className="sticky top-0 z-50 border-b border-border/30 bg-background/75 backdrop-blur-2xl supports-[backdrop-filter]:bg-background/55">
+        <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-neon/30 to-transparent" />
         <div className="container flex h-14 items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-neon/20 to-neon/5 border border-neon/30">
-              <BarChart3 className="h-4.5 w-4.5 text-neon" />
+          {/* Brand */}
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-neon/15 to-transparent border border-neon/25 transition-all group-hover:border-neon/50">
+              <BarChart3 className="h-4 w-4 text-neon" />
               <span className="absolute inset-0 rounded-xl bg-neon/10 blur-md -z-10" />
             </div>
-            <Link to="/" className="text-lg font-extrabold tracking-tight text-foreground leading-none">
-              Ronny<span className="bg-gradient-to-r from-neon to-neon-glow bg-clip-text text-transparent">BR</span>
-            </Link>
+            <div className="flex flex-col leading-none">
+              <span className="text-[15px] font-extrabold tracking-tight text-foreground">
+                WIN<span className="text-neon">STREAK</span>
+              </span>
+              <span className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 font-semibold mt-0.5">
+                {keySession.valid && keySession.plan === "pro" ? "RonnyBR Premium" : "RonnyBR"}
+              </span>
+            </div>
             {keySession.valid && keySession.plan && (
-              <>
-                <span className={`rounded-lg px-2.5 py-0.5 text-[10px] font-bold tracking-wider ${
-                  keySession.plan === "pro"
-                    ? "bg-badge-elite/20 text-neon"
-                    : "bg-secondary text-muted-foreground"
-                }`}>
-                  {keySession.plan.toUpperCase()}
-                </span>
-                <VipBadge plan={keySession.plan} />
-              </>
+              <VipBadge plan={keySession.plan} />
             )}
-          </div>
-          <div className="flex items-center gap-1">
-            {/* Surebet notification bell */}
+          </Link>
+
+          {/* Actions */}
+          <div className="flex items-center gap-0.5">
             <button
               onClick={() => {
                 if (surebetCount > 0) {
-                  // Dispatch event to switch to premium tab and scroll to surebet
                   window.dispatchEvent(new CustomEvent("navigate-to-surebet"));
-                  const el = document.getElementById("surebet-panel");
-                  if (el) {
-                    el.scrollIntoView({ behavior: "smooth" });
-                  } else {
-                    navigate("/");
-                    setTimeout(() => {
-                      window.dispatchEvent(new CustomEvent("navigate-to-surebet"));
-                    }, 500);
-                  }
                 } else {
                   toast.info("Nenhuma surebet ativa no momento", {
                     description: "Você será notificado quando uma oportunidade surgir.",
                   });
                 }
               }}
-              className={`relative rounded-lg p-2 transition-all ${
+              className={`relative rounded-full p-2 transition-all ${
                 surebetCount > 0
-                  ? "text-primary hover:bg-primary/10"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  ? "text-neon hover:bg-neon/10"
+                  : "text-muted-foreground hover:bg-card/60 hover:text-foreground"
               } ${surebetPulse ? "animate-bounce" : ""}`}
               title={surebetCount > 0 ? `${surebetCount} surebet(s) ativa(s)` : "Sem surebets no momento"}
             >
-              <Bell className={`h-4 w-4 ${surebetCount > 0 ? "fill-primary" : ""}`} />
+              <Bell className={`h-4 w-4 ${surebetCount > 0 ? "fill-neon" : ""}`} />
               {surebetCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-chart-negative text-[9px] font-bold text-primary-foreground animate-pulse-subtle">
+                <span className="absolute top-0.5 right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-chart-negative text-[9px] font-bold text-primary-foreground">
                   {surebetCount}
                 </span>
               )}
             </button>
-            {keySession.valid && (
-              <span className="hidden sm:block text-xs text-muted-foreground mr-2 truncate max-w-[120px]">
-                {keySession.username}
-              </span>
-            )}
-            {/* Personalization button — visible to all */}
+
             <button
               onClick={() => setShowPersonalization(true)}
-              className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+              className="rounded-full p-2 text-muted-foreground hover:bg-card/60 hover:text-foreground transition-colors"
               title="Personalizar"
             >
               <Palette className="h-4 w-4" />
             </button>
             <button
               onClick={toggleTheme}
-              className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+              className="rounded-full p-2 text-muted-foreground hover:bg-card/60 hover:text-foreground transition-colors"
+              title={theme === "dark" ? "Tema claro" : "Tema escuro"}
             >
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
             {isAdmin && (
               <Link
                 to="/admin"
-                className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                className="rounded-full p-2 text-muted-foreground hover:bg-card/60 hover:text-foreground transition-colors"
+                title="Admin"
               >
                 <Shield className="h-4 w-4" />
               </Link>
@@ -133,7 +118,7 @@ export function AppHeader() {
                   });
                   navigate("/");
                 }}
-                className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                className="rounded-full p-2 text-muted-foreground hover:bg-card/60 hover:text-foreground transition-colors"
                 title="Sair"
               >
                 <LogOut className="h-4 w-4" />
@@ -141,19 +126,11 @@ export function AppHeader() {
             ) : (
               <Link
                 to="/login"
-                className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                className="rounded-full p-2 text-muted-foreground hover:bg-card/60 hover:text-foreground transition-colors"
+                title="Entrar"
               >
                 <LogIn className="h-4 w-4" />
               </Link>
-            )}
-            {keySession.valid && (
-              <button
-                onClick={keyLogout}
-                className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-chart-negative transition-colors"
-                title="Sair da chave"
-              >
-                <KeyRound className="h-4 w-4" />
-              </button>
             )}
           </div>
         </div>
