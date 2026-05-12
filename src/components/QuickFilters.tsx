@@ -18,22 +18,25 @@ const filters = [
 
 export function QuickFilters({ active, onChange }: QuickFiltersProps) {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-      {filters.map(({ id, label, icon: Icon }) => (
-        <button
-          key={id}
-          onClick={() => onChange(id)}
-          className={cn(
-            "flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all whitespace-nowrap border",
-            active === id
-              ? "bg-neon/10 border-neon/50 text-neon"
-              : "bg-card border-border text-muted-foreground hover:border-neon/30 hover:text-foreground"
-          )}
-        >
-          {Icon && <Icon className="h-3.5 w-3.5" />}
-          {label}
-        </button>
-      ))}
+    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+      {filters.map(({ id, label, icon: Icon }) => {
+        const isActive = active === id;
+        return (
+          <button
+            key={id}
+            onClick={() => onChange(id)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-300",
+              isActive
+                ? "bg-neon text-neon-foreground shadow-[0_0_18px_-4px_hsl(var(--neon)/0.7)] scale-[1.02]"
+                : "bg-card/40 border border-border/40 text-muted-foreground hover:text-foreground hover:border-border backdrop-blur"
+            )}
+          >
+            {Icon && <Icon className="h-3.5 w-3.5" />}
+            {label}
+          </button>
+        );
+      })}
     </div>
   );
 }
