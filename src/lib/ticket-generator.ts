@@ -1,4 +1,12 @@
 import { NormalizedFixture, LEAGUES } from "./odds-api";
+import { calibrateLambdas, buildPoissonModel, deriveProbabilities, formScore, h2hScore } from "./poisson";
+
+export interface TicketOptions {
+  /** Hide individual picks below this confidence (0-100) */
+  minConfidence?: number;
+  /** Hide picks with negative EV below this threshold (e.g. -0.05) */
+  minEv?: number;
+}
 
 export type BetType = "home" | "draw" | "away" | "double_home_draw" | "double_away_draw" | "double_home_away" | "over_2_5" | "under_2_5" | "btts_yes" | "correct_score" | "multi_correct_score" | "anytime_correct_score";
 
