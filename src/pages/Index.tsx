@@ -52,11 +52,14 @@ import {
   ExportReports,
   BookmakerComparator,
   SmartBetSuggestions,
-  OddsHistoryChart
+  OddsHistoryChart,
+  MarketROIDashboard,
+  TicketComparator,
+  WhatIfSimulator,
 } from "@/components/premium";
 import { NBASection } from "@/components/nba/NBASection";
 import { CopaSection } from "@/components/CopaSection";
-import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield, BellRing, Brain, Activity, GitBranch, FileText, Eye, Globe, LineChart, Download } from "lucide-react";
+import { Star, Flame, Target, Search, Loader2, Lock, Zap, BarChart3, Trophy, MessageCircle, Calculator, Users, DollarSign, Calendar, Bot, Shield, BellRing, Brain, Activity, GitBranch, FileText, Eye, Globe, LineChart, Download, GitCompare, Wand2, PieChart } from "lucide-react";
 import { Navigate } from "react-router-dom";
 // Surebet notifier disabled per user request
 
@@ -67,7 +70,7 @@ const HIGHLIGHTS = [
   { label: "TOP", icon: Target, color: "text-chart-negative" },
 ];
 
-type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai" | "surebet" | "livealerts" | "streaks" | "multibet" | "calculator" | "insights" | "oddstracker" | "correlation" | "report" | "challenges" | "patterns" | "livestats" | "export" | "bookmaker" | "smartbet" | "oddshistory";
+type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai" | "surebet" | "livealerts" | "streaks" | "multibet" | "calculator" | "insights" | "oddstracker" | "correlation" | "report" | "challenges" | "patterns" | "livestats" | "export" | "bookmaker" | "smartbet" | "oddshistory" | "marketroi" | "compare" | "whatif";
 
 function applyQuickFilter(fixtures: NormalizedFixture[], filter: QuickFilterType): NormalizedFixture[] {
   switch (filter) {
@@ -294,6 +297,9 @@ export default function Index() {
                 { id: "bookmaker" as PremiumSection, icon: Globe, label: "Casas" },
                 { id: "smartbet" as PremiumSection, icon: Brain, label: "Smart Bet" },
                 { id: "oddshistory" as PremiumSection, icon: LineChart, label: "Odds Hist." },
+                { id: "marketroi" as PremiumSection, icon: PieChart, label: "ROI Mercados" },
+                { id: "compare" as PremiumSection, icon: GitCompare, label: "Comparar" },
+                { id: "whatif" as PremiumSection, icon: Wand2, label: "E se..." },
               ].map(({ id, icon: Icon, label }) => (
                 <button
                   key={id}
@@ -340,6 +346,9 @@ export default function Index() {
             {premiumSection === "bookmaker" && <BookmakerComparator fixtures={fixturesData} />}
             {premiumSection === "smartbet" && fixturesData && <SmartBetSuggestions fixtures={fixturesData} />}
             {premiumSection === "oddshistory" && <OddsHistoryChart fixtures={fixturesData} />}
+            {premiumSection === "marketroi" && <MarketROIDashboard />}
+            {premiumSection === "compare" && <TicketComparator />}
+            {premiumSection === "whatif" && <WhatIfSimulator />}
           </div>
         ) : (<>
         {/* Hero Carousel - Top 3 best games */}

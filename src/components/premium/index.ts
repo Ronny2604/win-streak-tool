@@ -23,3 +23,6 @@ export { ExportReports } from "./ExportReports";
 export { BookmakerComparator } from "./BookmakerComparator";
 export { SmartBetSuggestions } from "./SmartBetSuggestions";
 export { OddsHistoryChart } from "./OddsHistoryChart";
+export { MarketROIDashboard } from "./MarketROIDashboard";
+export { TicketComparator } from "./TicketComparator";
+export { WhatIfSimulator } from "./WhatIfSimulator";
