@@ -229,13 +229,19 @@ function generateTicketId(): string {
 }
 
 export function generateTickets(fixtures: NormalizedFixture[], options: TicketOptions = {}): BettingTicket[] {
+  const minConfidence = options.minConfidence ?? 0;
+  const minEv = options.minEv ?? -0.08;
+
   const allBets: AnalyzedBet[] = [];
   for (const fixture of fixtures) {
     allBets.push(...analyzeFixture(fixture));
   }
 
+  // Apply user-defined floor
+  const filtered = allBets.filter((b) => b.confidence >= minConfidence && b.ev >= minEv);
+
   // Sort by EV first, then confidence
-  allBets.sort((a, b) => {
+  filtered.sort((a, b) => {
     const evDiff = b.ev - a.ev;
     if (Math.abs(evDiff) > 0.01) return evDiff;
     return b.confidence - a.confidence;
@@ -244,8 +250,8 @@ export function generateTickets(fixtures: NormalizedFixture[], options: TicketOp
   const tickets: BettingTicket[] = [];
 
   // 🟢 SAFE - high confidence, positive EV, low odds
-  const safeBets = allBets
-    .filter((b) => b.confidence >= 65 && b.odd < 2.5 && b.ev > -0.05)
+  const safeBets = filtered
+    .filter((b) => b.confidence >= Math.max(65, minConfidence) && b.odd < 2.5 && b.ev > -0.05)
     .reduce((acc: AnalyzedBet[], bet) => {
       if (!acc.find((b) => b.fixture.id === bet.fixture.id)) acc.push(bet);
       return acc;
