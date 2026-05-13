@@ -1,9 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { NormalizedFixture } from "@/lib/odds-api";
 import { generateTickets } from "@/lib/ticket-generator";
 import { TicketCard } from "./TicketCard";
 import { useSavedTickets } from "@/hooks/useSavedTickets";
-import { Ticket, Loader2, Save, History } from "lucide-react";
+import { Ticket, Loader2, Save, History, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 interface TicketsSectionProps {
@@ -15,11 +15,12 @@ interface TicketsSectionProps {
 
 export function TicketsSection({ fixtures, isLoading, isPro, onOpenHistory }: TicketsSectionProps) {
   const { saveTicket, isSaving } = useSavedTickets();
+  const [minConfidence, setMinConfidence] = useState(55);
 
   const tickets = useMemo(() => {
     if (!fixtures || fixtures.length === 0) return [];
-    return generateTickets(fixtures);
-  }, [fixtures]);
+    return generateTickets(fixtures, { minConfidence });
+  }, [fixtures, minConfidence]);
 
   const handleSaveTicket = async (ticket: typeof tickets[0]) => {
     try {
@@ -81,6 +82,27 @@ export function TicketsSection({ fixtures, isLoading, isPro, onOpenHistory }: Ti
 
   return (
     <div className="space-y-3">
+      {/* Min-confidence slider */}
+      <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-md p-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+            <ShieldCheck className="h-3.5 w-3.5 text-neon" />
+            Confiança mínima
+          </div>
+          <span className="text-xs font-bold text-neon tabular-nums">{minConfidence}%</span>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={90}
+          step={5}
+          value={minConfidence}
+          onChange={(e) => setMinConfidence(parseInt(e.target.value))}
+          className="w-full accent-[hsl(var(--neon))]"
+        />
+        <p className="text-[10px] text-muted-foreground">Esconde sugestões abaixo deste limite e refaz os bilhetes.</p>
+      </div>
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Ticket className="h-4 w-4 text-neon" />
