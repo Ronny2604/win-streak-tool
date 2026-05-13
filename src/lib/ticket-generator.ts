@@ -277,7 +277,7 @@ export function generateTickets(fixtures: NormalizedFixture[], options: TicketOp
   }
 
   // 🟡 MODERATE - mix of value bets with +EV
-  const moderateBets = allBets
+  const moderateBets = filtered
     .filter((b) => b.confidence >= 48 && b.odd >= 1.3 && b.odd < 3.5 && b.ev > -0.03)
     .reduce((acc: AnalyzedBet[], bet) => {
       if (!acc.find((b) => b.fixture.id === bet.fixture.id)) acc.push(bet);
@@ -304,7 +304,7 @@ export function generateTickets(fixtures: NormalizedFixture[], options: TicketOp
   }
 
   // 🔴 AGGRESSIVE - high odds, prioritize +EV bets
-  const aggressiveBets = allBets
+  const aggressiveBets = filtered
     .filter((b) => b.odd >= 1.5)
     .reduce((acc: AnalyzedBet[], bet) => {
       if (!acc.find((b) => b.fixture.id === bet.fixture.id)) acc.push(bet);
