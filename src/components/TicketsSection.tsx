@@ -1,9 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { NormalizedFixture } from "@/lib/odds-api";
 import { generateTickets } from "@/lib/ticket-generator";
 import { TicketCard } from "./TicketCard";
 import { useSavedTickets } from "@/hooks/useSavedTickets";
-import { Ticket, Loader2, Save, History } from "lucide-react";
+import { Ticket, Loader2, Save, History, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 interface TicketsSectionProps {
@@ -15,11 +15,12 @@ interface TicketsSectionProps {
 
 export function TicketsSection({ fixtures, isLoading, isPro, onOpenHistory }: TicketsSectionProps) {
   const { saveTicket, isSaving } = useSavedTickets();
+  const [minConfidence, setMinConfidence] = useState(55);
 
   const tickets = useMemo(() => {
     if (!fixtures || fixtures.length === 0) return [];
-    return generateTickets(fixtures);
-  }, [fixtures]);
+    return generateTickets(fixtures, { minConfidence });
+  }, [fixtures, minConfidence]);
 
   const handleSaveTicket = async (ticket: typeof tickets[0]) => {
     try {
