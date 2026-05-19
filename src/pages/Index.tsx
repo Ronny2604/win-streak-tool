@@ -386,187 +386,156 @@ export default function Index() {
             {premiumSection === "whatif" && <WhatIfSimulator />}
           </div>
         ) : (<>
-        {/* Hero Stats Summary */}
-        <StatsSummaryBar fixtures={fixtures} isLoading={isLoading} />
-
-
-        {/* Search */}
-        <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70 group-focus-within:text-neon transition-colors" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Procurar jogos ou ligas..."
-            className="w-full rounded-2xl bg-card/40 backdrop-blur-md border border-border/40 py-3.5 pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-neon/40 focus:border-neon/40 transition-all"
+        {/* ───── SEÇÃO 1: VISÃO GERAL ───── */}
+        <section className="space-y-3">
+          <SectionHeader
+            eyebrow="Visão Geral"
+            title={activeTab === "live" ? "Ao Vivo Agora" : "Mercado Hoje"}
+            accent="neon"
+            badge={activeTab === "live" ? "LIVE" : undefined}
           />
-        </div>
+          <StatsSummaryBar fixtures={fixtures} isLoading={isLoading} />
+        </section>
 
-        {/* Quick Filters */}
-        <QuickFilters active={quickFilter} onChange={setQuickFilter} />
-
-        {/* Collapsible Filters */}
-        <div className="space-y-2">
-          <CollapsibleFilterGroup
-            icon={Layers}
-            label="Mercados"
-            accentClass="text-neon"
-            activeCount={activeMarkets.length}
-          >
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {MARKETS.map((m) => (
-                <FilterChip
-                  key={m}
-                  label={m}
-                  active={activeMarkets.includes(m)}
-                  onClick={() => toggleMarket(m)}
-                />
-              ))}
-            </div>
-          </CollapsibleFilterGroup>
-
-          <CollapsibleFilterGroup
-            icon={Sparkles}
-            label="Destaques"
-            accentClass="text-badge-star"
-            activeCount={activeHighlight !== null ? 1 : 0}
-          >
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {HIGHLIGHTS.map((h, i) => (
-                <button
-                  key={h.label}
-                  onClick={() => setActiveHighlight(activeHighlight === i ? null : i)}
-                  className={`flex items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-bold tracking-wide transition-all whitespace-nowrap ${
-                    activeHighlight === i
-                      ? "bg-gradient-to-r from-card to-surface border border-neon/50 glow-neon scale-[1.02]"
-                      : "bg-card/80 backdrop-blur border border-border/60 hover:border-neon/30 hover:scale-[1.02]"
-                  }`}
-                >
-                  <h.icon className={`h-4 w-4 ${h.color}`} />
-                  <span className="text-foreground">{h.label}</span>
-                </button>
-              ))}
-            </div>
-          </CollapsibleFilterGroup>
-
-          <CollapsibleFilterGroup
-            icon={Globe2}
-            label="Ligas"
-            accentClass="text-badge-hot"
-            activeCount={selectedLeague ? 1 : 0}
-          >
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-              <FilterChip
-                label="Todas"
-                active={!selectedLeague}
-                onClick={() => setSelectedLeague(undefined)}
+        {/* ───── SEÇÃO 2: BUSCA & FILTROS RÁPIDOS ───── */}
+        <section className="space-y-3">
+          <SectionHeader
+            eyebrow="Descobrir"
+            title="Buscar & Filtrar"
+            accent="badge-star"
+          />
+          <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-xl p-3 space-y-3 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.5)]">
+            <div className="relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70 group-focus-within:text-neon transition-colors" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Procurar jogos ou ligas..."
+                className="w-full rounded-xl bg-surface/60 border border-border/40 py-3 pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-neon/40 focus:border-neon/40 transition-all"
               />
-              {LEAGUES.map((l) => (
-                <FilterChip
-                  key={l.id}
-                  label={l.name}
-                  active={selectedLeague === l.id}
-                  onClick={() => setSelectedLeague(selectedLeague === l.id ? undefined : l.id)}
-                />
-              ))}
             </div>
-          </CollapsibleFilterGroup>
-        </div>
+            <QuickFilters active={quickFilter} onChange={setQuickFilter} />
+          </div>
+        </section>
 
-        {/* Active filters display */}
-        {activeMarkets.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl bg-surface/50 border border-border/40 p-2.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Ativos:</span>
-            {activeMarkets.map((m) => (
-              <FilterChip
-                key={m}
-                label={m}
-                active
-                removable
-                onClick={() => {}}
-                onRemove={() => toggleMarket(m)}
-              />
-            ))}
-            <button
-              onClick={() => setActiveMarkets([])}
-              className="ml-auto text-xs font-semibold text-chart-negative hover:underline"
+        {/* ───── SEÇÃO 3: FILTROS AVANÇADOS ───── */}
+        <section className="space-y-3">
+          <SectionHeader
+            eyebrow="Refinar"
+            title="Mercados & Ligas"
+            accent="badge-hot"
+            actionLabel={(activeMarkets.length > 0 || selectedLeague) ? "Limpar" : undefined}
+            onAction={() => { setActiveMarkets([]); setSelectedLeague(undefined); }}
+          />
+          <div className="space-y-2">
+            <CollapsibleFilterGroup
+              icon={Layers}
+              label="Mercados"
+              accentClass="text-neon"
+              activeCount={activeMarkets.length}
             >
-              Limpar
-            </button>
-          </div>
-        )}
-
-        {/* Market Insight Panel */}
-        {activeMarkets.length === 1 && fixturesData && fixturesData.length > 0 && (
-          <MarketInsightPanel
-            market={activeMarkets[0] as MarketType}
-            fixtures={fixturesData}
-            onClose={() => setActiveMarkets([])}
-          />
-        )}
-
-        {/* Section: Games */}
-        <div className="flex items-center justify-between px-1 pt-2">
-          <div className="flex items-center gap-2.5">
-            <span className="block w-1 h-4 rounded-full bg-neon shadow-[0_0_8px_hsl(var(--neon)/0.6)]" />
-            <h2 className="text-sm font-bold tracking-tight text-foreground">
-              {activeTab === "live" ? "Ao Vivo" : "Próximos Jogos"}
-            </h2>
-            {activeTab === "live" && (
-              <span className="text-[10px] font-bold text-chart-negative bg-chart-negative/10 px-2 py-0.5 rounded uppercase">Live</span>
-            )}
-          </div>
-          {filteredFixtures && (
-            <span className="text-[10px] font-semibold text-muted-foreground/70 tabular-nums uppercase tracking-wider">
-              {filteredFixtures.length} {filteredFixtures.length === 1 ? "jogo" : "jogos"}
-            </span>
-          )}
-        </div>
-
-        {/* Results */}
-        {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <MatchCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : filteredFixtures && filteredFixtures.length > 0 ? (
-          <div className="space-y-3">
-            {filteredFixtures.slice(0, isPro ? 50 : LITE_LIMIT).map((fixture, index) => (
-              <MatchCard
-                key={fixture.id}
-                fixture={fixture}
-                showOdds={isPro}
-                onClick={() => setSelectedMatch(fixture)}
-                animationDelay={index * 50}
-              />
-            ))}
-            {!isPro && filteredFixtures.length > LITE_LIMIT && (
-              <div className="relative">
-                <div className="space-y-3 blur-sm pointer-events-none select-none opacity-50">
-                  {filteredFixtures.slice(LITE_LIMIT, LITE_LIMIT + 2).map((fixture) => (
-                    <MatchCard key={fixture.id} fixture={fixture} showOdds={false} />
-                  ))}
-                </div>
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm rounded-xl">
-                  <Lock className="h-6 w-6 text-neon mb-2" />
-                  <p className="text-sm font-semibold text-foreground">
-                    +{filteredFixtures.length - LITE_LIMIT} jogos disponíveis
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Upgrade para <span className="font-bold text-neon">PRO</span> para ver todos os jogos, odds e ao vivo
-                  </p>
-                </div>
+              <div className="flex flex-wrap gap-2">
+                {MARKETS.map((m) => (
+                  <FilterChip
+                    key={m}
+                    label={m}
+                    active={activeMarkets.includes(m)}
+                    onClick={() => toggleMarket(m)}
+                  />
+                ))}
               </div>
-            )}
+            </CollapsibleFilterGroup>
+
+            <CollapsibleFilterGroup
+              icon={Globe2}
+              label="Ligas"
+              accentClass="text-badge-hot"
+              activeCount={selectedLeague ? 1 : 0}
+            >
+              <div className="flex flex-wrap gap-2">
+                <FilterChip
+                  label="Todas"
+                  active={!selectedLeague}
+                  onClick={() => setSelectedLeague(undefined)}
+                />
+                {LEAGUES.map((l) => (
+                  <FilterChip
+                    key={l.id}
+                    label={l.name}
+                    active={selectedLeague === l.id}
+                    onClick={() => setSelectedLeague(selectedLeague === l.id ? undefined : l.id)}
+                  />
+                ))}
+              </div>
+            </CollapsibleFilterGroup>
           </div>
-        ) : (
-          <EmptyState
-            type={search ? "no-results" : "no-games"}
-            searchTerm={search || undefined}
+
+          {/* Market Insight Panel - shown inline when single market active */}
+          {activeMarkets.length === 1 && fixturesData && fixturesData.length > 0 && (
+            <MarketInsightPanel
+              market={activeMarkets[0] as MarketType}
+              fixtures={fixturesData}
+              onClose={() => setActiveMarkets([])}
+            />
+          )}
+        </section>
+
+        {/* ───── SEÇÃO 4: JOGOS ───── */}
+        <section className="space-y-3">
+          <SectionHeader
+            eyebrow="Jogos"
+            title={activeTab === "live" ? "Partidas Ao Vivo" : "Próximos Jogos"}
+            accent={activeTab === "live" ? "chart-negative" : "neon"}
+            count={filteredFixtures?.length}
+            countLabel="jogos"
           />
-        )}
+
+          {isLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <MatchCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : filteredFixtures && filteredFixtures.length > 0 ? (
+            <div className="space-y-3">
+              {filteredFixtures.slice(0, isPro ? 50 : LITE_LIMIT).map((fixture, index) => (
+                <MatchCard
+                  key={fixture.id}
+                  fixture={fixture}
+                  showOdds={isPro}
+                  onClick={() => setSelectedMatch(fixture)}
+                  animationDelay={index * 50}
+                />
+              ))}
+              {!isPro && filteredFixtures.length > LITE_LIMIT && (
+                <div className="relative">
+                  <div className="space-y-3 blur-sm pointer-events-none select-none opacity-50">
+                    {filteredFixtures.slice(LITE_LIMIT, LITE_LIMIT + 2).map((fixture) => (
+                      <MatchCard key={fixture.id} fixture={fixture} showOdds={false} />
+                    ))}
+                  </div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm rounded-xl">
+                    <Lock className="h-6 w-6 text-neon mb-2" />
+                    <p className="text-sm font-semibold text-foreground">
+                      +{filteredFixtures.length - LITE_LIMIT} jogos disponíveis
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Upgrade para <span className="font-bold text-neon">PRO</span> para ver todos
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <EmptyState
+              type={search ? "no-results" : "no-games"}
+              searchTerm={search || undefined}
+            />
+          )}
+        </section>
         </>)}
+
       </main>
 
       {/* Match Detail Modal */}
