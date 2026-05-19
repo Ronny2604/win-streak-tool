@@ -350,11 +350,9 @@ export default function Index() {
             {premiumSection === "whatif" && <WhatIfSimulator />}
           </div>
         ) : (<>
-        {/* Hero Carousel - Top 3 best games */}
-        <HeroCarousel fixtures={fixtures} onSelect={setSelectedMatch} />
-
         {/* Hero Stats Summary */}
         <StatsSummaryBar fixtures={fixtures} isLoading={isLoading} />
+
 
         {/* Search */}
         <div className="relative group">
