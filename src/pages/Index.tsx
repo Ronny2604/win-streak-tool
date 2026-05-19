@@ -63,11 +63,6 @@ import { Navigate } from "react-router-dom";
 // Surebet notifier disabled per user request
 
 const MARKETS = ["Chance Dupla", "S/ Empate", "Escanteios", "Cartões", "Gols", "Ambas Marcam"];
-const HIGHLIGHTS = [
-  { label: "MELHOR DO DIA", icon: Star, color: "text-badge-star" },
-  { label: "10 MELHORES", icon: Flame, color: "text-badge-hot" },
-  { label: "TOP", icon: Target, color: "text-chart-negative" },
-];
 
 type PremiumSection = "valuebets" | "form" | "roi" | "chat" | "kelly" | "dashboard" | "h2h" | "rankings" | "financial" | "goals" | "favorites" | "odds" | "calendar" | "ai" | "surebet" | "livealerts" | "streaks" | "multibet" | "calculator" | "insights" | "oddstracker" | "correlation" | "report" | "challenges" | "patterns" | "livestats" | "export" | "bookmaker" | "smartbet" | "oddshistory" | "marketroi" | "compare" | "whatif";
 
