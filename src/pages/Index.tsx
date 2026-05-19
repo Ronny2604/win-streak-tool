@@ -263,57 +263,98 @@ export default function Index() {
           <BilhetesView fixtures={fixturesData} isLoading={loadingFixtures} isPro={isPro} onOpenHistory={() => setActiveTab("historico")} />
         ) : activeTab === "premium" ? (
         <div className="space-y-4">
-            {/* Premium sub-nav */}
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {/* Premium grid nav - organized by category */}
+            <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-xl p-3 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.5)]">
               {[
-                { id: "dashboard" as PremiumSection, icon: BarChart3, label: "Dashboard" },
-                { id: "ai" as PremiumSection, icon: Bot, label: "IA" },
-                { id: "valuebets" as PremiumSection, icon: Zap, label: "Value" },
-                { id: "h2h" as PremiumSection, icon: Users, label: "H2H" },
-                { id: "rankings" as PremiumSection, icon: Trophy, label: "Rankings" },
-                { id: "odds" as PremiumSection, icon: Zap, label: "Odds" },
-                { id: "calendar" as PremiumSection, icon: Calendar, label: "Calendário" },
-                { id: "financial" as PremiumSection, icon: DollarSign, label: "Financeiro" },
-                { id: "goals" as PremiumSection, icon: Target, label: "Metas" },
-                { id: "favorites" as PremiumSection, icon: Star, label: "Favoritos" },
-                { id: "form" as PremiumSection, icon: BarChart3, label: "Forma" },
-                { id: "roi" as PremiumSection, icon: Trophy, label: "ROI" },
-                { id: "chat" as PremiumSection, icon: MessageCircle, label: "Chat" },
-                { id: "kelly" as PremiumSection, icon: Calculator, label: "Kelly" },
-                { id: "surebet" as PremiumSection, icon: Shield, label: "Surebet" },
-                { id: "livealerts" as PremiumSection, icon: BellRing, label: "Alertas" },
-                { id: "streaks" as PremiumSection, icon: Flame, label: "Streaks" },
-                { id: "multibet" as PremiumSection, icon: Target, label: "Multi-Bet" },
-                { id: "calculator" as PremiumSection, icon: Calculator, label: "Calculadora" },
-                { id: "insights" as PremiumSection, icon: Brain, label: "Insights" },
-                { id: "oddstracker" as PremiumSection, icon: Activity, label: "Odds Live" },
-                { id: "correlation" as PremiumSection, icon: GitBranch, label: "Correlação" },
-                { id: "report" as PremiumSection, icon: FileText, label: "Relatório IA" },
-                { id: "challenges" as PremiumSection, icon: Trophy, label: "Desafios" },
-                { id: "patterns" as PremiumSection, icon: Eye, label: "Padrões" },
-                { id: "livestats" as PremiumSection, icon: Activity, label: "Ao Vivo+" },
-                { id: "export" as PremiumSection, icon: Download, label: "Exportar" },
-                { id: "bookmaker" as PremiumSection, icon: Globe, label: "Casas" },
-                { id: "smartbet" as PremiumSection, icon: Brain, label: "Smart Bet" },
-                { id: "oddshistory" as PremiumSection, icon: LineChart, label: "Odds Hist." },
-                { id: "marketroi" as PremiumSection, icon: PieChart, label: "ROI Mercados" },
-                { id: "compare" as PremiumSection, icon: GitCompare, label: "Comparar" },
-                { id: "whatif" as PremiumSection, icon: Wand2, label: "E se..." },
-              ].map(({ id, icon: Icon, label }) => (
-                <button
-                  key={id}
-                  onClick={() => setPremiumSection(id)}
-                  className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all whitespace-nowrap ${
-                    premiumSection === id
-                      ? "bg-badge-star/10 border border-badge-star/50 text-badge-star"
-                      : "bg-card border border-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {label}
-                </button>
+                {
+                  title: "Análise",
+                  items: [
+                    { id: "dashboard" as PremiumSection, icon: BarChart3, label: "Dashboard" },
+                    { id: "ai" as PremiumSection, icon: Bot, label: "IA Bilhete" },
+                    { id: "valuebets" as PremiumSection, icon: Zap, label: "Value" },
+                    { id: "smartbet" as PremiumSection, icon: Brain, label: "Smart Bet" },
+                    { id: "insights" as PremiumSection, icon: Brain, label: "Insights" },
+                    { id: "patterns" as PremiumSection, icon: Eye, label: "Padrões" },
+                  ],
+                },
+                {
+                  title: "Times & Ligas",
+                  items: [
+                    { id: "h2h" as PremiumSection, icon: Users, label: "H2H" },
+                    { id: "rankings" as PremiumSection, icon: Trophy, label: "Rankings" },
+                    { id: "form" as PremiumSection, icon: BarChart3, label: "Forma" },
+                    { id: "favorites" as PremiumSection, icon: Star, label: "Favoritos" },
+                    { id: "calendar" as PremiumSection, icon: Calendar, label: "Calendário" },
+                    { id: "correlation" as PremiumSection, icon: GitBranch, label: "Correlação" },
+                  ],
+                },
+                {
+                  title: "Odds & Casas",
+                  items: [
+                    { id: "odds" as PremiumSection, icon: Zap, label: "Comparar" },
+                    { id: "bookmaker" as PremiumSection, icon: Globe, label: "Casas" },
+                    { id: "oddstracker" as PremiumSection, icon: Activity, label: "Odds Live" },
+                    { id: "oddshistory" as PremiumSection, icon: LineChart, label: "Histórico" },
+                    { id: "surebet" as PremiumSection, icon: Shield, label: "Surebet" },
+                    { id: "livealerts" as PremiumSection, icon: BellRing, label: "Alertas" },
+                  ],
+                },
+                {
+                  title: "Financeiro",
+                  items: [
+                    { id: "financial" as PremiumSection, icon: DollarSign, label: "Financeiro" },
+                    { id: "goals" as PremiumSection, icon: Target, label: "Metas" },
+                    { id: "roi" as PremiumSection, icon: Trophy, label: "ROI Ligas" },
+                    { id: "marketroi" as PremiumSection, icon: PieChart, label: "ROI Mercado" },
+                    { id: "kelly" as PremiumSection, icon: Calculator, label: "Kelly" },
+                    { id: "calculator" as PremiumSection, icon: Calculator, label: "Lucro" },
+                  ],
+                },
+                {
+                  title: "Bilhetes & Ferramentas",
+                  items: [
+                    { id: "multibet" as PremiumSection, icon: Target, label: "Multi-Bet" },
+                    { id: "compare" as PremiumSection, icon: GitCompare, label: "Comparar" },
+                    { id: "whatif" as PremiumSection, icon: Wand2, label: "E se..." },
+                    { id: "streaks" as PremiumSection, icon: Flame, label: "Streaks" },
+                    { id: "challenges" as PremiumSection, icon: Trophy, label: "Desafios" },
+                    { id: "chat" as PremiumSection, icon: MessageCircle, label: "Chat IA" },
+                  ],
+                },
+                {
+                  title: "Live & Relatórios",
+                  items: [
+                    { id: "livestats" as PremiumSection, icon: Activity, label: "Ao Vivo+" },
+                    { id: "report" as PremiumSection, icon: FileText, label: "Relatório" },
+                    { id: "export" as PremiumSection, icon: Download, label: "Exportar" },
+                  ],
+                },
+              ].map((group) => (
+                <div key={group.title} className="mb-3 last:mb-0">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/70 px-1 mb-2">{group.title}</p>
+                  <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                    {group.items.map(({ id, icon: Icon, label }) => {
+                      const isActive = premiumSection === id;
+                      return (
+                        <button
+                          key={id}
+                          onClick={() => setPremiumSection(id)}
+                          className={`flex flex-col items-center justify-center gap-1.5 rounded-xl px-2 py-3 text-[10px] font-semibold transition-all duration-200 ${
+                            isActive
+                              ? "bg-gradient-to-br from-badge-star/20 to-badge-star/5 border border-badge-star/50 text-badge-star shadow-[0_0_20px_-8px_hsl(var(--badge-star)/0.5)] scale-[1.03]"
+                              : "bg-surface/40 border border-border/40 text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-surface/70 active:scale-95"
+                          }`}
+                        >
+                          <Icon className={`h-4 w-4 ${isActive ? "text-badge-star" : ""}`} />
+                          <span className="leading-tight text-center line-clamp-1">{label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               ))}
             </div>
+
 
             {premiumSection === "dashboard" && <PerformanceDashboard />}
             {premiumSection === "ai" && fixturesData && <AITicketGenerator fixtures={fixturesData} />}
