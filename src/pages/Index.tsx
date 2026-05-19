@@ -107,7 +107,7 @@ export default function Index() {
   const [premiumSection, setPremiumSection] = useState<PremiumSection>("dashboard");
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
   const [activeMarkets, setActiveMarkets] = useState<string[]>([]);
-  const [activeHighlight, setActiveHighlight] = useState<number | null>(null);
+  // activeHighlight removed — redundant with QuickFilters
   const [quickFilter, setQuickFilter] = useState<QuickFilterType>("all");
   const [search, setSearch] = useState("");
   const [selectedMatch, setSelectedMatch] = useState<NormalizedFixture | null>(null);
