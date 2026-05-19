@@ -17,6 +17,7 @@ import { CashoutBuilder } from "@/components/CashoutBuilder";
 import { BilhetesView } from "@/components/BilhetesView";
 import { FilterChip } from "@/components/FilterChip";
 import { AppHeader } from "@/components/AppHeader";
+import { SectionHeader } from "@/components/SectionHeader";
 import { CollapsibleFilterGroup } from "@/components/CollapsibleFilterGroup";
 import { Layers, Sparkles, Globe2 } from "lucide-react";
 import { useKeyGate } from "@/contexts/KeyGateContext";
