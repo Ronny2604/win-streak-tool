@@ -90,10 +90,12 @@ export function CopaSection({ isPro }: CopaSectionProps) {
 
   const filtered = fixtures
     ?.filter((f) => {
+      if (selectedGroup === "wc" && !isWorldCupFixture(f)) return false;
+      if (selectedGroup === "qualifiers" && !isQualifierFixture(f)) return false;
+      if (selectedGroup === "friendlies" && !(f.league.name.toLowerCase().includes("friendl") || f.league.name.toLowerCase().includes("amistos"))) return false;
       if (selectedLeague) {
         const leagueInfo = COPA_LEAGUES.find((l) => l.id === selectedLeague);
         if (leagueInfo && !f.league.name.toLowerCase().includes(leagueInfo.name.toLowerCase().split(" ")[0])) {
-          // Match by sport key in league name
           const sportKey = selectedLeague.replace(/soccer_/g, "").replace(/_/g, " ");
           if (!f.league.name.toLowerCase().includes(sportKey.split(" ")[0])) return false;
         }
@@ -107,7 +109,16 @@ export function CopaSection({ isPro }: CopaSectionProps) {
       }
       return true;
     })
-    ?.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    ?.sort((a, b) => {
+      // Prioritize World Cup fixtures, then by date
+      const wcA = isWorldCupFixture(a) ? 0 : isQualifierFixture(a) ? 1 : 2;
+      const wcB = isWorldCupFixture(b) ? 0 : isQualifierFixture(b) ? 1 : 2;
+      if (wcA !== wcB) return wcA - wcB;
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
+
+  const wcCount = fixtures?.filter(isWorldCupFixture).length ?? 0;
+  const qualCount = fixtures?.filter(isQualifierFixture).length ?? 0;
 
   return (
     <div className="space-y-4">
