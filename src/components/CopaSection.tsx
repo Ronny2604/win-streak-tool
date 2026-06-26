@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getCopaOdds, COPA_LEAGUES, type NormalizedFixture } from "@/lib/odds-api";
 import { MatchCard } from "./MatchCard";
@@ -82,11 +82,28 @@ export function CopaSection({ isPro }: CopaSectionProps) {
   const [showAnalysis, setShowAnalysis] = useState<string | null>(null);
   const wc = useWorldCupCountdown();
 
-  const { data: fixtures, isLoading } = useQuery({
+  const REFRESH_INTERVAL_MS = 60_000;
+  const { data: fixtures, isLoading, isFetching, isError, refetch, dataUpdatedAt, errorUpdatedAt } = useQuery({
     queryKey: ["copa-fixtures"],
     queryFn: () => getCopaOdds(),
-    staleTime: 60000,
+    staleTime: 30_000,
+    refetchInterval: REFRESH_INTERVAL_MS,
+    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false,
   });
+
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const lastUpdate = dataUpdatedAt || errorUpdatedAt;
+  const secondsAgo = lastUpdate ? Math.max(0, Math.floor((now - lastUpdate) / 1000)) : null;
+  const nextRefreshIn = lastUpdate
+    ? Math.max(0, Math.ceil((lastUpdate + REFRESH_INTERVAL_MS - now) / 1000))
+    : null;
+  const status: "updating" | "ok" | "error" = isFetching ? "updating" : isError ? "error" : "ok";
 
   const filtered = fixtures
     ?.filter((f) => {
@@ -157,6 +174,56 @@ export function CopaSection({ isPro }: CopaSectionProps) {
           <Sparkles className="h-4 w-4 text-badge-star" />
         </div>
       </button>
+
+      {/* Auto-refresh status bar */}
+      <div
+        className={cn(
+          "flex items-center justify-between gap-2 rounded-xl border px-3 py-2 backdrop-blur-xl transition-colors",
+          status === "updating" && "border-primary/40 bg-primary/10",
+          status === "ok" && "border-chart-positive/30 bg-chart-positive/5",
+          status === "error" && "border-chart-negative/40 bg-chart-negative/10"
+        )}
+        role="status"
+        aria-live="polite"
+      >
+        <div className="flex items-center gap-2 text-[11px] font-medium">
+          <span
+            className={cn(
+              "h-2 w-2 rounded-full",
+              status === "updating" && "animate-pulse bg-primary",
+              status === "ok" && "bg-chart-positive",
+              status === "error" && "bg-chart-negative"
+            )}
+          />
+          {status === "updating" && <span className="text-primary">Atualizando odds…</span>}
+          {status === "ok" && (
+            <span className="text-foreground/80">
+              Odds atualizadas
+              {secondsAgo !== null && (
+                <span className="ml-1 text-muted-foreground">
+                  · há {secondsAgo < 60 ? `${secondsAgo}s` : `${Math.floor(secondsAgo / 60)}min`}
+                </span>
+              )}
+              {nextRefreshIn !== null && nextRefreshIn > 0 && (
+                <span className="ml-1 text-muted-foreground">· próxima em {nextRefreshIn}s</span>
+              )}
+            </span>
+          )}
+          {status === "error" && <span className="text-chart-negative">Erro ao atualizar odds</span>}
+        </div>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className={cn(
+            "flex items-center gap-1 rounded-lg border border-border/60 bg-card/60 px-2 py-1 text-[10px] font-semibold text-foreground/80 transition-all hover:border-primary/50 hover:text-primary disabled:opacity-50",
+          )}
+        >
+          <TrendingUp className={cn("h-3 w-3", isFetching && "animate-spin")} />
+          Atualizar
+        </button>
+      </div>
+
 
       {/* Header */}
       <div className="flex items-center gap-3">
