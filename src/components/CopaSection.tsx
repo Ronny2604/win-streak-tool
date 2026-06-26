@@ -486,6 +486,62 @@ export function CopaSection({ isPro }: CopaSectionProps) {
                             </p>
                           </div>
                         </div>
+
+                        {/* Best Markets */}
+                        {analysis.bestMarkets.length > 0 && (
+                          <div className="mt-2 space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5">
+                                <Sparkles className="h-3 w-3 text-badge-star" />
+                                <span className="text-[11px] font-bold text-foreground">Melhores Mercados</span>
+                              </div>
+                              <span className="text-[10px] text-muted-foreground">
+                                xG {analysis.expectedGoals.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-1.5">
+                              {analysis.bestMarkets.map((m, i) => {
+                                const Icon = MARKET_ICONS[m.icon];
+                                const toneClass =
+                                  m.tone === "positive"
+                                    ? "bg-chart-positive/10 border-chart-positive/20 text-chart-positive"
+                                    : m.tone === "star"
+                                    ? "bg-badge-star/10 border-badge-star/20 text-badge-star"
+                                    : "bg-primary/10 border-primary/20 text-primary";
+                                return (
+                                  <div
+                                    key={i}
+                                    className={cn(
+                                      "rounded-lg border p-2 backdrop-blur-sm transition-all hover:scale-[1.02]",
+                                      toneClass
+                                    )}
+                                  >
+                                    <div className="flex items-center gap-1.5">
+                                      <Icon className="h-3 w-3 flex-shrink-0" />
+                                      <span className="text-[9px] font-semibold uppercase tracking-wide opacity-80">
+                                        {m.label}
+                                      </span>
+                                    </div>
+                                    <p className="mt-0.5 truncate text-[11px] font-bold text-foreground" title={m.pick}>
+                                      {m.pick}
+                                    </p>
+                                    <div className="mt-1 flex items-center justify-between">
+                                      <span className="text-[10px] font-bold tabular-nums">
+                                        {(m.probability * 100).toFixed(0)}%
+                                      </span>
+                                      <span className="text-[10px] text-muted-foreground tabular-nums">
+                                        @{m.fairOdd.toFixed(2)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <p className="text-[9px] text-muted-foreground text-center pt-1">
+                              Probabilidade real (sem margem) · Odd justa estimada
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
