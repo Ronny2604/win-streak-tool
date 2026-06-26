@@ -6,11 +6,21 @@ import { MatchCardSkeleton } from "./MatchCardSkeleton";
 import { MatchDetailModal } from "./MatchDetailModal";
 import { EmptyState } from "./EmptyState";
 import { FilterChip } from "./FilterChip";
-import { Globe, Trophy, Search, TrendingUp, Shield, Target, Flag, CalendarDays, Sparkles } from "lucide-react";
+import { Globe, Trophy, Search, TrendingUp, Shield, Target, Flag, CalendarDays, Sparkles, Goal, Crosshair, Scale, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { buildPoissonModel, calibrateLambdas, deriveProbabilities } from "@/lib/poisson";
 
 interface CopaSectionProps {
   isPro: boolean;
+}
+
+interface MarketPick {
+  label: string;
+  pick: string;
+  probability: number;
+  fairOdd: number;
+  icon: "goal" | "shield" | "target" | "scale" | "zap" | "crosshair";
+  tone: "positive" | "neutral" | "star";
 }
 
 function analyzeMatch(fixture: NormalizedFixture) {
@@ -22,15 +32,27 @@ function analyzeMatch(fixture: NormalizedFixture) {
   const a = parseFloat(odds.away);
   if (isNaN(h) || isNaN(d) || isNaN(a)) return null;
 
+  // Fair probabilities (remove vig)
+  const ih = 1 / h, id = 1 / d, ia = 1 / a;
+  const overround = ih + id + ia;
+  const pH = ih / overround;
+  const pD = id / overround;
+  const pA = ia / overround;
+
   const favorite = h < a ? "home" : a < h ? "away" : "draw";
   const favName = favorite === "home" ? fixture.teams.home.name : favorite === "away" ? fixture.teams.away.name : "Empate";
   const favOdd = favorite === "home" ? h : favorite === "away" ? a : d;
   const confidence = Math.min(95, Math.floor(60 + Math.abs(h - a) * 12));
 
+  // Poisson model — Copa games tend to be tighter, base total 2.5
+  const { lambdaHome, lambdaAway } = calibrateLambdas(pH, pA, 0, 0, 2.5);
+  const model = buildPoissonModel(lambdaHome, lambdaAway);
+  const probs = deriveProbabilities(model);
+
   let suggestion = "";
   let betType = "";
   if (Math.abs(h - a) > 1.5) {
-    suggestion = `${favName} deve dominar. Considere Vitória ${favName} ou Handicap.`;
+    suggestion = `${favName} deve dominar. Considere Vitória ${favName} ou Handicap -1.`;
     betType = favorite === "home" ? "Vitória Casa" : "Vitória Fora";
   } else if (Math.abs(h - a) < 0.3) {
     suggestion = "Jogo equilibrado. Empate ou Ambas Marcam pode ser boa opção.";
@@ -40,8 +62,110 @@ function analyzeMatch(fixture: NormalizedFixture) {
     betType = `Dupla Chance (${favName})`;
   }
 
-  return { favorite, favName, favOdd, confidence, suggestion, betType };
+  // Build best markets ranked by probability
+  const markets: MarketPick[] = [];
+
+  // 1X2 best side
+  const winProb = Math.max(pH, pD, pA);
+  markets.push({
+    label: "Resultado Final",
+    pick: favName,
+    probability: winProb,
+    fairOdd: 1 / winProb,
+    icon: "target",
+    tone: "positive",
+  });
+
+  // Dupla Chance
+  const dc1X = pH + pD, dcX2 = pD + pA, dc12 = pH + pA;
+  const bestDc = Math.max(dc1X, dcX2, dc12);
+  const dcLabel = bestDc === dc1X
+    ? `${fixture.teams.home.name} ou Empate`
+    : bestDc === dcX2
+    ? `${fixture.teams.away.name} ou Empate`
+    : `${fixture.teams.home.name} ou ${fixture.teams.away.name}`;
+  markets.push({
+    label: "Dupla Chance",
+    pick: dcLabel,
+    probability: bestDc,
+    fairOdd: 1 / bestDc,
+    icon: "shield",
+    tone: "positive",
+  });
+
+  // Over/Under 2.5
+  const overUnderProb = Math.max(probs.over25, probs.under25);
+  markets.push({
+    label: "Total de Gols",
+    pick: probs.over25 > probs.under25 ? "Mais de 2.5" : "Menos de 2.5",
+    probability: overUnderProb,
+    fairOdd: 1 / overUnderProb,
+    icon: "goal",
+    tone: "neutral",
+  });
+
+  // Over 1.5 (safer alt)
+  markets.push({
+    label: "Gols Alternativo",
+    pick: probs.over15 > 0.7 ? "Mais de 1.5" : "Menos de 3.5",
+    probability: probs.over15 > 0.7 ? probs.over15 : 1 - probs.over35,
+    fairOdd: 1 / (probs.over15 > 0.7 ? probs.over15 : 1 - probs.over35),
+    icon: "zap",
+    tone: "neutral",
+  });
+
+  // BTTS
+  const bttsProb = Math.max(probs.btts, 1 - probs.btts);
+  markets.push({
+    label: "Ambas Marcam",
+    pick: probs.btts > 0.5 ? "Sim" : "Não",
+    probability: bttsProb,
+    fairOdd: 1 / bttsProb,
+    icon: "scale",
+    tone: "neutral",
+  });
+
+  // Top correct score
+  const topScore = probs.topScores[0];
+  if (topScore) {
+    markets.push({
+      label: "Placar Exato",
+      pick: topScore.score,
+      probability: topScore.probability,
+      fairOdd: 1 / topScore.probability,
+      icon: "crosshair",
+      tone: "star",
+    });
+  }
+
+  // Multiple correct scores (top 3 combined)
+  const top3 = probs.topScores.slice(0, 3);
+  const top3Prob = top3.reduce((s, x) => s + x.probability, 0);
+  if (top3.length === 3) {
+    markets.push({
+      label: "Múltiplos Placares",
+      pick: top3.map((s) => s.score).join(" / "),
+      probability: top3Prob,
+      fairOdd: 1 / top3Prob,
+      icon: "crosshair",
+      tone: "star",
+    });
+  }
+
+  // Sort by probability (highest = safer) and keep top 6
+  const bestMarkets = markets.sort((a, b) => b.probability - a.probability).slice(0, 6);
+
+  return { favorite, favName, favOdd, confidence, suggestion, betType, bestMarkets, expectedGoals: probs.expectedGoals };
 }
+
+const MARKET_ICONS = {
+  goal: Goal,
+  shield: Shield,
+  target: Target,
+  scale: Scale,
+  zap: Zap,
+  crosshair: Crosshair,
+} as const;
 
 const WC_LEAGUE_IDS = ["soccer_fifa_world_cup"];
 const WC_QUALIFIER_IDS = [
