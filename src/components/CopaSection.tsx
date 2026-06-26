@@ -82,11 +82,28 @@ export function CopaSection({ isPro }: CopaSectionProps) {
   const [showAnalysis, setShowAnalysis] = useState<string | null>(null);
   const wc = useWorldCupCountdown();
 
-  const { data: fixtures, isLoading } = useQuery({
+  const REFRESH_INTERVAL_MS = 60_000;
+  const { data: fixtures, isLoading, isFetching, isError, refetch, dataUpdatedAt, errorUpdatedAt } = useQuery({
     queryKey: ["copa-fixtures"],
     queryFn: () => getCopaOdds(),
-    staleTime: 60000,
+    staleTime: 30_000,
+    refetchInterval: REFRESH_INTERVAL_MS,
+    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false,
   });
+
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const lastUpdate = dataUpdatedAt || errorUpdatedAt;
+  const secondsAgo = lastUpdate ? Math.max(0, Math.floor((now - lastUpdate) / 1000)) : null;
+  const nextRefreshIn = lastUpdate
+    ? Math.max(0, Math.ceil((lastUpdate + REFRESH_INTERVAL_MS - now) / 1000))
+    : null;
+  const status: "updating" | "ok" | "error" = isFetching ? "updating" : isError ? "error" : "ok";
 
   const filtered = fixtures
     ?.filter((f) => {
