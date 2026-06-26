@@ -122,6 +122,42 @@ export function CopaSection({ isPro }: CopaSectionProps) {
 
   return (
     <div className="space-y-4">
+      {/* World Cup 2026 Hero */}
+      <button
+        type="button"
+        onClick={() => setSelectedGroup("wc")}
+        className={cn(
+          "relative w-full overflow-hidden rounded-2xl border text-left transition-all",
+          "bg-gradient-to-br from-badge-star/20 via-primary/10 to-chart-positive/15",
+          "border-badge-star/40 backdrop-blur-xl p-4 shadow-[0_8px_32px_-12px_hsl(var(--badge-star)/0.5)]",
+          "hover:scale-[1.01] active:scale-[0.99]"
+        )}
+      >
+        <div className="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-badge-star/20 blur-2xl" />
+        <div className="absolute -left-4 -bottom-8 h-24 w-24 rounded-full bg-chart-positive/20 blur-2xl" />
+        <div className="relative flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-badge-star to-primary shadow-lg">
+            <Trophy className="h-6 w-6 text-background" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-badge-star">FIFA World Cup 2026</p>
+              {wc.status === "live" && (
+                <span className="flex items-center gap-1 rounded-full bg-chart-negative/20 px-1.5 py-0.5 text-[9px] font-bold text-chart-negative">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-chart-negative" /> AO VIVO
+                </span>
+              )}
+            </div>
+            <h3 className="truncate text-base font-bold text-foreground">Caminho até a Copa</h3>
+            <div className="mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
+              <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" />{wc.label}</span>
+              <span className="flex items-center gap-1"><Flag className="h-3 w-3" />{wcCount} jogos</span>
+            </div>
+          </div>
+          <Sparkles className="h-4 w-4 text-badge-star" />
+        </div>
+      </button>
+
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-yellow-400">
@@ -135,10 +171,18 @@ export function CopaSection({ isPro }: CopaSectionProps) {
         </div>
       </div>
 
+      {/* Group quick filters (WC focus) */}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <FilterChip label="Todos" active={selectedGroup === "all"} onClick={() => setSelectedGroup("all")} />
+        <FilterChip label={`🏆 Copa 2026${wcCount ? ` · ${wcCount}` : ""}`} active={selectedGroup === "wc"} onClick={() => setSelectedGroup("wc")} />
+        <FilterChip label={`Eliminatórias${qualCount ? ` · ${qualCount}` : ""}`} active={selectedGroup === "qualifiers"} onClick={() => setSelectedGroup("qualifiers")} />
+        <FilterChip label="Amistosos" active={selectedGroup === "friendlies"} onClick={() => setSelectedGroup("friendlies")} />
+      </div>
+
       {/* League filters */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         <FilterChip
-          label="Todos"
+          label="Todas ligas"
           active={!selectedLeague}
           onClick={() => setSelectedLeague(undefined)}
         />
