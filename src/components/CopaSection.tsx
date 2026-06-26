@@ -43,11 +43,44 @@ function analyzeMatch(fixture: NormalizedFixture) {
   return { favorite, favName, favOdd, confidence, suggestion, betType };
 }
 
+const WC_LEAGUE_IDS = ["soccer_fifa_world_cup"];
+const WC_QUALIFIER_IDS = [
+  "soccer_fifa_world_cup_qualifiers_conmebol",
+  "soccer_fifa_world_cup_qualifiers_uefa",
+];
+const FRIENDLY_IDS = ["soccer_international_friendlies"];
+
+function isWorldCupFixture(f: NormalizedFixture) {
+  const n = f.league.name.toLowerCase();
+  return n.includes("world cup") || n.includes("copa do mundo") || n.includes("fifa world");
+}
+function isQualifierFixture(f: NormalizedFixture) {
+  const n = f.league.name.toLowerCase();
+  return n.includes("qualif") || n.includes("eliminat");
+}
+
+function useWorldCupCountdown() {
+  // FIFA World Cup 2026: June 11, 2026 → July 19, 2026 (USA / Canada / Mexico)
+  const start = new Date("2026-06-11T20:00:00Z").getTime();
+  const end = new Date("2026-07-19T23:00:00Z").getTime();
+  const now = Date.now();
+  if (now < start) {
+    const days = Math.ceil((start - now) / 86400000);
+    return { status: "before" as const, label: `Faltam ${days} dias`, days };
+  }
+  if (now <= end) {
+    return { status: "live" as const, label: "Acontecendo agora", days: 0 };
+  }
+  return { status: "after" as const, label: "Edição encerrada", days: 0 };
+}
+
 export function CopaSection({ isPro }: CopaSectionProps) {
   const [selectedLeague, setSelectedLeague] = useState<string | undefined>(undefined);
+  const [selectedGroup, setSelectedGroup] = useState<"all" | "wc" | "qualifiers" | "friendlies">("all");
   const [selectedMatch, setSelectedMatch] = useState<NormalizedFixture | null>(null);
   const [search, setSearch] = useState("");
   const [showAnalysis, setShowAnalysis] = useState<string | null>(null);
+  const wc = useWorldCupCountdown();
 
   const { data: fixtures, isLoading } = useQuery({
     queryKey: ["copa-fixtures"],
