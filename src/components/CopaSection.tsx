@@ -175,6 +175,56 @@ export function CopaSection({ isPro }: CopaSectionProps) {
         </div>
       </button>
 
+      {/* Auto-refresh status bar */}
+      <div
+        className={cn(
+          "flex items-center justify-between gap-2 rounded-xl border px-3 py-2 backdrop-blur-xl transition-colors",
+          status === "updating" && "border-primary/40 bg-primary/10",
+          status === "ok" && "border-chart-positive/30 bg-chart-positive/5",
+          status === "error" && "border-chart-negative/40 bg-chart-negative/10"
+        )}
+        role="status"
+        aria-live="polite"
+      >
+        <div className="flex items-center gap-2 text-[11px] font-medium">
+          <span
+            className={cn(
+              "h-2 w-2 rounded-full",
+              status === "updating" && "animate-pulse bg-primary",
+              status === "ok" && "bg-chart-positive",
+              status === "error" && "bg-chart-negative"
+            )}
+          />
+          {status === "updating" && <span className="text-primary">Atualizando odds…</span>}
+          {status === "ok" && (
+            <span className="text-foreground/80">
+              Odds atualizadas
+              {secondsAgo !== null && (
+                <span className="ml-1 text-muted-foreground">
+                  · há {secondsAgo < 60 ? `${secondsAgo}s` : `${Math.floor(secondsAgo / 60)}min`}
+                </span>
+              )}
+              {nextRefreshIn !== null && nextRefreshIn > 0 && (
+                <span className="ml-1 text-muted-foreground">· próxima em {nextRefreshIn}s</span>
+              )}
+            </span>
+          )}
+          {status === "error" && <span className="text-chart-negative">Erro ao atualizar odds</span>}
+        </div>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className={cn(
+            "flex items-center gap-1 rounded-lg border border-border/60 bg-card/60 px-2 py-1 text-[10px] font-semibold text-foreground/80 transition-all hover:border-primary/50 hover:text-primary disabled:opacity-50",
+          )}
+        >
+          <TrendingUp className={cn("h-3 w-3", isFetching && "animate-spin")} />
+          Atualizar
+        </button>
+      </div>
+
+
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-yellow-400">
