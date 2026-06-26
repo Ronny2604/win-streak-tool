@@ -6,7 +6,7 @@ import { MatchCardSkeleton } from "./MatchCardSkeleton";
 import { MatchDetailModal } from "./MatchDetailModal";
 import { EmptyState } from "./EmptyState";
 import { FilterChip } from "./FilterChip";
-import { Globe, Trophy, Search, TrendingUp, Shield, Target } from "lucide-react";
+import { Globe, Trophy, Search, TrendingUp, Shield, Target, Flag, CalendarDays, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CopaSectionProps {
